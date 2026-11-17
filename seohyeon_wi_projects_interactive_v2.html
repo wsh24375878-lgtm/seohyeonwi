@@ -16,4 +16,11 @@ document.querySelectorAll('.track .card').forEach((card, index) => {
   }
   card.parentNode.replaceChild(link, card);
 });
+</script>
+<script>
+const navigationLinks = document.querySelectorAll('.navigation a');
+navigationLinks[0].href = 'index.html';
+navigationLinks[2].href = 'about.html';
+navigationLinks[2].textContent = 'ABOUT ME';
+navigationLinks[3].href = 'contact.html';
 </script></body></html>
