@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Interactive Typography — Fashion Design Portfolio</title>
+<style>
+*{box-sizing:border-box}
+html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#fff;font-family:Arial,Helvetica,sans-serif}
+.page{position:relative;width:100vw;height:100vh;overflow:hidden;background:#fff}
+.text{position:absolute;left:24px;top:54px;width:min(65vw,1080px);font-size:clamp(26px,3.25vw,56px);line-height:1.05;font-weight:400;letter-spacing:-.04em;color:#050505;z-index:3}
+.letter{display:inline-block;position:relative;will-change:transform;white-space:pre}
+.menu{position:absolute;left:24px;right:24px;bottom:24px;display:flex;justify-content:space-between;align-items:center;font-size:15px;line-height:1;color:#050505;z-index:5}.menu a{color:inherit;text-decoration:none}.cursor{position:fixed;width:14px;height:14px;border-radius:50%;background:#000;pointer-events:none;transform:translate(-50%,-50%);z-index:999;mix-blend-mode:multiply}
+@media (max-width:700px){
+.text{left:14px;top:48px;width:88vw;font-size:clamp(20px,5vw,34px)}
+.menu{left:14px;right:14px;bottom:18px;font-size:12px}
+}
+</style>
+</head>
+<body>
+<div class="page">
+<div class="text" id="interactiveText">2000, born, seoul, korea, sunghsin women’s university, fashion design, clothes, objects, images, materials, colors, shapes, collection, brand, product, observation, curiosity, question, experiment, making, editing, rebuilding, from imagination to reality, designer in progress</div>
+<div class="menu">
+  <a href="seohyeon_wi_projects_interactive_v2.html">Archive</a>
+  <a href="#">Fashion</a>
+  <a href="and2es-style-portfolio.html">3D</a>
+  <a href="#">Metal Craft</a>
+  <a href="#">Product</a>
+</div>
+</div>
+<div class="cursor"></div>
+<script>
+const text=document.getElementById("interactiveText");
+const cursor=document.querySelector(".cursor");
+const originalText=text.textContent;
+text.innerHTML="";
+[...originalText].forEach(char=>{
+ const span=document.createElement("span");
+ span.className="letter";
+ span.textContent=char===" " ? "\u00A0" : char;
+ text.appendChild(span);
+});
+const letters=[...document.querySelectorAll(".letter")];
+let mouse={x:innerWidth/2,y:innerHeight/2};
+const states=letters.map(()=>({x:0,y:0,vx:0,vy:0}));
+document.addEventListener("mousemove",e=>{
+ mouse.x=e.clientX; mouse.y=e.clientY;
+ cursor.style.left=mouse.x+"px"; cursor.style.top=mouse.y+"px";
+});
+function animate(){
+ letters.forEach((letter,i)=>{
+   const rect=letter.getBoundingClientRect();
+   const centerX=rect.left+rect.width/2;
+   const centerY=rect.top+rect.height/2;
+   const dx=centerX-mouse.x, dy=centerY-mouse.y;
+   const distance=Math.hypot(dx,dy);
+   const radius=180;
+   if(distance<radius){
+     const force=Math.pow((radius-distance)/radius,1.5);
+     const angle=Math.atan2(dy,dx);
+     const push=force*4.5;
+     states[i].vx+=Math.cos(angle)*push;
+     states[i].vy+=Math.sin(angle)*push;
+   }
+   states[i].vx+=-states[i].x*.035;
+   states[i].vy+=-states[i].y*.035;
+   states[i].vx*=.90; states[i].vy*=.90;
+   states[i].x+=states[i].vx; states[i].y+=states[i].vy;
+   letter.style.transform=`translate(${states[i].x}px,${states[i].y}px)`;
+ });
+ requestAnimationFrame(animate);
+}
+animate();
+</script>
+</body>
+</html>

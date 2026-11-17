@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SEOHYEON WI™ — Portfolio</title>
+<style>
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background: #fff;
+    color: #000;
+    font-family: Arial, Helvetica, sans-serif;
+  }
+
+  button, a { font: inherit; color: inherit; }
+
+  /* Top navigation */
+  .top {
+    position: fixed;
+    z-index: 100;
+    top: 3px;
+    left: 7px;
+    right: 7px;
+    height: 18px;
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: start;
+    font-size: 11px;
+    line-height: 13px;
+    pointer-events: none;
+  }
+
+  .top-left, .top-center, .top-right {
+    display: flex;
+    gap: 4px;
+  }
+
+  .top-center { justify-content: center; }
+  .top-right { justify-content: flex-end; }
+
+  .tag {
+    display: inline-block;
+    padding: 0 3px;
+    height: 14px;
+    line-height: 14px;
+    background: #000;
+    color: #fff;
+    white-space: nowrap;
+    pointer-events: auto;
+  }
+
+  .tag.link { cursor: pointer; text-decoration: underline; }
+
+  /* Main stage */
+  .stage {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    perspective: 1500px;
+    perspective-origin: 50% 49%;
+    touch-action: none;
+    cursor: grab;
+  }
+
+  .stage.dragging { cursor: grabbing; }
+
+  .carousel {
+    position: relative;
+    width: 100vw;
+    height: 100vh;
+    transform-style: preserve-3d;
+  }
+
+  .card {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 270px;
+    height: 405px;
+    margin-left: -135px;
+    margin-top: -202px;
+    transform-style: preserve-3d;
+    transform-origin: center center;
+    user-select: none;
+    cursor: pointer;
+    will-change: transform, opacity, filter;
+  }
+
+  .card-inner {
+    width: 100%;
+    height: 100%;
+    border: 1px solid #e4e4e4;
+    background: #c7c7c7;
+    box-shadow: 0 12px 30px rgba(0,0,0,.035);
+    overflow: hidden;
+  }
+
+  /* Every project is intentionally gray for now. */
+  .card:nth-child(2n) .card-inner { background: #bcbcbc; }
+  .card:nth-child(3n) .card-inner { background: #d0d0d0; }
+  .card:nth-child(4n) .card-inner { background: #c2c2c2; }
+
+  .gray-detail {
+    position: absolute;
+    inset: 0;
+    opacity: .24;
+    background:
+      linear-gradient(135deg, transparent 0 35%, rgba(255,255,255,.55) 35.2% 35.8%, transparent 36%),
+      linear-gradient(30deg, transparent 0 55%, rgba(0,0,0,.08) 55.2% 62%, transparent 62.2%);
+  }
+
+  .card-index {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    font-size: 10px;
+  }
+
+  .card-name {
+    position: absolute;
+    left: 10px;
+    bottom: 10px;
+    font-size: 11px;
+  }
+
+  /* Bottom project control */
+  .bottom {
+    position: fixed;
+    z-index: 100;
+    left: 50%;
+    bottom: 4px;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 4px;
+    align-items: center;
+    font-size: 11px;
+  }
+
+  .bottom button {
+    border: 0;
+    background: #000;
+    color: #fff;
+    padding: 0 4px;
+    height: 14px;
+    line-height: 14px;
+    cursor: pointer;
+  }
+
+  .bottom a {
+    text-decoration: none;
+    background: #eee;
+    padding: 0 4px;
+    height: 14px;
+    line-height: 14px;
+  }
+
+  /* Small helper */
+  .hint {
+    position: fixed;
+    z-index: 90;
+    left: 50%;
+    bottom: 27px;
+    transform: translateX(-50%);
+    font-size: 9px;
+    opacity: 0;
+    transition: opacity .4s ease;
+    pointer-events: none;
+  }
+
+  @media (max-width: 700px) {
+    .card {
+      width: 205px;
+      height: 308px;
+      margin-left: -102.5px;
+      margin-top: -154px;
+    }
+    .top {
+      font-size: 9px;
+      grid-template-columns: 1fr auto;
+    }
+    .top-center { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="top-left">
+    <span class="tag">SEOHYEON WI™</span>
+    <span class="tag" id="clock">00:00:00 (KST) Thursday August 27 2026</span>
+  </div>
+
+  <nav class="top-center">
+    <span class="tag link">Work</span>
+    <span class="tag link">Index</span>
+    <span class="tag link">Information</span>
+  </nav>
+
+  <div class="top-right">
+    <span class="tag link">Instagram</span>
+    <span class="tag link">Email</span>
+  </div>
+</header>
+
+<main class="stage" id="stage">
+  <div class="carousel" id="carousel"></div>
+</main>
+
+<div class="hint" id="hint">DRAG TO ROTATE</div>
+
+<div class="bottom">
+  <button id="projectName">Project 01</button>
+  <a href="project-detail.html?project=01" id="viewCase">View Case</a>
+</div>
+
+<script>
+  /*
+    Interaction model:
+    - Cards are arranged around a horizontal 3D cylinder.
+    - Dragging left/right rotates the entire carousel.
+    - Mouse wheel also rotates it.
+    - The nearest card becomes large/front-facing.
+    - Side cards become smaller, angled and fade slightly.
+    - Release has momentum/inertia.
+  */
+
+  const carousel = document.getElementById('carousel');
+  const stage = document.getElementById('stage');
+  const projectName = document.getElementById('projectName');
+  const viewCase = document.getElementById('viewCase');
+
+  const projects = [
+    'Project 01',
+    'Project 02',
+    'Project 03',
+    'Project 04',
+    'Project 05',
+    'Project 06',
+    'Project 07',
+    'Project 08'
+  ];
+
+  const cards = projects.map((name, i) => {
+    const card = document.createElement('div');
+    card.className = 'card';
+
+    const inner = document.createElement('div');
+    inner.className = 'card-inner';
+
+    const detail = document.createElement('div');
+    detail.className = 'gray-detail';
+
+    const index = document.createElement('div');
+    index.className = 'card-index';
+    index.textContent = String(i + 1).padStart(2, '0');
+
+    const label = document.createElement('div');
+    label.className = 'card-name';
+    label.textContent = name;
+
+    inner.append(detail, index, label);
+    card.appendChild(inner);
+    carousel.appendChild(card);
+    return card;
+  });
+
+  let rotation = 0;
+  let targetRotation = 0;
+  let velocity = 0;
+  let dragging = false;
+  let lastX = 0;
+  let lastTime = 0;
+  let pointerStartX = 0;
+  let didDrag = false;
+
+  // Distance between cards around the invisible cylinder.
+  const radius = 390;
+  const angleStep = 360 / cards.length;
+
+  function shortestAngle(a) {
+    return ((a + 180) % 360 + 360) % 360 - 180;
+  }
+
+  function render() {
+    cards.forEach((card, i) => {
+      const base = i * angleStep;
+      const angle = base + rotation;
+      const rad = angle * Math.PI / 180;
+
+      // 3D cylindrical placement.
+      const x = Math.sin(rad) * radius;
+      const z = Math.cos(rad) * radius;
+
+      // Front card gets scale/opacity; side cards recede.
+      const depth = (z + radius) / (radius * 2);
+      const scale = 0.68 + depth * 0.32;
+      const opacity = 0.30 + depth * 0.70;
+
+      card.style.transform =
+        `translate3d(${x}px, 0, ${z}px)
+         rotateY(${angle}deg)
+         scale(${scale})`;
+
+      card.style.opacity = opacity;
+      card.style.zIndex = Math.round(z + radius);
+    });
+
+    const normalized = ((rotation % 360) + 360) % 360;
+    const nearest = Math.round(-normalized / angleStep);
+    const active = ((nearest % cards.length) + cards.length) % cards.length;
+    projectName.textContent = projects[active];
+    viewCase.href = `project-detail.html?project=${String(active + 1).padStart(2, '0')}`;
+  }
+
+  function animate() {
+    if (!dragging) {
+      targetRotation += velocity;
+      velocity *= 0.94;
+    }
+
+    // Smoothly catch up to target rotation.
+    rotation += (targetRotation - rotation) * 0.14;
+
+    render();
+    requestAnimationFrame(animate);
+  }
+
+  let downCard = null;
+
+  function pointerDown(e) {
+    dragging = true;
+    stage.classList.add('dragging');
+    lastX = e.clientX;
+    pointerStartX = e.clientX;
+    didDrag = false;
+    lastTime = performance.now();
+    velocity = 0;
+    // 눌렀을 때 어떤 카드 위였는지 기억
+    downCard = e.target.closest('.card');
+  }
+
+  function pointerMove(e) {
+    if (!dragging) return;
+
+    const now = performance.now();
+    const dx = e.clientX - lastX;
+
+    if (!didDrag && Math.abs(e.clientX - pointerStartX) > 6) {
+      didDrag = true;
+      // 실제로 드래그가 시작됐을 때만 포인터 캡처
+      stage.setPointerCapture?.(e.pointerId);
+    }
+
+    const dt = Math.max(8, now - lastTime);
+    const delta = dx * 0.10;
+    targetRotation += delta;
+    velocity = delta * (16 / dt);
+
+    lastX = e.clientX;
+    lastTime = now;
+  }
+
+  function pointerUp(e) {
+    if (!dragging) return;
+    dragging = false;
+    stage.classList.remove('dragging');
+
+    // 드래그가 아니라 "클릭"이었다면 해당 카드의 상세 페이지로 이동
+    if (!didDrag && downCard && e.type === 'pointerup') {
+      const i = cards.indexOf(downCard);
+      if (i !== -1) {
+        const project = String(i + 1).padStart(2, '0');
+        window.location.href = `project-detail.html?project=${project}`;
+      }
+    }
+    downCard = null;
+  }
+
+  stage.addEventListener('pointerdown', pointerDown);
+  stage.addEventListener('pointermove', pointerMove);
+  stage.addEventListener('pointerup', pointerUp);
+  stage.addEventListener('pointercancel', pointerUp);
+
+  stage.addEventListener('wheel', e => {
+    e.preventDefault();
+    targetRotation += e.deltaY * 0.045 + e.deltaX * 0.025;
+    velocity += e.deltaY * 0.001;
+  }, { passive: false });
+
+  // Live clock.
+  function updateClock() {
+    const now = new Date();
+    const days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+    const month = now.toLocaleString('en-US', { month: 'long', timeZone: 'Asia/Seoul' });
+    const day = now.toLocaleString('en-US', { day: '2-digit', timeZone: 'Asia/Seoul' });
+    const year = now.toLocaleString('en-US', { year: 'numeric', timeZone: 'Asia/Seoul' });
+    const time = now.toLocaleTimeString('en-GB', {
+      hour12: false,
+      timeZone: 'Asia/Seoul'
+    });
+
+    const weekday = days[new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Seoul' })).getDay()];
+    document.getElementById('clock').textContent =
+      `${time} (KST) ${weekday} ${month} ${day} ${year}`;
+  }
+
+  updateClock();
+  setInterval(updateClock, 1000);
+
+  render();
+  animate();
+</script>
+
+</body>
+</html>
