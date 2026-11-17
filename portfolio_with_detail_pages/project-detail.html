@@ -3,7 +3,8 @@
 <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>SEOHYEON WI™ — Project</title>
 <style>
 *{box-sizing:border-box}html,body{margin:0;min-height:100%;background:#fff;color:#111;font-family:Arial,Helvetica,sans-serif}a{color:inherit;text-decoration:none}.top{position:fixed;z-index:5;top:10px;left:12px;right:12px;display:flex;justify-content:space-between;gap:12px;font-size:11px}.tag{display:inline-block;background:#000;color:#fff;padding:3px 6px}.page{padding:72px 5vw 36px}.meta{display:flex;justify-content:space-between;gap:20px;font-size:11px;margin-bottom:18px}.hero{height:min(68vh,680px);min-height:360px;background:#c7c7c7;position:relative;overflow:hidden;border:1px solid #e4e4e4}.hero:before{content:"";position:absolute;inset:0;background:linear-gradient(135deg,transparent 0 35%,rgba(255,255,255,.5) 35.2% 35.8%,transparent 36%),linear-gradient(30deg,transparent 0 55%,rgba(0,0,0,.08) 55.2% 62%,transparent 62.2%)}.hero-label{position:absolute;left:16px;bottom:14px;font-size:11px}.intro{display:grid;grid-template-columns:1fr 2fr;gap:30px;padding:34px 0 55px;border-bottom:1px solid #ddd}.eyebrow{font-size:10px;text-transform:uppercase}.intro h1{font-size:clamp(30px,6vw,76px);font-weight:400;letter-spacing:-.06em;margin:8px 0}.intro p{font-size:14px;line-height:1.7;max-width:560px;margin:0}.gallery{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:28px 0 70px}.gallery-item{aspect-ratio:4/3;background:#d0d0d0;position:relative;border:1px solid #e4e4e4}.gallery-item:nth-child(2){background:#bcbcbc}.gallery-item span{position:absolute;left:10px;bottom:10px;font-size:10px}.footer{display:flex;justify-content:space-between;border-top:1px solid #ddd;padding-top:14px;font-size:11px}@media(max-width:650px){.page{padding:64px 16px 24px}.intro{grid-template-columns:1fr;gap:14px}.gallery{grid-template-columns:1fr}.meta{font-size:10px}}
-</style></head><body>
+</style><link rel="stylesheet" href="../site-cursor.css">
+</head><body>
 <header class="top"><span class="tag">SEOHYEON WI™</span><a class="tag" href="index.html">← BACK TO WORK</a></header>
 <main class="page"><div class="meta"><span id="projectNo">PROJECT 01</span><span>PORTFOLIO / 2026</span></div>
 <section class="hero"><span class="hero-label" id="heroLabel">PROJECT 01 — COVER IMAGE</span></section>
@@ -13,4 +14,5 @@
 <script>
 const params=new URLSearchParams(location.search);const raw=params.get('project')||'01';const project=/^\d{1,2}$/.test(raw)?String(Math.min(8,Math.max(1,Number(raw)))).padStart(2,'0'):'01';
 document.title=`SEOHYEON WI™ — Project ${project}`;document.getElementById('projectNo').textContent=`PROJECT ${project}`;document.getElementById('projectTitle').textContent=`Project ${project}`;document.getElementById('heroLabel').textContent=`PROJECT ${project} — COVER IMAGE`;
-</script></body></html>
+</script><script src="../site-cursor.js"></script>
+</body></html>
