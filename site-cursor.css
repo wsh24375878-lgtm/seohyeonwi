@@ -16,3 +16,13 @@
 .cursor.is-visible {
   opacity: 1;
 }
+
+/* phones / tablets: no mouse, so no cursor dot */
+@media (hover: none), (pointer: coarse) {
+  .cursor { display: none !important; }
+}
+
+body.cursor-dragging,
+body.cursor-dragging * {
+  cursor: none !important;
+}

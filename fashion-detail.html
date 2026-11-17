@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#ffffff">
+<title>Fashion — SEOHYEON WI™</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background: #fff;
+    color: #050505;
+    font-family: Arial, Helvetica, sans-serif;
+    font-weight: 400;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    overscroll-behavior: none;
+  }
+  ::selection { background: none; color: #e6e6e6; }
+  a { color: inherit; text-decoration: none; }
+
+  /* ---------- title + description (same as fashion.html) ---------- */
+  .title {
+    position: absolute;
+    z-index: 3;
+    left: 24px;
+    top: 54px;
+    pointer-events: none;
+  }
+  .category-desc {
+    max-width: 360px;
+    margin-top: 14px;
+  }
+  .category-meta { margin-top: 6px; }
+  .swap { transition: opacity .15s ease-in-out; }
+  .swap.is-out { opacity: 0; }
+
+  /* ---------- image strip ---------- */
+  .stage {
+    position: fixed;
+    inset: 0;
+    z-index: 1;
+    overflow: hidden;
+    cursor: grab;
+    touch-action: none;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+  .stage.is-grabbing { cursor: grabbing; }
+  .track {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    will-change: transform;
+  }
+  .slide {
+    position: absolute;
+    top: 0;
+    opacity: 0;
+    will-change: transform, opacity;
+  }
+  .slide img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    pointer-events: none;
+    -webkit-user-drag: none;
+  }
+  .slide.is-side { cursor: pointer; }
+
+  /* ---------- bottom info (same spot as fashion.html) ---------- */
+  .bottom-info {
+    position: absolute;
+    z-index: 5;
+    left: 0;
+    right: 0;
+    bottom: 24px;
+    display: flex;
+    justify-content: center;
+    align-items: baseline;
+    gap: 14px;
+    font-size: 15px;
+    line-height: 1;
+    white-space: nowrap;
+    pointer-events: none;
+  }
+  .bottom-info a { pointer-events: auto; }
+  .back { color: #8c8c8c; transition: color .2s ease; }
+  .back:hover { color: #050505; }
+  .hint { color: #8c8c8c; }
+
+  /* ---------- enter / leave ---------- */
+  .chrome { transition: opacity .6s cubic-bezier(.33,1,.68,1), transform .6s cubic-bezier(.33,1,.68,1); }
+  .chrome.is-hidden { opacity: 0; transform: translateY(-8px); }
+  body.is-leaving .chrome { opacity: 0; transform: none; transition: opacity .35s ease; }
+
+  :focus-visible { outline: 2px solid #777; outline-offset: 2px; }
+
+  @media (max-width: 700px) {
+    .title { left: 14px; top: 64px; }
+    .category-desc { max-width: 260px; margin-top: 10px; }
+    .bottom-info { bottom: 18px; font-size: 12px; gap: 10px; }
+    .hint { display: none; }
+  }
+</style>
+<link rel="stylesheet" href="site-nav.css">
+<link rel="stylesheet" href="site-cursor.css">
+</head>
+<body>
+
+<header class="site-top">
+  <a class="site-name" href="index.html">SEOHYEON WI™</a>
+  <nav class="site-cats" aria-label="Work categories">
+    <a href="fashion.html" class="is-active">Fashion</a>
+    <a href="portfolio_with_detail_pages/index.html">3D</a>
+    <a href="seohyeon_wi_projects_interactive_v2.html?category=metal-craft">Metal Craft</a>
+    <a href="seohyeon_wi_projects_interactive_v2.html?category=product">Product</a>
+    <a href="seohyeon_wi_projects_interactive_v2.html">Archive</a>
+  </nav>
+  <nav class="site-info" aria-label="About and contact">
+    <a href="about.html">About</a>
+    <a href="contact.html">Contact</a>
+  </nav>
+</header>
+
+<header class="title chrome is-hidden">
+  <h1 class="big-text swap" id="workTitle">Fashion</h1>
+  <p class="category-desc ui-text swap" id="workDesc"></p>
+  <p class="category-meta ui-text muted swap" id="workMeta"></p>
+</header>
+
+<main class="stage" id="stage" aria-label="Fashion works. Drag left or right to see the other works.">
+  <div class="track" id="track"></div>
+</main>
+
+<div class="bottom-info chrome is-hidden">
+  <a class="back" id="back" href="fashion.html">← Fashion</a>
+  <span class="swap" id="counter">01 / 08</span>
+  <span class="hint">Drag ← →</span>
+</div>
+
+<div class="cursor" aria-hidden="true"></div>
+
+<script src="fashion-data.js"></script>
+<script>
+(() => {
+  const WORKS = window.FASHION_WORKS;
+  const stage = document.getElementById('stage');
+  const track = document.getElementById('track');
+  const workTitle = document.getElementById('workTitle');
+  const workDesc = document.getElementById('workDesc');
+  const workMeta = document.getElementById('workMeta');
+  const counter = document.getElementById('counter');
+  const back = document.getElementById('back');
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  let fromList = false;
+  try {
+    fromList = sessionStorage.getItem('fashionTransition') === '1';
+    sessionStorage.removeItem('fashionTransition');
+  } catch (e) {}
+
+  const startProject = new URLSearchParams(location.search).get('project') || WORKS[0].project;
+  let index = FashionData.indexOf(startProject);   // work in the centre
+  let slides = [];        // { el, aspect, w, x }
+  let gap = 24;
+  let pos = 0;            // rendered track offset (px)
+  let target = 0;         // target track offset (px)
+  let reveal = 0;         // 0 → 1 while the side images slide in
+  let leaving = false;
+
+  /* ---------- layout ---------- */
+  function layout() {
+    gap = Math.max(14, Math.round(FashionData.heroHeight() * .06));
+    let x = 0;
+    slides.forEach((s, i) => {
+      // same size as the centre image on the ring page (wide images shrink on phones)
+      const size = FashionData.heroSize(s.aspect);
+      s.w = size.w;
+      if (i > 0) x += slides[i - 1].w / 2 + gap + s.w / 2;
+      s.x = x;
+      s.el.style.width = `${s.w}px`;
+      s.el.style.height = `${size.h}px`;
+      s.el.style.left = `${x - s.w / 2}px`;
+      s.el.style.top = `${-size.h / 2}px`;
+    });
+    track.style.height = '0px';
+    track.style.marginTop = '0px';
+    target = -slides[index].x;
+  }
+
+  const minTarget = () => -slides[slides.length - 1].x;
+  const maxTarget = () => 0;
+  const clampTarget = v => Math.min(maxTarget(), Math.max(minTarget(), v));
+
+  function nearestIndex(offset) {
+    let best = 0, min = Infinity;
+    slides.forEach((s, i) => {
+      const d = Math.abs(s.x + offset);
+      if (d < min) { min = d; best = i; }
+    });
+    return best;
+  }
+
+  /* ---------- text ---------- */
+  function showText(i, animate) {
+    const work = WORKS[i];
+    const apply = () => {
+      workTitle.textContent = work.title;
+      workDesc.textContent = work.desc || '';
+      workMeta.textContent = [work.year, work.info].filter(Boolean).join(' — ');
+      counter.textContent = `${String(i + 1).padStart(2, '0')} / ${String(WORKS.length).padStart(2, '0')}`;
+      document.title = `${work.title} — Fashion — SEOHYEON WI™`;
+      [workTitle, workDesc, workMeta, counter].forEach(el => el.classList.remove('is-out'));
+    };
+    if (!animate) return apply();
+    [workTitle, workDesc, workMeta, counter].forEach(el => el.classList.add('is-out'));
+    clearTimeout(showText.timer);
+    showText.timer = setTimeout(apply, 150);
+  }
+
+  function setIndex(i) {
+    if (i === index) return;
+    index = i;
+    showText(i, true);
+    history.replaceState(null, '', `fashion-detail.html?project=${WORKS[i].project}`);
+  }
+
+  function goTo(i) {
+    i = Math.max(0, Math.min(slides.length - 1, i));
+    target = -slides[i].x;
+    setIndex(i);
+  }
+
+  /* ---------- render loop ---------- */
+  function frame() {
+    pos += (target - pos) * (dragging ? .35 : .1);
+    track.style.transform = `translate3d(${pos}px, 0, 0)`;
+
+    const span = slides.length ? slides[index].w / 2 + gap + 120 : 1;
+    slides.forEach((s, i) => {
+      const d = Math.min(1, Math.abs(s.x + pos) / span);
+      const base = 1 - d * .65;                          // side images are lighter
+      const isCurrent = i === index;
+      const r = isCurrent && fromList ? 1 : reveal;      // the clicked image is already in place
+      const side = Math.sign(i - index) || 0;
+      const shift = (1 - r) * 80 * side;
+      s.el.style.opacity = (base * r).toFixed(3);
+      s.el.style.transform = `translate3d(${shift}px, 0, 0)`;
+      s.el.classList.toggle('is-side', !isCurrent);
+    });
+    requestAnimationFrame(frame);
+  }
+
+  function playReveal() {
+    const start = performance.now();
+    const dur = reduceMotion ? 1 : 750;
+    const delay = fromList ? 80 : 0;
+    (function tick(now) {
+      const p = Math.max(0, Math.min(1, (now - start - delay) / dur));
+      reveal = 1 - Math.pow(1 - p, 3);
+      if (p < 1) requestAnimationFrame(tick);
+    })(start);
+    document.querySelectorAll('.chrome').forEach((el, i) => {
+      setTimeout(() => el.classList.remove('is-hidden'), (fromList ? 150 : 0) + i * 100);
+    });
+  }
+
+  /* ---------- drag ---------- */
+  let dragging = false;
+  let startX = 0, startTarget = 0, lastX = 0, lastT = 0, velocity = 0, moved = 0;
+  let downSlide = -1;
+
+  stage.addEventListener('pointerdown', e => {
+    if (leaving || (e.pointerType === 'mouse' && e.button !== 0)) return;
+    dragging = true;
+    startX = lastX = e.clientX;
+    lastT = performance.now();
+    startTarget = target;
+    velocity = 0;
+    moved = 0;
+    const el = document.elementsFromPoint(e.clientX, e.clientY).find(n => n.classList && n.classList.contains('slide'));
+    downSlide = el ? slides.findIndex(s => s.el === el) : -1;
+    stage.setPointerCapture(e.pointerId);
+    stage.classList.add('is-grabbing');
+  });
+
+  stage.addEventListener('pointermove', e => {
+    if (!dragging) return;
+    const now = performance.now();
+    const dx = e.clientX - startX;
+    moved = Math.max(moved, Math.abs(dx));
+    let t = startTarget + dx;
+    // rubber band past the first / last image
+    if (t > maxTarget()) t = maxTarget() + (t - maxTarget()) * .35;
+    if (t < minTarget()) t = minTarget() + (t - minTarget()) * .35;
+    target = t;
+    velocity = (e.clientX - lastX) / Math.max(8, now - lastT);
+    lastX = e.clientX;
+    lastT = now;
+  });
+
+  function endDrag() {
+    if (!dragging) return;
+    dragging = false;
+    stage.classList.remove('is-grabbing');
+    if (moved < 6) {
+      // a click: jump to the image that was clicked
+      if (downSlide >= 0 && downSlide !== index) goTo(downSlide);
+      else target = -slides[index].x;
+      return;
+    }
+    const projected = clampTarget(target + velocity * 220);
+    goTo(nearestIndex(projected));
+  }
+  stage.addEventListener('pointerup', endDrag);
+  stage.addEventListener('pointercancel', endDrag);
+
+  /* ---------- wheel / keys ---------- */
+  let wheelTimer = 0;
+  window.addEventListener('wheel', e => {
+    e.preventDefault();
+    if (leaving) return;
+    target = clampTarget(target - (Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : e.deltaY));
+    clearTimeout(wheelTimer);
+    wheelTimer = setTimeout(() => goTo(nearestIndex(target)), 140);
+  }, { passive: false });
+
+  window.addEventListener('keydown', e => {
+    if (leaving) return;
+    if (e.key === 'ArrowRight') { e.preventDefault(); goTo(index + 1); }
+    if (e.key === 'ArrowLeft') { e.preventDefault(); goTo(index - 1); }
+    if (e.key === 'Escape') leave();
+  });
+
+  /* ---------- back to the ring (reverse transition) ---------- */
+  function leave() {
+    if (leaving) return;
+    const url = FashionData.listUrl(WORKS[index]);
+    if (reduceMotion) { location.href = url; return; }
+    leaving = true;
+    target = -slides[index].x;
+    document.body.classList.add('is-leaving');
+    const start = performance.now();
+    (function tick(now) {
+      const p = Math.min(1, (now - start) / 400);
+      reveal = 1 - p;
+      if (p < 1) requestAnimationFrame(tick);
+    })(start);
+    fromList = true; // keep the centre image visible while leaving
+    setTimeout(() => { location.href = url; }, 450);
+  }
+  back.addEventListener('click', e => { e.preventDefault(); leave(); });
+
+  window.addEventListener('pageshow', e => {
+    if (!e.persisted || !leaving) return;
+    leaving = false;
+    reveal = 1;
+    document.body.classList.remove('is-leaving');
+  });
+
+  window.addEventListener('resize', () => { if (slides.length) { layout(); pos = target; } });
+
+  /* ---------- boot ---------- */
+  showText(index, false);
+  FashionData.loadAll().then(loaded => {
+    slides = loaded.map((data, i) => {
+      const el = document.createElement('figure');
+      el.className = 'slide';
+      const img = document.createElement('img');
+      img.src = data.src;
+      img.alt = WORKS[i].title;
+      el.appendChild(img);
+      track.appendChild(el);
+      return { el, aspect: data.aspect, w: 0, x: 0 };
+    });
+    layout();
+    pos = target;
+    requestAnimationFrame(frame);
+    playReveal();
+  });
+})();
+</script>
+<script src="site-cursor.js"></script>
+</body>
+</html>

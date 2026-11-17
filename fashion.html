@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#ffffff">
+<title>Fashion — SEOHYEON WI™</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background: #fff;
+    color: #000;
+    font-family: Arial, Helvetica, sans-serif;
+    font-weight: 400;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    overscroll-behavior: none;
+  }
+
+  ::selection { background: none; color: #e6e6e6; }
+  a { color: inherit; text-decoration: none; }
+
+
+  /* ---------- stage ---------- */
+  .landing { position: fixed; inset: 0; z-index: 0; overflow: hidden; }
+
+  .stage {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    perspective-origin: 50% 50%;
+    touch-action: none;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+  .stage.is-grabbing, .stage.is-grabbing * { cursor: grabbing !important; }
+
+  .scene, .ring-outer, .ring-inner {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    transform-style: preserve-3d;
+  }
+
+  .ring-item, .hero {
+    position: absolute;
+    top: 0;
+    left: 0;
+    opacity: 0;
+    will-change: transform, opacity;
+  }
+  .ring-item { pointer-events: none; }
+  .ring-item img, .hero img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    pointer-events: none;
+    -webkit-user-drag: none;
+  }
+  .hero { cursor: pointer; }
+
+  /* ---------- bottom info ---------- */
+  .bottom-info {
+    position: absolute;
+    z-index: 5;
+    left: 50%;
+    bottom: 24px;
+    display: flex;
+    align-items: baseline;
+    gap: 14px;
+    transform: translateX(-50%);
+    font-size: 15px;
+    line-height: 1;
+    color: #050505;
+    white-space: nowrap;
+    opacity: 0;
+    transition: opacity .15s ease-in-out;
+  }
+  .bottom-info.is-visible { opacity: 1; }
+  .view-case { color: #8c8c8c; transition: color .2s ease; }
+  .view-case:hover { color: #050505; }
+
+  body.is-leaving .chrome, body.is-leaving .bottom-info {
+    opacity: 0 !important;
+    transition: opacity .35s ease !important;
+  }
+
+  .intro-hide { opacity: 0; transform: translateY(-12px); }
+  .intro-show { transition: opacity .8s cubic-bezier(.33,1,.68,1), transform .8s cubic-bezier(.33,1,.68,1); opacity: 1; transform: none; }
+
+  :focus-visible { outline: 2px solid #777; outline-offset: 2px; }
+
+  @media (max-width: 700px) {
+    .bottom-info { bottom: 18px; font-size: 12px; gap: 10px; }
+  }
+</style>
+<link rel="stylesheet" href="site-nav.css">
+<link rel="stylesheet" href="site-cursor.css">
+</head>
+<body>
+
+<header class="site-top">
+  <a class="site-name" href="index.html">SEOHYEON WI™</a>
+  <nav class="site-cats" aria-label="Work categories">
+    <a href="fashion.html" class="is-active" aria-current="page">Fashion</a>
+    <a href="portfolio_with_detail_pages/index.html">3D</a>
+    <a href="seohyeon_wi_projects_interactive_v2.html?category=metal-craft">Metal Craft</a>
+    <a href="seohyeon_wi_projects_interactive_v2.html?category=product">Product</a>
+    <a href="seohyeon_wi_projects_interactive_v2.html">Archive</a>
+  </nav>
+  <nav class="site-info" aria-label="About and contact">
+    <a href="about.html">About</a>
+    <a href="contact.html">Contact</a>
+  </nav>
+</header>
+
+<main class="landing">
+  <div class="stage" id="stage" aria-label="Rotating fashion gallery. Drag, scroll, or use arrow keys to rotate.">
+    <div class="scene" id="scene">
+      <a class="hero" id="hero" href="#" aria-label="View case"><img id="heroImg" alt=""></a>
+      <div class="ring-outer" id="ringOuter">
+        <div class="ring-inner" id="ringInner"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="bottom-info" id="bottomInfo">
+    <a id="infoTitle" href="#"></a>
+    <a class="view-case" id="infoCase" href="#">View Case →</a>
+  </div>
+</main>
+
+<div class="cursor" aria-hidden="true"></div>
+
+<script src="fashion-data.js"></script>
+<script>
+/* 작품 목록은 fashion-data.js 에서 수정하세요. */
+const WORKS = window.FASHION_WORKS;
+const detailUrl = FashionData.detailUrl;
+
+(() => {
+  /* ---------- scene constants (same values as the reference) ---------- */
+  const CAMERA_Z = 8;
+  const VIEW_UNITS = FashionData.VIEW_UNITS; // visible height at z=0
+  const HERO_H = FashionData.HERO_H;
+  const HERO_FALLBACK_W = 2.5;
+  const ITEM_H = 0.68;
+  const INTRO_SCALE = 2.5;
+
+  const stage = document.getElementById('stage');
+  const ringOuter = document.getElementById('ringOuter');
+  const ringInner = document.getElementById('ringInner');
+  const hero = document.getElementById('hero');
+  const heroImg = document.getElementById('heroImg');
+  const bottomInfo = document.getElementById('bottomInfo');
+  const infoTitle = document.getElementById('infoTitle');
+  const infoCase = document.getElementById('infoCase');
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  const count = WORKS.length;
+  const step = Math.PI * 2 / count;
+
+  let unit = 1;          // px per world unit
+  let radius = 3;        // ring radius (1.8 on mobile)
+  let items = [];        // { el, w, h, x, z, s, o }
+  let heroState = { o: 0, aspect: 0.8 };
+
+  // rotation state
+  let current = 0;       // rendered ring rotation
+  let target = 0;        // target ring rotation
+  let snapIndex = 0;
+  let tiltX = 0, tiltXTarget = 0;
+  let tiltY = 0, tiltYTarget = 0;
+  let intro = true;
+  let activeIndex = -1;
+  let keyReady = true;
+
+  /* ---------- tiny tween engine ---------- */
+  const tweens = [];
+  const easeOut = t => 1 - (1 - t) * (1 - t); // power2.out
+  function tween(obj, to, { duration = 1, delay = 0, ease = easeOut, onComplete } = {}) {
+    tweens.push({ obj, to, from: null, duration, start: performance.now() + delay * 1000, ease, onComplete });
+  }
+  function runTweens(now) {
+    for (let i = tweens.length - 1; i >= 0; i--) {
+      const t = tweens[i];
+      if (now < t.start) continue;
+      if (!t.from) {
+        t.from = {};
+        for (const k in t.to) t.from[k] = t.obj[k];
+      }
+      const p = Math.min(1, (now - t.start) / (t.duration * 1000));
+      const e = t.ease(p);
+      for (const k in t.to) t.obj[k] = t.from[k] + (t.to[k] - t.from[k]) * e;
+      if (p >= 1) {
+        tweens.splice(i, 1);
+        t.onComplete && t.onComplete();
+      }
+    }
+  }
+
+  /* ---------- layout ---------- */
+  function layout() {
+    unit = window.innerHeight / VIEW_UNITS;
+    radius = window.innerWidth <= 768 ? 1.8 : 3;
+    stage.style.perspective = `${CAMERA_Z * unit}px`;
+    items.forEach(item => {
+      item.el.style.width = `${item.w * unit}px`;
+      item.el.style.height = `${item.h * unit}px`;
+      item.el.style.marginLeft = `${-item.w * unit / 2}px`;
+      item.el.style.marginTop = `${-item.h * unit / 2}px`;
+    });
+    sizeHero();
+    if (!intro) items.forEach((item, i) => {
+      item.x = Math.sin(step * i) * radius;
+      item.z = Math.cos(step * i) * radius;
+    });
+  }
+
+  function sizeHero() {
+    const { w, h } = heroState.aspect
+      ? FashionData.heroSize(heroState.aspect)
+      : { w: HERO_FALLBACK_W * unit, h: HERO_H * unit };
+    hero.style.width = `${w}px`;
+    hero.style.height = `${h}px`;
+    hero.style.marginLeft = `${-w / 2}px`;
+    hero.style.marginTop = `${-h / 2}px`;
+  }
+
+  /* ---------- active project ---------- */
+  function setActive(index) {
+    activeIndex = index;
+    const work = WORKS[index];
+    const data = items[index];
+    heroImg.src = data.src;
+    heroImg.alt = work.title;
+    heroState.aspect = data.aspect;
+    sizeHero();
+    hero.href = detailUrl(work);
+    hero.setAttribute('aria-label', `${work.title} — View Case`);
+
+    // info-fade (out-in)
+    bottomInfo.classList.remove('is-visible');
+    clearTimeout(setActive.timer);
+    setActive.timer = setTimeout(() => {
+      infoTitle.textContent = work.title;
+      infoTitle.href = detailUrl(work);
+      infoCase.href = detailUrl(work);
+      if (!intro || setActive.revealed) bottomInfo.classList.add('is-visible');
+    }, 150);
+  }
+
+  function nearestToFront() {
+    let best = 0, min = Infinity;
+    for (let i = 0; i < count; i++) {
+      let a = ((current + step * i) % (Math.PI * 2) + Math.PI * 2) % (Math.PI * 2);
+      if (a > Math.PI) a = Math.PI * 2 - a;
+      if (a < min) { min = a; best = i; }
+    }
+    return best;
+  }
+
+  /* ---------- render loop ---------- */
+  function frame(now) {
+    runTweens(now);
+
+    if (!intro) {
+      current += (target - current) * 0.08;
+      tiltX += (tiltXTarget - tiltX) * 0.08;
+      tiltY += (tiltYTarget - tiltY) * 0.05;
+    }
+
+    // three.js rotation.x maps to CSS rotateX(-x) (CSS y axis points down)
+    ringOuter.style.transform = `rotateX(${-tiltX}rad) rotateY(${tiltY}rad)`;
+    ringInner.style.transform = `rotateY(${current}rad)`;
+
+    for (const item of items) {
+      const facing = Math.atan2(item.x, item.z); // plane faces away from ring centre
+      item.el.style.transform =
+        `translate3d(${item.x * unit}px, 0, ${item.z * unit}px) rotateY(${facing}rad) scale(${item.s})`;
+      item.el.style.opacity = item.o;
+    }
+    hero.style.opacity = heroState.o;
+
+    if (!intro) {
+      const front = nearestToFront();
+      if (front !== activeIndex) setActive(front);
+    }
+
+    requestAnimationFrame(frame);
+  }
+
+  /* ---------- intro (mirrors reference timing) ---------- */
+  function playIntro() {
+    const n = items.length;
+    items.forEach((item, i) => {
+      tween(item, { o: 1 }, { duration: .8, delay: n > 1 ? .8 * i / (n - 1) : 0 });
+    });
+    const spread = 1.4;
+    items.forEach((item, i) => {
+      tween(item, { x: Math.sin(step * i) * radius, z: Math.cos(step * i) * radius },
+        { duration: 1.55, delay: spread + .04 * i });
+      tween(item, { s: 1 }, { duration: 1, delay: spread + .04 * i });
+    });
+    const spin = { r: 0 };
+    tween(spin, { r: -(step * 10) }, { duration: 3, delay: spread });
+    // keep ring rotation in sync with the spin tween
+    (function follow() {
+      current = spin.r;
+      if (intro) requestAnimationFrame(follow);
+    })();
+    tween(heroState, { o: 1 }, { duration: .5, delay: spread + .9 });
+
+    setTimeout(revealChrome, (spread + .9) * 1000);
+    setTimeout(() => {
+      intro = false;
+      current = target = spin.r;
+      snapIndex = Math.round(spin.r / step);
+    }, (spread + 3) * 1000 + 30);
+  }
+
+  function skipIntro() {
+    items.forEach((item, i) => {
+      item.x = Math.sin(step * i) * radius;
+      item.z = Math.cos(step * i) * radius;
+      item.s = 1;
+      item.o = 1;
+    });
+    heroState.o = 1;
+    intro = false;
+    revealChrome();
+  }
+
+  function revealChrome() {
+    setActive.revealed = true;
+    if (activeIndex < 0) setActive(nearestToFront());
+    bottomInfo.classList.add('is-visible');
+    document.querySelectorAll('.chrome').forEach((el, i) => {
+      setTimeout(() => el.classList.add('intro-show'), i * 120);
+    });
+  }
+
+  /* ---------- interaction ---------- */
+  let dragging = false;
+  let dragStartX = 0;
+  let dragStartTarget = 0;
+  let dragDelta = 0;
+  const dragSpeed = () => 5 / window.innerWidth;
+
+  function snap() {
+    snapIndex = Math.round(target / step);
+    target = snapIndex * step;
+  }
+
+  window.addEventListener('wheel', e => {
+    e.preventDefault();
+    if (intro) return;
+    target += e.deltaY * 0.003;
+    clearTimeout(window.__wheelSnap);
+    window.__wheelSnap = setTimeout(() => { snapIndex = Math.round(target / step); }, 120);
+  }, { passive: false });
+
+  window.addEventListener('keydown', e => {
+    if (intro) return;
+    if (e.key === 'Enter' && document.activeElement === document.body) {
+      goToDetail();
+      return;
+    }
+    if ((e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') || !keyReady) return;
+    e.preventDefault();
+    keyReady = false;
+    snapIndex = Math.round(target / step) + (e.key === 'ArrowRight' ? 1 : -1);
+    target = snapIndex * step;
+    setTimeout(() => { keyReady = true; }, 700);
+  });
+
+  window.addEventListener('mousemove', e => {
+    if (!reduceMotion) {
+      tiltXTarget = (e.clientY / window.innerHeight - .5) * .24;
+      tiltYTarget = (e.clientX / window.innerWidth - .5) * .12;
+    }
+    if (!dragging) return;
+    dragDelta = e.clientX - dragStartX;
+    target = dragStartTarget + dragDelta * dragSpeed();
+  });
+
+  stage.addEventListener('mousedown', e => {
+    if (intro || e.button !== 0) return;
+    e.preventDefault();
+    dragging = true;
+    dragStartX = e.clientX;
+    dragStartTarget = target;
+    dragDelta = 0;
+    stage.classList.add('is-grabbing');
+  });
+
+  window.addEventListener('mouseup', () => {
+    if (!dragging) return;
+    dragging = false;
+    stage.classList.remove('is-grabbing');
+    snap();
+  });
+
+  // touch
+  stage.addEventListener('touchstart', e => {
+    if (intro) return;
+    dragging = true;
+    dragStartX = e.touches[0].clientX;
+    dragStartTarget = target;
+    dragDelta = 0;
+  }, { passive: true });
+
+  stage.addEventListener('touchmove', e => {
+    e.preventDefault();
+    if (!dragging) return;
+    const t = e.touches[0];
+    dragDelta = t.clientX - dragStartX;
+    target = dragStartTarget + dragDelta * dragSpeed();
+    // the ring tilts a little toward the finger, like it does for the mouse
+    if (!reduceMotion) {
+      tiltXTarget = (t.clientY / window.innerHeight - .5) * .24;
+      tiltYTarget = (t.clientX / window.innerWidth - .5) * .12;
+    }
+  }, { passive: false });
+
+  stage.addEventListener('touchend', () => {
+    tiltXTarget = tiltYTarget = 0;
+    if (!dragging) return;
+    dragging = false;
+    snap();
+  });
+
+  /* ---------- transition to the detail page ----------
+     The centre image stays exactly where it is (the detail page draws it
+     at the same size and position); everything else fades away. */
+  let leaving = false;
+  function goToDetail() {
+    if (leaving || activeIndex < 0) return;
+    const url = detailUrl(WORKS[activeIndex]);
+    if (reduceMotion) { window.location.href = url; return; }
+    leaving = true;
+    intro = true; // freeze interaction
+    try { sessionStorage.setItem('fashionTransition', '1'); } catch (e) {}
+    document.body.classList.add('is-leaving');
+    items.forEach((item, i) => {
+      if (i === activeIndex) tween(item, { o: 0 }, { duration: .25 });
+      else tween(item, { o: 0, s: .7 }, { duration: .45, delay: .02 * i });
+    });
+    setTimeout(() => { window.location.href = url; }, 520);
+  }
+
+  [hero, infoTitle, infoCase].forEach(link => link.addEventListener('click', e => {
+    e.preventDefault();
+    // a drag must not count as a click on the centre image
+    if (intro || Math.abs(dragDelta) > 5) return;
+    goToDetail();
+  }));
+
+  // coming back with the browser's back button (page restored from cache)
+  window.addEventListener('pageshow', e => {
+    if (!e.persisted || !leaving) return;
+    leaving = false;
+    document.body.classList.remove('is-leaving');
+    items.forEach(item => { item.o = 1; item.s = 1; });
+    intro = false;
+  });
+
+  window.addEventListener('resize', layout);
+
+  /* ---------- boot ---------- */
+  // fashion.html?work=03 → coming back from a detail page: show that work at the front
+  const returnParam = new URLSearchParams(location.search).get('work');
+  const returning = returnParam !== null;
+  const returnIndex = returning ? FashionData.indexOf(returnParam) : 0;
+
+  if (!returning) document.querySelectorAll('.chrome').forEach(el => el.classList.add('intro-hide'));
+
+  FashionData.loadAll().then(loaded => {
+    items = loaded.map((data, i) => {
+      const el = document.createElement('figure');
+      el.className = 'ring-item';
+      const img = document.createElement('img');
+      img.src = data.src;
+      img.alt = '';
+      el.appendChild(img);
+      ringInner.appendChild(el);
+      return {
+        el,
+        src: data.src,
+        aspect: data.aspect,
+        w: ITEM_H * data.aspect,
+        h: ITEM_H,
+        x: 0,
+        z: 3 + i * 0.01,
+        s: INTRO_SCALE,
+        o: 0,
+      };
+    });
+    layout();
+    items.forEach((item, i) => { item.z = radius + i * 0.01; });
+
+    if (returning) {
+      // hero is already in place (same as the detail page); ring fades back in
+      current = target = -step * returnIndex;
+      snapIndex = -returnIndex;
+      setActive.revealed = true;
+      setActive(returnIndex);
+      items.forEach((item, i) => {
+        item.x = Math.sin(step * i) * radius;
+        item.z = Math.cos(step * i) * radius;
+        item.s = reduceMotion ? 1 : .7;
+        item.o = 0;
+        tween(item, { o: 1, s: 1 }, { duration: .6, delay: .03 * i });
+      });
+      heroState.o = 1;
+      intro = false;
+      bottomInfo.classList.add('is-visible');
+      history.replaceState(null, '', 'fashion.html');
+      requestAnimationFrame(frame);
+      return;
+    }
+
+    setActive(0);
+    requestAnimationFrame(frame);
+    if (reduceMotion) skipIntro();
+    else setTimeout(playIntro, 200);
+  });
+})();
+</script>
+<script src="site-cursor.js"></script>
+</body>
+</html>

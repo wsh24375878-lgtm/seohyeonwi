@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#ffffff">
+<title>Rotating Image Study — SEOHYEON WI™</title>
+<style>
+  * { box-sizing: border-box; }
+
+  html, body {
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    overflow: hidden;
+    background: #fff;
+    color: #080808;
+    font-family: Arial, Helvetica, sans-serif;
+  }
+
+  button, a { color: inherit; font: inherit; }
+
+  .top {
+    position: fixed;
+    z-index: 20;
+    top: 10px;
+    left: 10px;
+    right: 10px;
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: start;
+    gap: 8px;
+    font-size: 13px;
+    line-height: 1;
+    pointer-events: none;
+  }
+
+  .top-left, .top-center, .top-right {
+    display: flex;
+    gap: 3px;
+  }
+
+  .top-center { justify-content: center; }
+  .top-right { justify-content: flex-end; }
+
+  .pill {
+    display: inline-flex;
+    align-items: center;
+    min-height: 20px;
+    padding: 3px 6px;
+    border: 0;
+    border-radius: 0;
+    background: #050505;
+    color: #fff;
+    text-decoration: none;
+    white-space: nowrap;
+    pointer-events: auto;
+  }
+
+  .pill:hover, .pill:focus-visible {
+    background: #e7e7e7;
+    color: #050505;
+  }
+
+  .gallery {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    display: grid;
+    place-items: center;
+    perspective: 1250px;
+    perspective-origin: 50% 49%;
+    touch-action: pan-y;
+    cursor: grab;
+  }
+
+  .gallery.dragging { cursor: grabbing; }
+
+  .carousel {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    transform-style: preserve-3d;
+    user-select: none;
+  }
+
+  .slide {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: clamp(230px, 27vw, 350px);
+    aspect-ratio: 4 / 3;
+    margin: 0;
+    transform-style: preserve-3d;
+    transform-origin: center;
+    will-change: transform, opacity;
+    cursor: pointer;
+  }
+
+  .artwork {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    background: #e8e5df;
+    backface-visibility: hidden;
+  }
+
+  .artwork::before, .artwork::after, .shape {
+    position: absolute;
+    display: block;
+    content: "";
+  }
+
+  .art-label {
+    position: absolute;
+    z-index: 2;
+    top: 12px;
+    left: 12px;
+    font-size: 10px;
+    line-height: 1.2;
+    letter-spacing: .02em;
+  }
+
+  .art-number {
+    position: absolute;
+    z-index: 2;
+    right: 12px;
+    bottom: 12px;
+    font-size: 11px;
+  }
+
+  .art--01 { background: #ded8ce; }
+  .art--01::before {
+    width: 60%;
+    aspect-ratio: 1;
+    top: 20%;
+    left: 20%;
+    border-radius: 50%;
+    background: radial-gradient(circle at 35% 32%, #f5f0e9 0 8%, #bdb4a8 9% 34%, #726d67 68%, #292827 100%);
+    box-shadow: 28px 34px 42px rgba(0,0,0,.2);
+  }
+  .art--01::after {
+    width: 40%;
+    height: 1px;
+    left: 30%;
+    bottom: 17%;
+    background: #181818;
+    transform: rotate(-24deg);
+  }
+
+  .art--02 { background: #1d2422; color: #f0eee7; }
+  .art--02::before {
+    width: 68%;
+    height: 70%;
+    top: 16%;
+    left: 16%;
+    background: linear-gradient(155deg, transparent 0 27%, #63756e 28% 42%, #c1bba8 43% 46%, #252b29 47% 100%);
+    clip-path: polygon(50% 0, 100% 24%, 84% 100%, 8% 82%, 0 20%);
+  }
+  .art--02::after {
+    width: 44%;
+    height: 44%;
+    top: 28%;
+    left: 28%;
+    border: 1px solid rgba(255,255,255,.55);
+    border-radius: 50%;
+    transform: scaleX(.55) rotate(-32deg);
+  }
+
+  .art--03 { background: #b94f37; }
+  .art--03::before {
+    width: 54%;
+    height: 70%;
+    top: 15%;
+    left: 23%;
+    background: repeating-linear-gradient(90deg, #edc49a 0 12px, #d5986c 12px 18px, #8b3a31 18px 22px);
+    clip-path: polygon(50% 0, 100% 18%, 72% 100%, 0 82%, 18% 22%);
+    box-shadow: 12px 16px 30px rgba(55,20,10,.2);
+  }
+  .art--03::after {
+    width: 140%;
+    height: 1px;
+    top: 50%;
+    left: -20%;
+    background: rgba(255,255,255,.8);
+    transform: rotate(38deg);
+  }
+
+  .art--04 { background: #dce1d4; }
+  .art--04::before {
+    width: 62%;
+    aspect-ratio: 1;
+    top: 19%;
+    left: 19%;
+    border-radius: 50%;
+    background: radial-gradient(circle at 38% 30%, #edf0e7 0 5%, #b1baa4 24%, #6f7d68 55%, #303b33 100%);
+    box-shadow: 20px 24px 38px rgba(22,33,22,.24);
+  }
+  .art--04::after {
+    width: 74%;
+    height: 32%;
+    left: 13%;
+    bottom: 13%;
+    border-top: 1px solid rgba(10,20,10,.7);
+    border-bottom: 1px solid rgba(10,20,10,.7);
+    transform: rotate(-17deg);
+  }
+
+  .art--05 { background: #d7d1dc; }
+  .art--05::before {
+    width: 56%;
+    height: 76%;
+    top: 12%;
+    left: 22%;
+    background: linear-gradient(135deg, #f3eced 0 35%, #b8aebd 36% 49%, #6d6277 50% 68%, #d2c8d6 69%);
+    clip-path: polygon(12% 0, 100% 18%, 84% 100%, 0 76%);
+    box-shadow: 16px 18px 26px rgba(30,20,40,.18);
+  }
+  .art--05::after {
+    width: 30%;
+    height: 30%;
+    top: 32%;
+    left: 35%;
+    border: 1px solid rgba(255,255,255,.8);
+    border-radius: 50%;
+  }
+
+  .art--06 { background: #e6e3dc; }
+  .art--06::before {
+    width: 62%;
+    height: 66%;
+    top: 18%;
+    left: 19%;
+    background: linear-gradient(90deg, #242321 0 33%, #dad5cb 34% 67%, #8e8b83 68%);
+    clip-path: polygon(0 10%, 70% 0, 100% 22%, 78% 100%, 14% 82%);
+  }
+  .art--06::after {
+    width: 58%;
+    height: 1px;
+    top: 50%;
+    left: 21%;
+    background: #f6f3eb;
+    transform: rotate(48deg);
+  }
+
+  .art--07 { background: #28323b; color: #f3eee6; }
+  .art--07::before {
+    width: 54%;
+    aspect-ratio: 1;
+    top: 22%;
+    left: 23%;
+    border-radius: 50%;
+    background: radial-gradient(circle at 35% 30%, #f4e8d1, #a68565 26%, #495461 58%, #13191e 82%);
+    box-shadow: 18px 24px 40px rgba(0,0,0,.32);
+  }
+  .art--07::after {
+    width: 100%;
+    height: 22%;
+    left: 0;
+    bottom: 0;
+    background: linear-gradient(90deg, transparent, rgba(240,232,218,.35), transparent);
+  }
+
+  .project-info {
+    position: fixed;
+    z-index: 20;
+    left: 50%;
+    bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    transform: translateX(-50%);
+    font-size: 13px;
+  }
+
+  .project-name { min-width: 90px; justify-content: center; }
+  .case-link { background: #e8e8e8; color: #111; }
+
+  :focus-visible { outline: 2px solid #777; outline-offset: 3px; }
+
+  @media (max-width: 700px) {
+    .top {
+      top: 6px;
+      left: 6px;
+      right: 6px;
+      grid-template-columns: 1fr auto;
+      font-size: 10px;
+    }
+
+    .top-left { gap: 2px; }
+    .top-center, .top-right { display: none; }
+    .pill { min-height: 18px; padding: 3px 5px; }
+    .slide { width: clamp(190px, 60vw, 270px); }
+    .project-info { bottom: 8px; left: 8px; transform: none; font-size: 11px; }
+    .project-name { min-width: auto; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .slide { will-change: auto; }
+  }
+</style>
+<link rel="stylesheet" href="site-cursor.css">
+</head>
+<body>
+<header class="top">
+  <div class="top-left">
+    <a class="pill" href="index.html">SEOHYEON WI™</a>
+    <span class="pill" id="clock" aria-label="Current time in Seoul"></span>
+  </div>
+  <nav class="top-center" aria-label="Main navigation">
+    <a class="pill" href="seohyeon_wi_projects_interactive_v2.html">Work</a>
+    <a class="pill" href="index.html">Index</a>
+    <a class="pill" href="about.html">Information</a>
+  </nav>
+  <div class="top-right">
+    <a class="pill" href="contact.html">Instagram</a>
+    <a class="pill" href="contact.html">Email</a>
+  </div>
+</header>
+
+<main class="gallery" id="gallery" aria-label="Interactive rotating image gallery">
+  <div class="carousel" id="carousel">
+    <figure class="slide" data-title="Form Study" data-project="01">
+      <div class="artwork art--01" role="img" aria-label="Sculptural stone form on a warm neutral background">
+        <span class="art-label">FORM STUDY<br>STONE / 01</span><span class="art-number">01</span>
+      </div>
+    </figure>
+    <figure class="slide" data-title="Soft Structure" data-project="02">
+      <div class="artwork art--02" role="img" aria-label="Layered dark green geometric structure">
+        <span class="art-label">SOFT STRUCTURE<br>OBJECT / 02</span><span class="art-number">02</span>
+      </div>
+    </figure>
+    <figure class="slide" data-title="Between Layers" data-project="03">
+      <div class="artwork art--03" role="img" aria-label="Folded terracotta and sand colored material study">
+        <span class="art-label">BETWEEN LAYERS<br>TEXTILE / 03</span><span class="art-number">03</span>
+      </div>
+    </figure>
+    <figure class="slide" data-title="Quiet Volume" data-project="04">
+      <div class="artwork art--04" role="img" aria-label="Muted green rounded volume and fine lines">
+        <span class="art-label">QUIET VOLUME<br>FORM / 04</span><span class="art-number">04</span>
+      </div>
+    </figure>
+    <figure class="slide" data-title="Material Notes" data-project="05">
+      <div class="artwork art--05" role="img" aria-label="Pale violet folded material and ring">
+        <span class="art-label">MATERIAL NOTES<br>STUDY / 05</span><span class="art-number">05</span>
+      </div>
+    </figure>
+    <figure class="slide" data-title="Folded Space" data-project="06">
+      <div class="artwork art--06" role="img" aria-label="Monochrome folded plane study">
+        <span class="art-label">FOLDED SPACE<br>OBJECT / 06</span><span class="art-number">06</span>
+      </div>
+    </figure>
+    <figure class="slide" data-title="Afterimage" data-project="07">
+      <div class="artwork art--07" role="img" aria-label="Abstract dark blue and bronze sphere">
+        <span class="art-label">AFTERIMAGE<br>COLOR / 07</span><span class="art-number">07</span>
+      </div>
+    </figure>
+  </div>
+</main>
+
+<div class="project-info">
+  <span class="pill project-name" id="projectName" aria-live="polite">Form Study</span>
+  <a class="pill case-link" id="caseLink" href="portfolio_with_detail_pages/project-detail.html?project=01">View Case</a>
+</div>
+<div class="cursor" aria-hidden="true"></div>
+
+<script>
+  const gallery = document.getElementById('gallery');
+  const carousel = document.getElementById('carousel');
+  const slides = [...document.querySelectorAll('.slide')];
+  const projectName = document.getElementById('projectName');
+  const caseLink = document.getElementById('caseLink');
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+  const angleStep = 360 / slides.length;
+  let rotation = 0;
+  let targetRotation = 0;
+  let lastInteraction = performance.now();
+  let activeIndex = -1;
+  let pointerDownX = 0;
+  let lastPointerX = 0;
+  let dragging = false;
+  let didDrag = false;
+
+  function wrapIndex(index) {
+    return (index % slides.length + slides.length) % slides.length;
+  }
+
+  function render() {
+    const radius = Math.max(230, Math.min(window.innerWidth * 0.44, 620));
+
+    slides.forEach((slide, index) => {
+      const degrees = index * angleStep + rotation;
+      const radians = degrees * Math.PI / 180;
+      const x = Math.sin(radians) * radius;
+      const z = Math.cos(radians) * radius;
+      const facing = Math.max(0, Math.cos(radians));
+      const scale = 0.16 + Math.pow(facing, 4) * 0.84;
+
+      slide.style.transform =
+        `translate(-50%, -50%) translate3d(${x}px, 0, ${z}px) rotateY(${degrees}deg) scale(${scale})`;
+      slide.style.opacity = 0.1 + Math.pow(facing, 2) * 0.9;
+      slide.style.zIndex = String(Math.round(z + radius));
+    });
+
+    const nearest = Math.round(-rotation / angleStep);
+    const current = wrapIndex(nearest);
+    if (current !== activeIndex) {
+      activeIndex = current;
+      const slide = slides[current];
+      projectName.textContent = slide.dataset.title;
+      caseLink.href = `portfolio_with_detail_pages/project-detail.html?project=${slide.dataset.project}`;
+    }
+  }
+
+  function animate(now) {
+    if (!dragging && !reduceMotion.matches && now - lastInteraction > 2200) {
+      targetRotation += 0.08;
+    }
+    rotation += (targetRotation - rotation) * 0.1;
+    render();
+    requestAnimationFrame(animate);
+  }
+
+  function rotateBy(direction) {
+    targetRotation += direction * angleStep;
+    lastInteraction = performance.now();
+  }
+
+  gallery.addEventListener('pointerdown', event => {
+    if (event.button !== 0 && event.pointerType === 'mouse') return;
+    dragging = true;
+    didDrag = false;
+    pointerDownX = event.clientX;
+    lastPointerX = event.clientX;
+    gallery.classList.add('dragging');
+    gallery.setPointerCapture(event.pointerId);
+    lastInteraction = performance.now();
+  });
+
+  gallery.addEventListener('pointermove', event => {
+    if (!dragging) return;
+    const delta = event.clientX - lastPointerX;
+    if (Math.abs(event.clientX - pointerDownX) > 5) didDrag = true;
+    targetRotation += delta * 0.2;
+    lastPointerX = event.clientX;
+    lastInteraction = performance.now();
+  });
+
+  function endDrag(event) {
+    if (!dragging) return;
+    dragging = false;
+    gallery.classList.remove('dragging');
+    if (gallery.hasPointerCapture(event.pointerId)) {
+      gallery.releasePointerCapture(event.pointerId);
+    }
+  }
+
+  gallery.addEventListener('pointerup', endDrag);
+  gallery.addEventListener('pointercancel', endDrag);
+
+  gallery.addEventListener('click', event => {
+    if (didDrag) {
+      event.preventDefault();
+      didDrag = false;
+      return;
+    }
+    const slide = event.target.closest('.slide');
+    if (!slide) return;
+    const index = slides.indexOf(slide);
+    targetRotation = -index * angleStep;
+    lastInteraction = performance.now();
+  });
+
+  gallery.addEventListener('wheel', event => {
+    event.preventDefault();
+    targetRotation += (event.deltaY + event.deltaX) * 0.055;
+    lastInteraction = performance.now();
+  }, { passive: false });
+
+  document.addEventListener('keydown', event => {
+    if (event.key === 'ArrowLeft') rotateBy(1);
+    if (event.key === 'ArrowRight') rotateBy(-1);
+  });
+  window.addEventListener('resize', render);
+
+  function updateClock() {
+    const now = new Date();
+    const time = now.toLocaleTimeString('en-GB', {
+      hour12: false,
+      timeZone: 'Asia/Seoul'
+    });
+    const date = now.toLocaleDateString('en-US', {
+      weekday: 'short',
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+      timeZone: 'Asia/Seoul'
+    });
+    document.getElementById('clock').textContent = `${time} (KST) ${date}`;
+  }
+
+  updateClock();
+  setInterval(updateClock, 1000);
+  render();
+  requestAnimationFrame(animate);
+</script>
+<script src="site-cursor.js"></script>
+</body>
+</html>

@@ -18,154 +18,86 @@
 
   button, a { font: inherit; color: inherit; }
 
-  /* Top navigation */
-  .top {
-    position: fixed;
-    z-index: 100;
-    top: 3px;
-    left: 7px;
-    right: 7px;
-    height: 18px;
-    display: grid;
-    grid-template-columns: 1fr auto 1fr;
-    align-items: start;
-    font-size: 11px;
-    line-height: 13px;
-    pointer-events: none;
-  }
-
-  .top-left, .top-center, .top-right {
-    display: flex;
-    gap: 4px;
-  }
-
-  .top-center { justify-content: center; }
-  .top-right { justify-content: flex-end; }
-
-  .tag {
-    display: inline-block;
-    padding: 0 3px;
-    height: 14px;
-    line-height: 14px;
-    background: #000;
-    color: #fff;
-    white-space: nowrap;
-    pointer-events: auto;
-  }
-
-  .tag.link { cursor: pointer; text-decoration: underline; }
-
-  /* Main stage */
+  /* Main stage — rotating ring (same interaction as the Fashion page) */
   .stage {
     position: absolute;
     inset: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    perspective: 1500px;
-    perspective-origin: 50% 49%;
+    overflow: hidden;
+    perspective-origin: 50% 50%;
     touch-action: none;
-    cursor: grab;
-  }
-
-  .stage.dragging { cursor: grabbing; }
-
-  .carousel {
-    position: relative;
-    width: 100vw;
-    height: 100vh;
-    transform-style: preserve-3d;
-  }
-
-  .card {
-    position: absolute;
-    left: 50%;
-    top: 50%;
-    width: 270px;
-    height: 405px;
-    margin-left: -135px;
-    margin-top: -202px;
-    transform-style: preserve-3d;
-    transform-origin: center center;
     user-select: none;
-    cursor: pointer;
-    will-change: transform, opacity, filter;
+    -webkit-user-select: none;
+  }
+  .stage.is-grabbing, .stage.is-grabbing * { cursor: grabbing !important; }
+
+  .scene, .ring-outer, .ring-inner {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    transform-style: preserve-3d;
   }
 
-  .card-inner {
+  .ring-item, .hero {
+    position: absolute;
+    top: 0;
+    left: 0;
+    opacity: 0;
+    will-change: transform, opacity;
+  }
+  .ring-item { pointer-events: none; }
+  .ring-item img, .hero img {
+    display: block;
     width: 100%;
     height: 100%;
-    border: 1px solid #e4e4e4;
-    background: #c7c7c7;
-    box-shadow: 0 12px 30px rgba(0,0,0,.035);
-    overflow: hidden;
+    object-fit: cover;
+    pointer-events: none;
+    -webkit-user-drag: none;
   }
-
-  /* Every project is intentionally gray for now. */
-  .card:nth-child(2n) .card-inner { background: #bcbcbc; }
-  .card:nth-child(3n) .card-inner { background: #d0d0d0; }
-  .card:nth-child(4n) .card-inner { background: #c2c2c2; }
-
-  .gray-detail {
-    position: absolute;
-    inset: 0;
-    opacity: .24;
-    background:
-      linear-gradient(135deg, transparent 0 35%, rgba(255,255,255,.55) 35.2% 35.8%, transparent 36%),
-      linear-gradient(30deg, transparent 0 55%, rgba(0,0,0,.08) 55.2% 62%, transparent 62.2%);
-  }
-
-  .card-index {
-    position: absolute;
-    top: 10px;
-    left: 10px;
-    font-size: 10px;
-  }
-
-  .card-name {
-    position: absolute;
-    left: 10px;
-    bottom: 10px;
-    font-size: 11px;
-  }
+  .hero { cursor: pointer; }
 
   /* Bottom project control */
   .bottom {
     position: fixed;
     z-index: 100;
     left: 50%;
-    bottom: 4px;
+    bottom: 24px;
     transform: translateX(-50%);
     display: flex;
-    gap: 4px;
-    align-items: center;
-    font-size: 11px;
+    gap: 14px;
+    align-items: baseline;
+    font-size: 15px;
+    line-height: 1;
+    color: #050505;
+    white-space: nowrap;
+    transition: opacity .15s ease-in-out;
   }
+  .bottom.is-out { opacity: 0; }
 
   .bottom button {
     border: 0;
-    background: #000;
-    color: #fff;
-    padding: 0 4px;
-    height: 14px;
-    line-height: 14px;
+    background: transparent;
+    color: #050505;
+    padding: 0;
+    font-size: inherit;
+    line-height: inherit;
     cursor: pointer;
   }
 
   .bottom a {
     text-decoration: none;
-    background: #eee;
-    padding: 0 4px;
-    height: 14px;
-    line-height: 14px;
+    color: #8c8c8c;
+    transition: color .2s ease;
   }
+  .bottom a:hover { color: #050505; }
 
   /* Small helper */
   .hint {
     position: fixed;
     z-index: 90;
     left: 50%;
-    bottom: 27px;
+    bottom: 44px;
     transform: translateX(-50%);
     font-size: 9px;
     opacity: 0;
@@ -174,248 +106,360 @@
   }
 
   @media (max-width: 700px) {
-    .card {
-      width: 205px;
-      height: 308px;
-      margin-left: -102.5px;
-      margin-top: -154px;
-    }
-    .top {
-      font-size: 9px;
-      grid-template-columns: 1fr auto;
-    }
-    .top-center { display: none; }
+    .bottom { bottom: 18px; font-size: 12px; gap: 10px; }
   }
 </style>
+<link rel="stylesheet" href="../site-nav.css">
 <link rel="stylesheet" href="../site-cursor.css">
 </head>
 <body>
 
-<header class="top">
-  <div class="top-left">
-    <span class="tag">SEOHYEON WI™</span>
-    <span class="tag" id="clock">00:00:00 (KST) Thursday August 27 2026</span>
-  </div>
-
-  <nav class="top-center">
-    <span class="tag link">Work</span>
-    <span class="tag link">Index</span>
-    <span class="tag link">Information</span>
+<header class="site-top">
+  <a class="site-name" href="../index.html">SEOHYEON WI™</a>
+  <nav class="site-cats" aria-label="Work categories">
+    <a href="../fashion.html">Fashion</a>
+    <a href="index.html" class="is-active" aria-current="page">3D</a>
+    <a href="../seohyeon_wi_projects_interactive_v2.html?category=metal-craft">Metal Craft</a>
+    <a href="../seohyeon_wi_projects_interactive_v2.html?category=product">Product</a>
+    <a href="../seohyeon_wi_projects_interactive_v2.html">Archive</a>
   </nav>
-
-  <div class="top-right">
-    <span class="tag link">Instagram</span>
-    <span class="tag link">Email</span>
-  </div>
+  <nav class="site-info" aria-label="About and contact">
+    <a href="../about.html">About</a>
+    <a href="../contact.html">Contact</a>
+  </nav>
 </header>
 
-<main class="stage" id="stage">
-  <div class="carousel" id="carousel"></div>
+<main class="stage" id="stage" aria-label="Rotating 3D gallery. Drag, scroll, or use arrow keys to rotate.">
+  <div class="scene">
+    <a class="hero" id="hero" href="project-detail.html?project=01" aria-label="View case"><img id="heroImg" alt=""></a>
+    <div class="ring-outer" id="ringOuter">
+      <div class="ring-inner" id="ringInner"></div>
+    </div>
+  </div>
 </main>
 
 <div class="hint" id="hint">DRAG TO ROTATE</div>
 
-<div class="bottom">
+<div class="bottom" id="bottom">
   <button id="projectName">Project 01</button>
-  <a href="project-detail.html?project=01" id="viewCase">View Case</a>
+  <a href="project-detail.html?project=01" id="viewCase">View Case →</a>
 </div>
 
 <script>
   /*
-    Interaction model:
-    - Cards are arranged around a horizontal 3D cylinder.
-    - Dragging left/right rotates the entire carousel.
-    - Mouse wheel also rotates it.
-    - The nearest card becomes large/front-facing.
-    - Side cards become smaller, angled and fade slightly.
-    - Release has momentum/inertia.
+    3D 프로젝트 목록 — 실제 이미지를 넣으려면 src 에 경로를 적어주세요.
+    (예: src: '../images/3d/01.jpg')  비워두면 회색 임시 이미지가 표시됩니다.
   */
-
-  const carousel = document.getElementById('carousel');
-  const stage = document.getElementById('stage');
-  const projectName = document.getElementById('projectName');
-  const viewCase = document.getElementById('viewCase');
-
   const projects = [
-    'Project 01',
-    'Project 02',
-    'Project 03',
-    'Project 04',
-    'Project 05',
-    'Project 06',
-    'Project 07',
-    'Project 08'
+    { name: 'Project 01', src: '' },
+    { name: 'Project 02', src: '' },
+    { name: 'Project 03', src: '' },
+    { name: 'Project 04', src: '' },
+    { name: 'Project 05', src: '' },
+    { name: 'Project 06', src: '' },
+    { name: 'Project 07', src: '' },
+    { name: 'Project 08', src: '' },
   ];
+  const detailUrl = i => `project-detail.html?project=${String(i + 1).padStart(2, '0')}`;
 
-  const cards = projects.map((name, i) => {
-    const card = document.createElement('div');
-    card.className = 'card';
+  (() => {
+    const CAMERA_Z = 8;
+    const FOV = 45;
+    const VIEW_UNITS = 2 * CAMERA_Z * Math.tan((FOV / 2) * Math.PI / 180);
+    const HERO_H = 3.1;
+    const ITEM_H = 0.68;
+    const INTRO_SCALE = 2.5;
 
-    const inner = document.createElement('div');
-    inner.className = 'card-inner';
+    const stage = document.getElementById('stage');
+    const ringOuter = document.getElementById('ringOuter');
+    const ringInner = document.getElementById('ringInner');
+    const hero = document.getElementById('hero');
+    const heroImg = document.getElementById('heroImg');
+    const bottom = document.getElementById('bottom');
+    const projectName = document.getElementById('projectName');
+    const viewCase = document.getElementById('viewCase');
+    const hint = document.getElementById('hint');
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-    const detail = document.createElement('div');
-    detail.className = 'gray-detail';
+    const count = projects.length;
+    const step = Math.PI * 2 / count;
 
-    const index = document.createElement('div');
-    index.className = 'card-index';
-    index.textContent = String(i + 1).padStart(2, '0');
+    let unit = 1, radius = 3, items = [];
+    let heroState = { o: 0, aspect: 2 / 3 };
+    let current = 0, target = 0;
+    let tiltX = 0, tiltXTarget = 0, tiltY = 0, tiltYTarget = 0;
+    let intro = true, activeIndex = -1, keyReady = true;
 
-    const label = document.createElement('div');
-    label.className = 'card-name';
-    label.textContent = name;
-
-    inner.append(detail, index, label);
-    card.appendChild(inner);
-    carousel.appendChild(card);
-    return card;
-  });
-
-  let rotation = 0;
-  let targetRotation = 0;
-  let velocity = 0;
-  let dragging = false;
-  let lastX = 0;
-  let lastTime = 0;
-  let pointerStartX = 0;
-  let didDrag = false;
-
-  // Distance between cards around the invisible cylinder.
-  const radius = 390;
-  const angleStep = 360 / cards.length;
-
-  function shortestAngle(a) {
-    return ((a + 180) % 360 + 360) % 360 - 180;
-  }
-
-  function render() {
-    cards.forEach((card, i) => {
-      const base = i * angleStep;
-      const angle = base + rotation;
-      const rad = angle * Math.PI / 180;
-
-      // 3D cylindrical placement.
-      const x = Math.sin(rad) * radius;
-      const z = Math.cos(rad) * radius;
-
-      // Front card gets scale/opacity; side cards recede.
-      const depth = (z + radius) / (radius * 2);
-      const scale = 0.68 + depth * 0.32;
-      const opacity = 0.30 + depth * 0.70;
-
-      card.style.transform =
-        `translate3d(${x}px, 0, ${z}px)
-         rotateY(${angle}deg)
-         scale(${scale})`;
-
-      card.style.opacity = opacity;
-      card.style.zIndex = Math.round(z + radius);
-    });
-
-    const normalized = ((rotation % 360) + 360) % 360;
-    const nearest = Math.round(-normalized / angleStep);
-    const active = ((nearest % cards.length) + cards.length) % cards.length;
-    projectName.textContent = projects[active];
-    viewCase.href = `project-detail.html?project=${String(active + 1).padStart(2, '0')}`;
-  }
-
-  function animate() {
-    if (!dragging) {
-      targetRotation += velocity;
-      velocity *= 0.94;
+    /* gray placeholder in the same style as the old 3D cards */
+    const GRAYS = ['#e8e8e8', '#e3e3e3', '#ededed', '#e7e7e7'];
+    function placeholder(i) {
+      const w = 540, h = 810;
+      const c = document.createElement('canvas');
+      c.width = w; c.height = h;
+      const g = c.getContext('2d');
+      g.fillStyle = i % 4 === 3 ? GRAYS[3] : i % 3 === 2 ? GRAYS[2] : i % 2 === 1 ? GRAYS[1] : GRAYS[0];
+      g.fillRect(0, 0, w, h);
+      g.globalAlpha = .24;
+      g.strokeStyle = '#fff'; g.lineWidth = 3;
+      g.beginPath(); g.moveTo(w * .35, 0); g.lineTo(w, h * .65); g.stroke();
+      g.fillStyle = 'rgba(0,0,0,.08)';
+      g.beginPath(); g.moveTo(0, h * .6); g.lineTo(w * .55, h); g.lineTo(w * .4, h); g.lineTo(0, h * .75); g.fill();
+      g.globalAlpha = 1;
+      g.strokeStyle = '#ededed'; g.lineWidth = 2; g.strokeRect(1, 1, w - 2, h - 2);
+      g.fillStyle = '#000';
+      g.font = '20px Arial, Helvetica, sans-serif';
+      g.fillText(String(i + 1).padStart(2, '0'), 20, 40);
+      g.font = '22px Arial, Helvetica, sans-serif';
+      g.fillText(projects[i].name, 20, h - 22);
+      return c.toDataURL('image/png');
     }
 
-    // Smoothly catch up to target rotation.
-    rotation += (targetRotation - rotation) * 0.14;
-
-    render();
-    requestAnimationFrame(animate);
-  }
-
-  let downCard = null;
-
-  function pointerDown(e) {
-    dragging = true;
-    stage.classList.add('dragging');
-    lastX = e.clientX;
-    pointerStartX = e.clientX;
-    didDrag = false;
-    lastTime = performance.now();
-    velocity = 0;
-    // 눌렀을 때 어떤 카드 위였는지 기억
-    downCard = e.target.closest('.card');
-  }
-
-  function pointerMove(e) {
-    if (!dragging) return;
-
-    const now = performance.now();
-    const dx = e.clientX - lastX;
-
-    if (!didDrag && Math.abs(e.clientX - pointerStartX) > 6) {
-      didDrag = true;
-      // 실제로 드래그가 시작됐을 때만 포인터 캡처
-      stage.setPointerCapture?.(e.pointerId);
+    function loadImage(p, i) {
+      return new Promise(resolve => {
+        const img = new Image();
+        img.onload = () => resolve({ src: img.src, aspect: img.naturalWidth / img.naturalHeight || 2 / 3 });
+        img.onerror = () => { img.onerror = null; img.src = placeholder(i); };
+        img.src = p.src || placeholder(i);
+      });
     }
 
-    const dt = Math.max(8, now - lastTime);
-    const delta = dx * 0.10;
-    targetRotation += delta;
-    velocity = delta * (16 / dt);
-
-    lastX = e.clientX;
-    lastTime = now;
-  }
-
-  function pointerUp(e) {
-    if (!dragging) return;
-    dragging = false;
-    stage.classList.remove('dragging');
-
-    // 드래그가 아니라 "클릭"이었다면 해당 카드의 상세 페이지로 이동
-    if (!didDrag && downCard && e.type === 'pointerup') {
-      const i = cards.indexOf(downCard);
-      if (i !== -1) {
-        const project = String(i + 1).padStart(2, '0');
-        window.location.href = `project-detail.html?project=${project}`;
+    /* tiny tween engine */
+    const tweens = [];
+    const easeOut = t => 1 - (1 - t) * (1 - t);
+    function tween(obj, to, { duration = 1, delay = 0 } = {}) {
+      tweens.push({ obj, to, from: null, duration, start: performance.now() + delay * 1000 });
+    }
+    function runTweens(now) {
+      for (let i = tweens.length - 1; i >= 0; i--) {
+        const t = tweens[i];
+        if (now < t.start) continue;
+        if (!t.from) { t.from = {}; for (const k in t.to) t.from[k] = t.obj[k]; }
+        const p = Math.min(1, (now - t.start) / (t.duration * 1000));
+        const e = easeOut(p);
+        for (const k in t.to) t.obj[k] = t.from[k] + (t.to[k] - t.from[k]) * e;
+        if (p >= 1) tweens.splice(i, 1);
       }
     }
-    downCard = null;
-  }
 
-  stage.addEventListener('pointerdown', pointerDown);
-  stage.addEventListener('pointermove', pointerMove);
-  stage.addEventListener('pointerup', pointerUp);
-  stage.addEventListener('pointercancel', pointerUp);
+    function layout() {
+      unit = window.innerHeight / VIEW_UNITS;
+      radius = window.innerWidth <= 768 ? 1.8 : 3;
+      stage.style.perspective = `${CAMERA_Z * unit}px`;
+      items.forEach(item => {
+        item.el.style.width = `${item.w * unit}px`;
+        item.el.style.height = `${item.h * unit}px`;
+        item.el.style.marginLeft = `${-item.w * unit / 2}px`;
+        item.el.style.marginTop = `${-item.h * unit / 2}px`;
+      });
+      sizeHero();
+      if (!intro) items.forEach((item, i) => {
+        item.x = Math.sin(step * i) * radius;
+        item.z = Math.cos(step * i) * radius;
+      });
+    }
 
-  stage.addEventListener('wheel', e => {
-    e.preventDefault();
-    targetRotation += e.deltaY * 0.045 + e.deltaX * 0.025;
-    velocity += e.deltaY * 0.001;
-  }, { passive: false });
+    function sizeHero() {
+      let h = HERO_H * unit, w = HERO_H * heroState.aspect * unit;
+      // wide images shrink so they never overflow a phone screen
+      const maxW = innerWidth * (innerWidth <= 700 ? 0.86 : 0.9);
+      if (w > maxW) { h *= maxW / w; w = maxW; }
+      hero.style.width = `${w}px`;
+      hero.style.height = `${h}px`;
+      hero.style.marginLeft = `${-w / 2}px`;
+      hero.style.marginTop = `${-h / 2}px`;
+    }
 
-  // Live clock.
-  function updateClock() {
-    const now = new Date();
-    const days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
-    const month = now.toLocaleString('en-US', { month: 'long', timeZone: 'Asia/Seoul' });
-    const day = now.toLocaleString('en-US', { day: '2-digit', timeZone: 'Asia/Seoul' });
-    const year = now.toLocaleString('en-US', { year: 'numeric', timeZone: 'Asia/Seoul' });
-    const time = now.toLocaleTimeString('en-GB', {
-      hour12: false,
-      timeZone: 'Asia/Seoul'
+    function setActive(i) {
+      activeIndex = i;
+      heroImg.src = items[i].src;
+      heroImg.alt = projects[i].name;
+      heroState.aspect = items[i].aspect;
+      sizeHero();
+      hero.href = detailUrl(i);
+      bottom.classList.add('is-out');
+      clearTimeout(setActive.timer);
+      setActive.timer = setTimeout(() => {
+        projectName.textContent = projects[i].name;
+        viewCase.href = detailUrl(i);
+        bottom.classList.remove('is-out');
+      }, 150);
+    }
+
+    function nearestToFront() {
+      let best = 0, min = Infinity;
+      for (let i = 0; i < count; i++) {
+        let a = ((current + step * i) % (Math.PI * 2) + Math.PI * 2) % (Math.PI * 2);
+        if (a > Math.PI) a = Math.PI * 2 - a;
+        if (a < min) { min = a; best = i; }
+      }
+      return best;
+    }
+
+    function frame(now) {
+      runTweens(now);
+      if (!intro) {
+        current += (target - current) * 0.08;
+        tiltX += (tiltXTarget - tiltX) * 0.08;
+        tiltY += (tiltYTarget - tiltY) * 0.05;
+      }
+      ringOuter.style.transform = `rotateX(${-tiltX}rad) rotateY(${tiltY}rad)`;
+      ringInner.style.transform = `rotateY(${current}rad)`;
+      for (const item of items) {
+        const facing = Math.atan2(item.x, item.z);
+        item.el.style.transform =
+          `translate3d(${item.x * unit}px, 0, ${item.z * unit}px) rotateY(${facing}rad) scale(${item.s})`;
+        item.el.style.opacity = item.o;
+      }
+      hero.style.opacity = heroState.o;
+      if (!intro) {
+        const front = nearestToFront();
+        if (front !== activeIndex) setActive(front);
+      }
+      requestAnimationFrame(frame);
+    }
+
+    function playIntro() {
+      const n = items.length;
+      items.forEach((item, i) => tween(item, { o: 1 }, { duration: .8, delay: .8 * i / (n - 1) }));
+      const spread = 1.4;
+      items.forEach((item, i) => {
+        tween(item, { x: Math.sin(step * i) * radius, z: Math.cos(step * i) * radius },
+          { duration: 1.55, delay: spread + .04 * i });
+        tween(item, { s: 1 }, { duration: 1, delay: spread + .04 * i });
+      });
+      const spin = { r: 0 };
+      tween(spin, { r: -(step * 10) }, { duration: 3, delay: spread });
+      (function follow() {
+        current = spin.r;
+        if (intro) requestAnimationFrame(follow);
+      })();
+      tween(heroState, { o: 1 }, { duration: .5, delay: spread + .9 });
+      setTimeout(() => {
+        intro = false;
+        current = target = spin.r;
+        hint.style.opacity = 1;
+        setTimeout(() => { hint.style.opacity = 0; }, 2500);
+      }, (spread + 3) * 1000 + 30);
+    }
+
+    function skipIntro() {
+      items.forEach((item, i) => {
+        item.x = Math.sin(step * i) * radius;
+        item.z = Math.cos(step * i) * radius;
+        item.s = 1; item.o = 1;
+      });
+      heroState.o = 1;
+      intro = false;
+    }
+
+    /* interaction */
+    let dragging = false, dragStartX = 0, dragStartTarget = 0, dragDelta = 0;
+    const dragSpeed = () => 5 / window.innerWidth;
+    const snap = () => { target = Math.round(target / step) * step; };
+
+    window.addEventListener('wheel', e => {
+      e.preventDefault();
+      if (!intro) target += e.deltaY * 0.003;
+    }, { passive: false });
+
+    window.addEventListener('keydown', e => {
+      if (intro) return;
+      if (e.key === 'Enter' && document.activeElement === document.body) {
+        location.href = detailUrl(activeIndex);
+        return;
+      }
+      if ((e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') || !keyReady) return;
+      e.preventDefault();
+      keyReady = false;
+      target = (Math.round(target / step) + (e.key === 'ArrowRight' ? 1 : -1)) * step;
+      setTimeout(() => { keyReady = true; }, 700);
     });
 
-    const weekday = days[new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Seoul' })).getDay()];
-    document.getElementById('clock').textContent =
-      `${time} (KST) ${weekday} ${month} ${day} ${year}`;
-  }
+    window.addEventListener('mousemove', e => {
+      if (!reduceMotion) {
+        tiltXTarget = (e.clientY / window.innerHeight - .5) * .24;
+        tiltYTarget = (e.clientX / window.innerWidth - .5) * .12;
+      }
+      if (!dragging) return;
+      dragDelta = e.clientX - dragStartX;
+      target = dragStartTarget + dragDelta * dragSpeed();
+    });
 
-  updateClock();
-  setInterval(updateClock, 1000);
+    stage.addEventListener('mousedown', e => {
+      if (intro || e.button !== 0) return;
+      e.preventDefault();
+      dragging = true;
+      dragStartX = e.clientX;
+      dragStartTarget = target;
+      dragDelta = 0;
+      stage.classList.add('is-grabbing');
+    });
 
-  render();
-  animate();
+    window.addEventListener('mouseup', () => {
+      if (!dragging) return;
+      dragging = false;
+      stage.classList.remove('is-grabbing');
+      snap();
+    });
+
+    stage.addEventListener('touchstart', e => {
+      if (intro) return;
+      dragging = true;
+      dragStartX = e.touches[0].clientX;
+      dragStartTarget = target;
+      dragDelta = 0;
+    }, { passive: true });
+
+    stage.addEventListener('touchmove', e => {
+      e.preventDefault();
+      if (!dragging) return;
+      const t = e.touches[0];
+      dragDelta = t.clientX - dragStartX;
+      target = dragStartTarget + dragDelta * dragSpeed();
+      // the ring tilts a little toward the finger, like it does for the mouse
+      if (!reduceMotion) {
+        tiltXTarget = (t.clientY / innerHeight - .5) * .24;
+        tiltYTarget = (t.clientX / innerWidth - .5) * .12;
+      }
+    }, { passive: false });
+
+    stage.addEventListener('touchend', () => {
+      tiltXTarget = tiltYTarget = 0;
+      if (!dragging) return;
+      dragging = false;
+      snap();
+    });
+
+    // a drag must not count as a click on the centre image
+    hero.addEventListener('click', e => {
+      if (intro || Math.abs(dragDelta) > 5) e.preventDefault();
+    });
+    projectName.addEventListener('click', () => { if (activeIndex >= 0) location.href = detailUrl(activeIndex); });
+
+    window.addEventListener('resize', layout);
+
+    /* boot */
+    Promise.all(projects.map(loadImage)).then(loaded => {
+      items = loaded.map((data, i) => {
+        const el = document.createElement('figure');
+        el.className = 'ring-item';
+        el.style.margin = '0';
+        const img = document.createElement('img');
+        img.src = data.src;
+        img.alt = '';
+        el.appendChild(img);
+        ringInner.appendChild(el);
+        return { el, src: data.src, aspect: data.aspect, w: ITEM_H * data.aspect, h: ITEM_H, x: 0, z: 3, s: INTRO_SCALE, o: 0 };
+      });
+      layout();
+      items.forEach((item, i) => { item.z = radius + i * 0.01; });
+      setActive(0);
+      requestAnimationFrame(frame);
+      if (reduceMotion) skipIntro();
+      else setTimeout(playIntro, 200);
+    });
+  })();
+
 </script>
 
 <script src="../site-cursor.js"></script>
