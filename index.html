@@ -16,6 +16,7 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#fff;font-f
 .menu{left:14px;right:14px;bottom:18px;font-size:12px}
 }
 </style>
+<link rel="stylesheet" href="site-cursor.css">
 </head>
 <body>
 <div class="page">
@@ -31,7 +32,6 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#fff;font-f
 <div class="cursor"></div>
 <script>
 const text=document.getElementById("interactiveText");
-const cursor=document.querySelector(".cursor");
 const originalText=text.textContent;
 text.innerHTML="";
 [...originalText].forEach(char=>{
@@ -45,7 +45,6 @@ let mouse={x:innerWidth/2,y:innerHeight/2};
 const states=letters.map(()=>({x:0,y:0,vx:0,vy:0}));
 document.addEventListener("mousemove",e=>{
  mouse.x=e.clientX; mouse.y=e.clientY;
- cursor.style.left=mouse.x+"px"; cursor.style.top=mouse.y+"px";
 });
 function animate(){
  letters.forEach((letter,i)=>{
@@ -72,5 +71,6 @@ function animate(){
 }
 animate();
 </script>
+<script src="site-cursor.js"></script>
 </body>
 </html>
