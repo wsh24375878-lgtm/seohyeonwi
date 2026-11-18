@@ -44,13 +44,13 @@ a{color:inherit;text-decoration:none}
 @keyframes floatA{50%{translate:0 7px}}@keyframes floatB{50%{translate:0 -8px}}@keyframes floatC{50%{translate:0 6px}}@keyframes floatD{50%{translate:0 -7px}}@keyframes floatE{50%{translate:0 8px}}@keyframes floatF{50%{translate:0 -6px}}@keyframes floatG{50%{translate:0 7px}}@keyframes floatH{50%{translate:0 -8px}}
 
 /* ---------- speed zones ---------- */
-.speed-zone{position:absolute;z-index:30;top:calc(50% - 170px);right:0;width:78px;height:360px;cursor:e-resize}
+.speed-zone{position:absolute;z-index:30;top:calc(50% - 170px);right:0;width:140px;height:360px;cursor:e-resize}
 .speed-zone.left{right:auto;left:0;cursor:w-resize;z-index:15}
 .speed-hint{position:absolute;top:50%;right:23px;font-size:15px;color:#8c8c8c;opacity:0;transform:translateX(5px);transition:opacity .25s ease,transform .25s ease}
 .speed-hint.left-hint{right:auto;left:23px;transform:translateX(-5px)}
 .speed-zone.active .speed-hint{opacity:1;transform:translateX(0)}
 
-@media (max-width:900px){.speed-zone{width:55px}}
+@media (max-width:900px){.speed-zone{width:90px}}
 @media (max-width:700px){
 .text{left:14px;top:64px;width:88vw;font-size:clamp(20px,5vw,34px)}
 .gallery{top:calc(50% - 140px);height:300px}
@@ -115,12 +115,22 @@ const zoneLeft = document.getElementById('speedZoneLeft');
 const baseSpeed = .18, hoverSpeed = baseSpeed * 25;
 let position = -90, currentSpeed = baseSpeed, targetSpeed = baseSpeed, last = performance.now();
 
+// the closer the mouse gets to the very edge, the faster the cards run (a touch faster than before at the edge)
+const EDGE_MAX = 1.2;              // top speed at the edge, relative to the old hover speed
 function bindZone(el, speed) {
-  const on = () => { targetSpeed = speed; el.classList.add('active'); };
+  const isLeft = speed < 0;
+  const at = e => {
+    const r = el.getBoundingClientRect();
+    const fromEdge = isLeft ? e.clientX - r.left : r.right - e.clientX;   // 0 at the very edge
+    const closeness = Math.max(0, Math.min(1, 1 - fromEdge / r.width));   // 0 … 1
+    targetSpeed = speed * (.35 + (EDGE_MAX - .35) * Math.pow(closeness, 1.4));
+  };
+  const on = e => { el.classList.add('active'); if (e && e.clientX !== undefined) at(e); else targetSpeed = speed; };
   const off = () => { targetSpeed = baseSpeed; el.classList.remove('active'); };
   el.addEventListener('mouseenter', on);
+  el.addEventListener('mousemove', at);
   el.addEventListener('mouseleave', off);
-  el.addEventListener('touchstart', on, { passive: true });
+  el.addEventListener('touchstart', () => on(), { passive: true });
   el.addEventListener('touchend', off, { passive: true });
 }
 bindZone(zone, hoverSpeed);
