@@ -26,6 +26,13 @@ p,h1{margin:0}
 .label{position:absolute;left:16px;bottom:14px}
 
 .pager{display:flex;justify-content:space-between;margin-top:96px;padding-top:14px;border-top:1px solid #050505}
+/* real images: show the whole page spread, no cropping */
+.hero.has-image{height:auto;min-height:0;background:none}
+.hero.has-image img{height:auto;object-fit:contain}
+.gallery:has(.has-image){grid-template-columns:1fr}
+.shot.has-image{aspect-ratio:auto;background:none}
+.shot.has-image img{height:auto}
+.gallery.is-empty{display:none}
 
 @media (max-width:700px){
   .top-fade{height:62px}
@@ -75,21 +82,15 @@ p,h1{margin:0}
   </section>
 
   <nav class="pager ui-text">
-    <a class="muted" href="index.html">← Back to Object</a>
+    <a class="muted" id="backLink" href="index.html">← Back to Object</a>
     <a class="muted" id="nextLink" href="project-detail.html?project=02">Next project →</a>
   </nav>
 </main>
 <div class="cursor" aria-hidden="true"></div>
-<script>
-const raw = new URLSearchParams(location.search).get('project') || '01';
-const n = /^\d{1,2}$/.test(raw) ? Math.min(8, Math.max(1, Number(raw))) : 1;
-const project = String(n).padStart(2, '0');
-const next = String(n % 8 + 1).padStart(2, '0');
-document.title = `Object ${project} — SEOHYEON WI™`;
-document.getElementById('projectTitle').textContent = `Object ${project}`;
-document.getElementById('projectMeta').textContent = `${project} / 08 — Object, 2026`;
-document.getElementById('nextLink').href = `project-detail.html?project=${next}`;
-</script>
+
+<script src="../works-data.js"></script>
+<script>window.WORK_DETAIL = { category: "object", prefix: "../", label: "Object" };</script>
+<script src="../work-detail.js"></script>
 <script src="../site-cursor.js"></script>
 </body>
 </html>

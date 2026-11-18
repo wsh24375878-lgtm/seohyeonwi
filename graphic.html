@@ -33,6 +33,8 @@ a{color:inherit;text-decoration:none}
 .card:nth-child(8n+8){width:255px;height:295px;margin-top:0}
 .art{width:100%;height:100%;background:#ebebeb;transition:transform .5s cubic-bezier(.16,1,.3,1)}
 .card:hover .art{transform:scale(1.055)}
+.art img{display:block;width:100%;height:100%;object-fit:cover;object-position:22% center;-webkit-user-drag:none}
+.card-label{z-index:1;background:#fff;padding:3px 5px}
 .card:nth-child(8n+1){animation:floatA 6.6s ease-in-out infinite}
 .card:nth-child(8n+2){animation:floatB 7.4s ease-in-out infinite}
 .card:nth-child(8n+3){animation:floatC 6.9s ease-in-out infinite}
@@ -105,7 +107,10 @@ for (let i = 0; i < 32; i++) {
   card.className = 'card';
   card.href = `project-detail.html?project=${String(k + 1).padStart(2, '0')}&category=graphic`;
   card.setAttribute('aria-label', `View ${work.title}`);
-  card.innerHTML = `<div class="art"></div><span class="card-label">${work.title}</span>`;
+  // each card shows one of the work's images in turn
+  const imgs = work.images.filter(Boolean);
+  const src = imgs.length ? imgs[Math.floor(i / GRAPHIC.length) % imgs.length] : '';
+  card.innerHTML = `<div class="art">${src ? `<img src="${src}" alt="" loading="lazy">` : ''}</div><span class="card-label">${work.title}</span>`;
   track.appendChild(card);
 }
 

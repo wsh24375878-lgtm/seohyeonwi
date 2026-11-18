@@ -1,28 +1,44 @@
 /* =========================================================
-   FASHION 작품 목록 — fashion.html 과 fashion-detail.html 이 함께 씁니다.
+   FASHION 작품 목록 — fashion.html / fashion-detail.html / Archive 가 함께 씁니다.
 
-   - 실제 이미지를 넣으려면 images/fashion/ 폴더에 01.jpg, 02.jpg ...
-     파일을 넣거나, 아래 src 경로를 바꿔주세요.
-   - 파일이 없으면 자동으로 임시 이미지가 표시됩니다.
-   - title / desc / year / info 는 상세 페이지에 표시되는 글입니다.
+   - 한 줄이 원형 화면의 이미지 한 장이에요.
+   - group 이 같은 이미지는 Archive 에서 한 프로젝트로 묶여요.
+   - title / desc / info / year 는 상세 페이지에 표시되는 글입니다.
+   - 이미지는 포트폴리오 PDF(포트폴리오_지원자 위서현.pdf)에서 가져왔어요.
    ========================================================= */
 window.FASHION_WORKS = [
-  { project: '01', title: 'Collection 01', src: 'images/fashion/01.jpg', year: '2026', info: 'Womenswear',
-    desc: 'A study of draped volume — soft structure built from a single length of fabric.' },
-  { project: '02', title: 'Collection 02', src: 'images/fashion/02.jpg', year: '2026', info: 'Textile',
-    desc: 'Layered surfaces and hand-finished edges, exploring how material holds a shape.' },
-  { project: '03', title: 'Collection 03', src: 'images/fashion/03.jpg', year: '2025', info: 'Outerwear',
-    desc: 'Folded panels and warm tones, translating architectural lines into garments.' },
-  { project: '04', title: 'Collection 04', src: 'images/fashion/04.jpg', year: '2025', info: 'Object',
-    desc: 'Between clothing and object — pieces that can be worn, held, or simply placed.' },
-  { project: '05', title: 'Collection 05', src: 'images/fashion/05.jpg', year: '2025', info: 'Womenswear',
-    desc: 'Pale, quiet colours and light fabrics layered to create depth without weight.' },
-  { project: '06', title: 'Collection 06', src: 'images/fashion/06.jpg', year: '2024', info: 'Pattern',
-    desc: 'Monochrome pattern cutting — rebuilding a classic silhouette piece by piece.' },
-  { project: '07', title: 'Collection 07', src: 'images/fashion/07.jpg', year: '2024', info: 'Image',
-    desc: 'An image-led project, styling and photographing the collection as one story.' },
-  { project: '08', title: 'Collection 08', src: 'images/fashion/08.jpg', year: '2024', info: 'Accessory',
-    desc: 'Small accessories developed from leftover materials of earlier collections.' },
+  // 졸업 컬렉션 — 혼란 (Confusion)
+  { project: '01', group: 'Confusion', title: 'Confusion — Final Look', src: 'images/fashion/confusion-final-look.jpg', info: 'Graduation Collection',
+    desc: 'Inflated volumes and trailing threads — the fear of the unknown, turned into a body you can wear.' },
+  { project: '02', group: 'Confusion', title: 'Confusion — Final Work', src: 'images/fashion/confusion-final-work.jpg', info: 'Graduation Collection',
+    desc: 'Starting from the film "Alien", the unknown is broken down and rebuilt as clothing instead of being avoided.' },
+  { project: '03', group: 'Confusion', title: 'Confusion — Mood Board', src: 'images/fashion/confusion-mood-board.jpg', info: 'Research',
+    desc: 'Organic, parasitic forms and a cold palette of shadow mint, lucent white and midnight denim.' },
+  { project: '04', group: 'Confusion', title: 'Confusion — Concept & Material', src: 'images/fashion/confusion-concept-material.jpg', info: 'Concept',
+    desc: 'The concept of confusion, and a material board of belts, buckles, padding and worn denim.' },
+  { project: '05', group: 'Confusion', title: 'Confusion — Design Sketch', src: 'images/fashion/confusion-design-sketch.jpg', info: 'Sketch',
+    desc: 'Idea sketches exploring padded volume, straps and layered drapery across the line-up.' },
+  { project: '06', group: 'Confusion', title: 'Confusion — Textile Design', src: 'images/fashion/confusion-textile-design.jpg', info: 'Textile',
+    desc: 'Original textile prints developed for the collection, with mock-up layouts on garments.' },
+  { project: '07', group: 'Confusion', title: 'Confusion — Final Sketch', src: 'images/fashion/confusion-final-sketch.jpg', info: 'Sketch',
+    desc: 'The final look: exaggerated padded volume carried by straps and denim, finished with print.' },
+  { project: '08', group: 'Confusion', title: 'Confusion — Making Process', src: 'images/fashion/confusion-making-process.jpg', info: 'Process',
+    desc: 'Material tests and repeated fittings to find the balance between volume and structure.' },
+  { project: '09', group: 'Confusion', title: 'Confusion — Tech Pack, Top', src: 'images/fashion/confusion-tech-pack-top.jpg', info: 'Tech Pack',
+    desc: 'Sample work order for the padded top — measurements, details and construction notes.' },
+  { project: '10', group: 'Confusion', title: 'Confusion — Tech Pack, Skirt', src: 'images/fashion/confusion-tech-pack-skirt.jpg', info: 'Tech Pack',
+    desc: 'Sample work order for the wrapped denim skirt with belt details.' },
+  // 기성복 디자인 — Ready-to-wear
+  { project: '11', group: 'Ready-to-wear', title: 'Ready-to-wear — Line-up', src: 'images/fashion/rtw-line-up.jpg', info: 'Ready-to-wear',
+    desc: 'A ready-to-wear line-up of layered, utility-driven pieces.' },
+  { project: '12', group: 'Ready-to-wear', title: 'Ready-to-wear — Tech Pack 01', src: 'images/fashion/rtw-tech-pack-01.jpg', info: 'Tech Pack',
+    desc: 'Cargo skirt with fold-over waist and drawcord hem.' },
+  { project: '13', group: 'Ready-to-wear', title: 'Ready-to-wear — Tech Pack 02', src: 'images/fashion/rtw-tech-pack-02.jpg', info: 'Tech Pack',
+    desc: 'Wide trousers with crossing belt straps.' },
+  { project: '14', group: 'Ready-to-wear', title: 'Ready-to-wear — Tech Pack 03', src: 'images/fashion/rtw-tech-pack-03.jpg', info: 'Tech Pack',
+    desc: 'Knit top with an asymmetric open shoulder.' },
+  { project: '15', group: 'Ready-to-wear', title: 'Ready-to-wear — Tech Pack 04', src: 'images/fashion/rtw-tech-pack-04.jpg', info: 'Tech Pack',
+    desc: 'Denim bustier with belt-buckle closures.' },
 ];
 
 window.FashionData = (() => {

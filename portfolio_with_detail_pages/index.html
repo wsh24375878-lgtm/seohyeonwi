@@ -133,22 +133,16 @@
 <div class="mobile-work" id="mobileWork"><div id="mobileWorkName"></div></div>
 <div class="cursor" aria-hidden="true"></div>
 
+<script src="../works-data.js"></script>
 <script>
 /*
-  3D 프로젝트 목록 — 프로젝트마다 이미지를 여러 장 넣을 수 있어요.
-  images 에 경로를 적으면 실제 이미지가 쓰이고 (예: '../images/3d/01-1.jpg'),
-  비워두면('') 회색 임시 이미지가 표시됩니다.
+  Object 프로젝트 목록 — works-data.js 의 object 목록을 그대로 써요.
+  (작업을 바꾸려면 works-data.js 를 수정하세요. 경로는 사이트 폴더 기준이라 앞에 ../ 를 붙여요.)
 */
-const PROJECTS = [
-  { title: 'Object 01', images: ['', '', '', ''] },
-  { title: 'Object 02', images: ['', '', ''] },
-  { title: 'Object 03', images: ['', '', ''] },
-  { title: 'Object 04', images: ['', '', '', '', ''] },
-  { title: 'Object 05', images: ['', '', ''] },
-  { title: 'Object 06', images: ['', ''] },
-  { title: 'Object 07', images: ['', '', '', ''] },
-  { title: 'Object 08', images: ['', '', ''] },
-];
+const PROJECTS = window.OTHER_WORKS.object.map(w => ({
+  title: w.title,
+  images: w.images.map(src => (src ? '../' + src : '')),
+}));
 </script>
 
 <!-- ======================= 3D object ======================= -->

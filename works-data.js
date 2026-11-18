@@ -9,21 +9,34 @@
      비워두면('') 회색 임시 이미지가 표시됩니다.
    ========================================================= */
 window.OTHER_WORKS = {
+  // Living Design — "Reconstructing fear into techwear." (3D / resin, June 2025)
   object: [
-    { title: 'Object 01', type: '3D',          year: '2025', images: ['', '', '', ''] },
-    { title: 'Object 02', type: '3D',          year: '2025', images: ['', '', ''] },
-    { title: 'Object 03', type: 'Metal Craft', year: '2025', images: ['', '', ''] },
-    { title: 'Object 04', type: 'Metal Craft', year: '2024', images: ['', '', '', ''] },
-    { title: 'Object 05', type: 'Product',     year: '2024', images: ['', '', ''] },
-    { title: 'Object 06', type: '3D',          year: '2024', images: ['', ''] },
-    { title: 'Object 07', type: 'Metal Craft', year: '2023', images: ['', '', '', ''] },
-    { title: 'Object 08', type: 'Product',     year: '2023', images: ['', '', ''] },
+    { title: 'Reconstructing Fear', type: '3D · Resin', year: '2025',
+      desc: 'A living-design project that turns the fear of the unknown into objects you carry every day — modelled in Rhino and ZBrush, printed in resin and finished by hand.',
+      images: ['images/object/living-design-intro.jpg', 'images/object/final-objects.jpg'] },
+    { title: 'Bone Case — Phone', type: '3D · Phone Case', year: '2025',
+      desc: 'A phone case built from the organic bone structure of the alien, shaped so the hand naturally finds its grip.',
+      images: ['images/object/bone-case-phone.jpg'] },
+    { title: 'Bone Case — Lighter', type: '3D · Lighter Case', year: '2025',
+      desc: 'The same bone language applied to a lighter case, kept light while holding a solid outer form.',
+      images: ['images/object/bone-case-lighter.jpg'] },
+    { title: 'Bone Case — AirPods', type: '3D · AirPods Case', year: '2025',
+      desc: 'Taking apart and rebuilding a spine-like structure — familiar and uncanny at the same time.',
+      images: ['images/object/bone-case-airpods.jpg'] },
+    { title: 'Alien Case — AirPods Max', type: '3D · Headphone Case', year: '2025',
+      desc: 'An exaggerated spine that wraps the headphones like a living creature, balancing function and form.',
+      images: ['images/object/alien-case-airpods-max.jpg', 'images/object/final-headphones.jpg'] },
   ],
   graphic: [
-    { title: 'Graduation Exhibition', type: 'Poster · Leaflet', year: '2025', images: ['', '', ''] },
-    { title: 'OFF Magazine',          type: 'Magazine Cover',   year: '2019', images: ['', ''] },
-    { title: 'Brand Graphics',        type: 'Identity',         year: '2024', images: ['', '', ''] },
-    { title: 'Image Map',             type: 'Research',         year: '2026', images: ['', ''] },
+    { title: 'CIRCULATION', type: 'Exhibition Poster', year: '2022',
+      desc: 'Poster for the 2022 SSWU Fashion Industry graduation exhibition — light and reflection as a loop that keeps returning.',
+      images: ['images/graphic/circulation-poster.jpg'] },
+    { title: 'Piece of Cake', type: 'Exhibition Poster', year: '2025',
+      desc: 'Graduation exhibition poster, feed and sticker design — 24 works gathering into one cake.',
+      images: ['images/graphic/piece-of-cake-poster.jpg'] },
+    { title: 'FromW2', type: 'Brand Identity', year: '',
+      desc: 'Identity and visuals for FromW2, a techwear brand — logo, product imagery and a collaboration with It\'s Skin.',
+      images: ['images/graphic/fromw2-brand.jpg', 'images/graphic/fromw2-collaboration.jpg'] },
   ],
 };
 
@@ -84,12 +97,18 @@ window.WorksData = (() => {
   async function loadAll() {
     const list = [];
     if (window.FASHION_WORKS && window.FashionData) {
+      // images that share a group become one project row
       const imgs = await window.FashionData.loadAll();
-      window.FASHION_WORKS.forEach((w, k) => list.push({
-        category: 'fashion', categoryName: 'Fashion', title: w.title, year: w.year, info: w.info,
-        url: detailUrl('fashion', +w.project || k + 1),
-        images: [{ url: imgs[k].src, ar: imgs[k].aspect }],
-      }));
+      const groups = new Map();
+      window.FASHION_WORKS.forEach((w, k) => {
+        const key = w.group || w.title;
+        if (!groups.has(key)) groups.set(key, {
+          category: 'fashion', categoryName: 'Fashion', title: key, year: w.year, info: w.info,
+          url: detailUrl('fashion', +w.project || k + 1), images: [],
+        });
+        groups.get(key).images.push({ url: imgs[k].src, ar: imgs[k].aspect });
+      });
+      groups.forEach(g => list.push(g));
     }
     for (const cat of Object.keys(window.OTHER_WORKS)) {
       const works = window.OTHER_WORKS[cat];
@@ -105,5 +124,5 @@ window.WorksData = (() => {
     return list;
   }
 
-  return { CATEGORY_NAMES, loadAll };
+  return { CATEGORY_NAMES, loadAll, loadImage };
 })();

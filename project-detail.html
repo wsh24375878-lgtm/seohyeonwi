@@ -26,6 +26,13 @@ p,h1{margin:0}
 .label{position:absolute;left:16px;bottom:14px}
 
 .pager{display:flex;justify-content:space-between;margin-top:96px;padding-top:14px;border-top:1px solid #050505}
+/* real images: show the whole page spread, no cropping */
+.hero.has-image{height:auto;min-height:0;background:none}
+.hero.has-image img{height:auto;object-fit:contain}
+.gallery:has(.has-image){grid-template-columns:1fr}
+.shot.has-image{aspect-ratio:auto;background:none}
+.shot.has-image img{height:auto}
+.gallery.is-empty{display:none}
 
 @media (max-width:700px){
   .top-fade{height:62px}
@@ -80,36 +87,10 @@ p,h1{margin:0}
   </nav>
 </main>
 <div class="cursor" aria-hidden="true"></div>
+
 <script src="works-data.js"></script>
-<script>
-// project-detail.html?project=02&category=graphic → titles come from works-data.js
-const params = new URLSearchParams(location.search);
-const category = params.get('category') === 'graphic' ? 'graphic' : null;
-const list = category ? window.OTHER_WORKS[category] : null;
-const total = list ? list.length : 8;
-const raw = params.get('project') || '01';
-const n = /^\d{1,2}$/.test(raw) ? Math.min(total, Math.max(1, Number(raw))) : 1;
-const project = String(n).padStart(2, '0');
-const next = String(n % total + 1).padStart(2, '0');
-const work = list ? list[n - 1] : null;
-const title = work ? work.title : `Project ${project}`;
-const label = category ? 'Graphic' : 'Archive';
-document.title = `${title} — SEOHYEON WI™`;
-document.getElementById('projectTitle').textContent = title;
-document.getElementById('projectMeta').textContent =
-  `${project} / ${String(total).padStart(2, '0')} — ${[label, work && work.type, work ? work.year : '2026'].filter(Boolean).join(', ')}`;
-document.getElementById('nextLink').href = `project-detail.html?project=${next}${category ? `&category=${category}` : ''}`;
-if (category) {
-  const back = document.getElementById('backLink');
-  back.href = 'graphic.html';
-  back.textContent = '← Back to graphic';
-  document.querySelectorAll('.site-cats a').forEach(a => {
-    const on = a.textContent.trim() === 'Graphic';
-    a.classList.toggle('is-active', on);
-    if (on) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current');
-  });
-}
-</script>
+<script>window.WORK_DETAIL = { category: "graphic", prefix: "", label: "Graphic", backUrl: "graphic.html", backText: "← Back to graphic" };</script>
+<script src="work-detail.js"></script>
 <script src="site-cursor.js"></script>
 </body>
 </html>
