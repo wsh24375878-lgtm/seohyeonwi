@@ -208,6 +208,11 @@ document.addEventListener("touchstart",followTouch,{passive:true});
 document.addEventListener("touchmove",followTouch,{passive:true});
 document.addEventListener("touchend",()=>{ mouse.x=-9999; mouse.y=-9999; },{passive:true});
 if(matchMedia("(hover: none)").matches){ mouse.x=-9999; mouse.y=-9999; }
+// reaction speed: push and pull are both scaled down by the same amount,
+// so letters drift about as far as before, just a little more slowly
+const PUSH=4.5*.6;       // was 4.5
+const SPRING=.035*.6;    // was .035
+const DAMP=.915;         // was .90 — a touch smoother
 function animate(){
  scatter=scatterAmount(performance.now());
  letters.forEach((letter,i)=>{
@@ -220,14 +225,14 @@ function animate(){
    if(distance<radius){
      const force=Math.pow((radius-distance)/radius,1.5);
      const angle=Math.atan2(dy,dx);
-     const push=force*4.5;
+     const push=force*PUSH;
      states[i].vx+=Math.cos(angle)*push;
      states[i].vy+=Math.sin(angle)*push;
    }
    // the spring pulls toward the scattered spot while scattering, otherwise home
-   states[i].vx+=-(states[i].x-states[i].sx*scatter)*.035;
-   states[i].vy+=-(states[i].y-states[i].sy*scatter)*.035;
-   states[i].vx*=.90; states[i].vy*=.90;
+   states[i].vx+=-(states[i].x-states[i].sx*scatter)*SPRING;
+   states[i].vy+=-(states[i].y-states[i].sy*scatter)*SPRING;
+   states[i].vx*=DAMP; states[i].vy*=DAMP;
    states[i].x+=states[i].vx; states[i].y+=states[i].vy;
    const rot=states[i].sr*scatter;
    letter.style.transform=rot?`translate(${states[i].x}px,${states[i].y}px) rotate(${rot.toFixed(2)}deg)`:`translate(${states[i].x}px,${states[i].y}px)`;
