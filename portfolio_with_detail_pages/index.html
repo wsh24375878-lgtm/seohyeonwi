@@ -1,112 +1,88 @@
 <!DOCTYPE html>
-<html lang="ko">
+<html lang="ko" class="intro-pending">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SEOHYEON WI™ — Portfolio</title>
+<title>3D — SEOHYEON WI™</title>
 <style>
-  * { box-sizing: border-box; }
-  html, body {
-    margin: 0;
-    width: 100%;
-    height: 100%;
-    overflow: hidden;
-    background: #fff;
-    color: #000;
-    font-family: Arial, Helvetica, sans-serif;
-  }
+  :root { --pad: 24px; --font: Arial, Helvetica, sans-serif; }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { height: 100%; overflow: hidden; background: #fff; color: #050505; }
+  body { font-family: var(--font); font-weight: 400; -webkit-font-smoothing: antialiased; user-select: none; -webkit-user-select: none; }
+  a { color: inherit; text-decoration: none; }
+  .muted { color: #8c8c8c; }
 
-  button, a { font: inherit; color: inherit; }
+  /* ---------- 3D object ---------- */
+  #app { position: fixed; inset: 0; z-index: 0; filter: contrast(1.22); }
+  #app canvas { display: block; }
+  .veil { position: fixed; inset: 0; z-index: 1; background: #fff; pointer-events: none; }
 
-  /* Main stage — rotating ring (same interaction as the Fashion page) */
-  .stage {
-    position: absolute;
-    inset: 0;
-    overflow: hidden;
-    perspective-origin: 50% 50%;
-    touch-action: none;
-    user-select: none;
-    -webkit-user-select: none;
-  }
-  .stage.is-grabbing, .stage.is-grabbing * { cursor: grabbing !important; }
+  /* ---------- left-middle text (same 15px type as the main page) ---------- */
+  .meta, .work-meta { position: fixed; z-index: 2; left: var(--pad); top: 50%; transform: translateY(-50%); font-size: 15px; line-height: 1.3; pointer-events: none; transition: opacity .18s ease; }
+  .work-meta { opacity: 0; font-variant-numeric: tabular-nums; }
+  .work-meta a { pointer-events: auto; transition: color .2s ease; }
+  .work-meta a:hover { color: #050505; }
+  body.work-open .work-meta { opacity: 1; }
+  body.work-open .meta { opacity: 0; }
+  body:not(.playing) .work-meta a { pointer-events: none; }
 
-  .scene, .ring-outer, .ring-inner {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    width: 0;
-    height: 0;
-    transform-style: preserve-3d;
-  }
+  /* ---------- project strip ---------- */
+  .carousel { position: fixed; left: 50%; bottom: var(--pad); z-index: 3; transform: translateX(-20px); display: flex; align-items: flex-end; pointer-events: auto; cursor: pointer; }
+  .carousel .thumb { position: relative; width: 40px; height: 55px; border: 1px solid transparent; border-radius: 2px; overflow: hidden; background: #e5e5e5; background-clip: padding-box; flex: none; transform-origin: center bottom; }
+  .carousel .thumb img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; transform: scale(1.4); pointer-events: none; -webkit-user-drag: none; }
+  .tile-num, .tile-letter, .tile-work { position: absolute; z-index: 1; pointer-events: none; font-size: 9px; line-height: 1; color: #050505; font-variant-numeric: tabular-nums; }
+  .tile-num { top: 4px; right: 3px; transform-origin: top right; }
+  .tile-letter { bottom: 4px; left: 3px; transform-origin: bottom left; }
+  .tile-work { top: 4px; left: 3px; transform-origin: top left; transition: opacity .18s ease; }
+  #playCarousel .tile-work { display: none; }
+  @media (hover: hover) { #carousel:hover .tile-work { opacity: 0; } }
+  .carousel-label { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(var(--pad) + 70px); font-size: 15px; line-height: 1; white-space: nowrap; color: #fff; mix-blend-mode: difference; z-index: 5; opacity: 0; transition: opacity .18s ease; pointer-events: none; }
+  @media (hover: hover) { #carousel:hover + .carousel-label { opacity: 1; } }
 
-  .ring-item, .hero {
-    position: absolute;
-    top: 0;
-    left: 0;
-    opacity: 0;
-    will-change: transform, opacity;
-  }
-  .ring-item { pointer-events: none; }
-  .ring-item img, .hero img {
-    display: block;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    pointer-events: none;
-    -webkit-user-drag: none;
-  }
-  .hero { cursor: pointer; }
+  #playCarousel { left: 0; transform: none; pointer-events: none; transform-origin: center center; }
 
-  /* Bottom project control */
-  .bottom {
-    position: fixed;
-    z-index: 100;
-    left: 50%;
-    bottom: 24px;
-    transform: translateX(-50%);
-    display: flex;
-    gap: 14px;
-    align-items: baseline;
-    font-size: 15px;
-    line-height: 1;
-    color: #050505;
-    white-space: nowrap;
-    transition: opacity .15s ease-in-out;
-  }
-  .bottom.is-out { opacity: 0; }
+  /* ---------- full-height artwork ---------- */
+  .work-bg { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 1; height: 100vh; aspect-ratio: var(--work-ar, 4 / 5); background-size: cover; background-position: center; opacity: 0; transition: opacity .3s ease, filter .3s ease; pointer-events: none; }
+  .work-bg.show { opacity: 1; }
+  .work-bg.entering { animation: workUnblur .3s ease; }
+  .work-bg.leaving { filter: blur(22px); }
+  @keyframes workUnblur { 0% { filter: blur(22px); } to { filter: blur(0); } }
+  body.playing .work-bg.show { pointer-events: auto; cursor: pointer; }
+  body.dragging .work-bg { transition: none; }
 
-  .bottom button {
-    border: 0;
-    background: transparent;
-    color: #050505;
-    padding: 0;
-    font-size: inherit;
-    line-height: inherit;
-    cursor: pointer;
-  }
+  .playhead { position: fixed; left: 50%; bottom: var(--pad); transform: translateX(-50%); width: 2px; height: 55px; background: #050505; border-radius: 2px; z-index: 6; pointer-events: none; }
+  .minimise { position: fixed; right: var(--pad); top: 50%; transform: translateY(-50%); font-size: 15px; line-height: 1.3; cursor: pointer; z-index: 6; pointer-events: none; }
+  body.playing .minimise { pointer-events: auto; }
 
-  .bottom a {
-    text-decoration: none;
-    color: #8c8c8c;
-    transition: color .2s ease;
-  }
-  .bottom a:hover { color: #050505; }
+  #app, #carousel, .meta { opacity: 1; transition: opacity .3s ease .3s; }
+  body.playing #app, body.playing #carousel, body.playing .meta { opacity: 0; pointer-events: none; transition: opacity .3s ease 0s; }
+  .playhead, .minimise, #playCarousel { opacity: 0; transition: opacity .3s ease 0s; }
+  body.playing .playhead, body.playing .minimise, body.playing #playCarousel { opacity: 1; transition: opacity .3s ease .3s; }
+  body.playing .minimise { transition: opacity .18s ease; }
+  @media (hover: hover) { body.playing .minimise:hover { opacity: .5; } }
+  body.playing #playCarousel { transition: opacity .7s cubic-bezier(.33,0,.2,1) .3s; pointer-events: auto; cursor: ew-resize; touch-action: none; }
+  body.morphing #playCarousel { opacity: 1; transition: none; }
+  body.playing .work-meta { opacity: 1; }
+  body.playing.idle #playCarousel, body.playing.idle .playhead { opacity: 0; }
+  html.intro-pending #carousel { opacity: 0; pointer-events: none; }
+  body.intro-spinning #carousel { opacity: 1; pointer-events: none; transition: none; }
 
-  /* Small helper */
-  .hint {
-    position: fixed;
-    z-index: 90;
-    left: 50%;
-    bottom: 44px;
-    transform: translateX(-50%);
-    font-size: 9px;
-    opacity: 0;
-    transition: opacity .4s ease;
-    pointer-events: none;
-  }
+  .media-stack, .mobile-work { display: none; }
 
+  /* ---------- phones: scrolling layout ---------- */
+  /* ---------- phones: object on top, then the images in a scrolling column ---------- */
   @media (max-width: 700px) {
-    .bottom { bottom: 18px; font-size: 12px; gap: 10px; }
+    :root { --pad: 14px; }
+    html, body { height: auto; overflow-y: auto; overflow-x: hidden; }
+    #app { position: relative; inset: auto; width: 100%; aspect-ratio: 1 / 1; margin-top: 70px; }
+    .veil { position: absolute; }
+    .meta, .carousel, .carousel-label, .playhead, .minimise, .work-bg, .work-meta { display: none !important; }
+    .media-stack { display: block; padding: 32px 14px 40px; }
+    .media-item { display: block; position: relative; overflow: hidden; background: #e5e5e5; }
+    .media-item + .media-item { margin-top: 14px; }
+    .media-item img { display: block; width: 100%; height: auto; }
+    .mobile-work { display: block; position: fixed; left: 14px; bottom: 18px; font-size: 12px; line-height: 1.3; color: #fff; mix-blend-mode: difference; z-index: 5; pointer-events: none; opacity: 0; }
+    .mobile-work.show { opacity: 1; transition: opacity .2s ease; }
   }
 </style>
 <link rel="stylesheet" href="../site-nav.css">
@@ -129,339 +105,596 @@
   </nav>
 </header>
 
-<main class="stage" id="stage" aria-label="Rotating 3D gallery. Drag, scroll, or use arrow keys to rotate.">
-  <div class="scene">
-    <a class="hero" id="hero" href="project-detail.html?project=01" aria-label="View case"><img id="heroImg" alt=""></a>
-    <div class="ring-outer" id="ringOuter">
-      <div class="ring-inner" id="ringInner"></div>
-    </div>
-  </div>
-</main>
+<div id="app"></div>
+<div class="veil" id="veil"></div>
 
-<div class="hint" id="hint">DRAG TO ROTATE</div>
-
-<div class="bottom" id="bottom">
-  <button id="projectName">Project 01</button>
-  <a href="project-detail.html?project=01" id="viewCase">View Case →</a>
+<div class="meta">
+  <p>3D</p>
+  <p class="muted" id="idleCount"></p>
+</div>
+<div class="work-meta" aria-live="polite">
+  <p class="muted">Selected work</p>
+  <p id="workName"></p>
+  <a class="muted" id="workCase" href="project-detail.html?project=01">View Case →</a>
 </div>
 
+<div class="media-stack" id="mediaStack"></div>
+
+<!-- full-height artwork behind the content -->
+<div class="work-bg" id="workBg" aria-hidden="true"></div>
+<div class="playhead" aria-hidden="true"></div>
+<div class="minimise" id="minimise" role="button" tabindex="0">Close</div>
+<div class="carousel" id="playCarousel" aria-hidden="true"></div>
+
+<div class="carousel" id="carousel" role="button" tabindex="0" aria-label="Play all work"></div>
+<div class="carousel-label">Click to play</div>
+
+<div class="mobile-work" id="mobileWork"><div id="mobileWorkName"></div></div>
+<div class="cursor" aria-hidden="true"></div>
+
 <script>
-  /*
-    3D 프로젝트 목록 — 실제 이미지를 넣으려면 src 에 경로를 적어주세요.
-    (예: src: '../images/3d/01.jpg')  비워두면 회색 임시 이미지가 표시됩니다.
-  */
-  const projects = [
-    { name: 'Project 01', src: '' },
-    { name: 'Project 02', src: '' },
-    { name: 'Project 03', src: '' },
-    { name: 'Project 04', src: '' },
-    { name: 'Project 05', src: '' },
-    { name: 'Project 06', src: '' },
-    { name: 'Project 07', src: '' },
-    { name: 'Project 08', src: '' },
-  ];
-  const detailUrl = i => `project-detail.html?project=${String(i + 1).padStart(2, '0')}`;
-
-  (() => {
-    const CAMERA_Z = 8;
-    const FOV = 45;
-    const VIEW_UNITS = 2 * CAMERA_Z * Math.tan((FOV / 2) * Math.PI / 180);
-    const HERO_H = 3.1;
-    const ITEM_H = 0.68;
-    const INTRO_SCALE = 2.5;
-
-    const stage = document.getElementById('stage');
-    const ringOuter = document.getElementById('ringOuter');
-    const ringInner = document.getElementById('ringInner');
-    const hero = document.getElementById('hero');
-    const heroImg = document.getElementById('heroImg');
-    const bottom = document.getElementById('bottom');
-    const projectName = document.getElementById('projectName');
-    const viewCase = document.getElementById('viewCase');
-    const hint = document.getElementById('hint');
-    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-    const count = projects.length;
-    const step = Math.PI * 2 / count;
-
-    let unit = 1, radius = 3, items = [];
-    let heroState = { o: 0, aspect: 2 / 3 };
-    let current = 0, target = 0;
-    let tiltX = 0, tiltXTarget = 0, tiltY = 0, tiltYTarget = 0;
-    let intro = true, activeIndex = -1, keyReady = true;
-
-    /* gray placeholder in the same style as the old 3D cards */
-    const GRAYS = ['#e8e8e8', '#e3e3e3', '#ededed', '#e7e7e7'];
-    function placeholder(i) {
-      const w = 540, h = 810;
-      const c = document.createElement('canvas');
-      c.width = w; c.height = h;
-      const g = c.getContext('2d');
-      g.fillStyle = i % 4 === 3 ? GRAYS[3] : i % 3 === 2 ? GRAYS[2] : i % 2 === 1 ? GRAYS[1] : GRAYS[0];
-      g.fillRect(0, 0, w, h);
-      g.globalAlpha = .24;
-      g.strokeStyle = '#fff'; g.lineWidth = 3;
-      g.beginPath(); g.moveTo(w * .35, 0); g.lineTo(w, h * .65); g.stroke();
-      g.fillStyle = 'rgba(0,0,0,.08)';
-      g.beginPath(); g.moveTo(0, h * .6); g.lineTo(w * .55, h); g.lineTo(w * .4, h); g.lineTo(0, h * .75); g.fill();
-      g.globalAlpha = 1;
-      g.strokeStyle = '#ededed'; g.lineWidth = 2; g.strokeRect(1, 1, w - 2, h - 2);
-      g.fillStyle = '#000';
-      g.font = '20px Arial, Helvetica, sans-serif';
-      g.fillText(String(i + 1).padStart(2, '0'), 20, 40);
-      g.font = '22px Arial, Helvetica, sans-serif';
-      g.fillText(projects[i].name, 20, h - 22);
-      return c.toDataURL('image/png');
-    }
-
-    function loadImage(p, i) {
-      return new Promise(resolve => {
-        const img = new Image();
-        img.onload = () => resolve({ src: img.src, aspect: img.naturalWidth / img.naturalHeight || 2 / 3 });
-        img.onerror = () => { img.onerror = null; img.src = placeholder(i); };
-        img.src = p.src || placeholder(i);
-      });
-    }
-
-    /* tiny tween engine */
-    const tweens = [];
-    const easeOut = t => 1 - (1 - t) * (1 - t);
-    function tween(obj, to, { duration = 1, delay = 0 } = {}) {
-      tweens.push({ obj, to, from: null, duration, start: performance.now() + delay * 1000 });
-    }
-    function runTweens(now) {
-      for (let i = tweens.length - 1; i >= 0; i--) {
-        const t = tweens[i];
-        if (now < t.start) continue;
-        if (!t.from) { t.from = {}; for (const k in t.to) t.from[k] = t.obj[k]; }
-        const p = Math.min(1, (now - t.start) / (t.duration * 1000));
-        const e = easeOut(p);
-        for (const k in t.to) t.obj[k] = t.from[k] + (t.to[k] - t.from[k]) * e;
-        if (p >= 1) tweens.splice(i, 1);
-      }
-    }
-
-    function layout() {
-      unit = window.innerHeight / VIEW_UNITS;
-      radius = window.innerWidth <= 768 ? 1.8 : 3;
-      stage.style.perspective = `${CAMERA_Z * unit}px`;
-      items.forEach(item => {
-        item.el.style.width = `${item.w * unit}px`;
-        item.el.style.height = `${item.h * unit}px`;
-        item.el.style.marginLeft = `${-item.w * unit / 2}px`;
-        item.el.style.marginTop = `${-item.h * unit / 2}px`;
-      });
-      sizeHero();
-      if (!intro) items.forEach((item, i) => {
-        item.x = Math.sin(step * i) * radius;
-        item.z = Math.cos(step * i) * radius;
-      });
-    }
-
-    function sizeHero() {
-      let h = HERO_H * unit, w = HERO_H * heroState.aspect * unit;
-      // wide images shrink so they never overflow a phone screen
-      const maxW = innerWidth * (innerWidth <= 700 ? 0.86 : 0.9);
-      if (w > maxW) { h *= maxW / w; w = maxW; }
-      hero.style.width = `${w}px`;
-      hero.style.height = `${h}px`;
-      hero.style.marginLeft = `${-w / 2}px`;
-      hero.style.marginTop = `${-h / 2}px`;
-    }
-
-    function setActive(i) {
-      activeIndex = i;
-      heroImg.src = items[i].src;
-      heroImg.alt = projects[i].name;
-      heroState.aspect = items[i].aspect;
-      sizeHero();
-      hero.href = detailUrl(i);
-      bottom.classList.add('is-out');
-      clearTimeout(setActive.timer);
-      setActive.timer = setTimeout(() => {
-        projectName.textContent = projects[i].name;
-        viewCase.href = detailUrl(i);
-        bottom.classList.remove('is-out');
-      }, 150);
-    }
-
-    function nearestToFront() {
-      let best = 0, min = Infinity;
-      for (let i = 0; i < count; i++) {
-        let a = ((current + step * i) % (Math.PI * 2) + Math.PI * 2) % (Math.PI * 2);
-        if (a > Math.PI) a = Math.PI * 2 - a;
-        if (a < min) { min = a; best = i; }
-      }
-      return best;
-    }
-
-    function frame(now) {
-      runTweens(now);
-      if (!intro) {
-        current += (target - current) * 0.08;
-        tiltX += (tiltXTarget - tiltX) * 0.08;
-        tiltY += (tiltYTarget - tiltY) * 0.05;
-      }
-      ringOuter.style.transform = `rotateX(${-tiltX}rad) rotateY(${tiltY}rad)`;
-      ringInner.style.transform = `rotateY(${current}rad)`;
-      for (const item of items) {
-        const facing = Math.atan2(item.x, item.z);
-        item.el.style.transform =
-          `translate3d(${item.x * unit}px, 0, ${item.z * unit}px) rotateY(${facing}rad) scale(${item.s})`;
-        item.el.style.opacity = item.o;
-      }
-      hero.style.opacity = heroState.o;
-      if (!intro) {
-        const front = nearestToFront();
-        if (front !== activeIndex) setActive(front);
-      }
-      requestAnimationFrame(frame);
-    }
-
-    function playIntro() {
-      const n = items.length;
-      items.forEach((item, i) => tween(item, { o: 1 }, { duration: .8, delay: .8 * i / (n - 1) }));
-      const spread = 1.4;
-      items.forEach((item, i) => {
-        tween(item, { x: Math.sin(step * i) * radius, z: Math.cos(step * i) * radius },
-          { duration: 1.55, delay: spread + .04 * i });
-        tween(item, { s: 1 }, { duration: 1, delay: spread + .04 * i });
-      });
-      const spin = { r: 0 };
-      tween(spin, { r: -(step * 10) }, { duration: 3, delay: spread });
-      (function follow() {
-        current = spin.r;
-        if (intro) requestAnimationFrame(follow);
-      })();
-      tween(heroState, { o: 1 }, { duration: .5, delay: spread + .9 });
-      setTimeout(() => {
-        intro = false;
-        current = target = spin.r;
-        hint.style.opacity = 1;
-        setTimeout(() => { hint.style.opacity = 0; }, 2500);
-      }, (spread + 3) * 1000 + 30);
-    }
-
-    function skipIntro() {
-      items.forEach((item, i) => {
-        item.x = Math.sin(step * i) * radius;
-        item.z = Math.cos(step * i) * radius;
-        item.s = 1; item.o = 1;
-      });
-      heroState.o = 1;
-      intro = false;
-    }
-
-    /* interaction */
-    let dragging = false, dragStartX = 0, dragStartTarget = 0, dragDelta = 0;
-    const dragSpeed = () => 5 / window.innerWidth;
-    const snap = () => { target = Math.round(target / step) * step; };
-
-    window.addEventListener('wheel', e => {
-      e.preventDefault();
-      if (!intro) target += e.deltaY * 0.003;
-    }, { passive: false });
-
-    window.addEventListener('keydown', e => {
-      if (intro) return;
-      if (e.key === 'Enter' && document.activeElement === document.body) {
-        location.href = detailUrl(activeIndex);
-        return;
-      }
-      if ((e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') || !keyReady) return;
-      e.preventDefault();
-      keyReady = false;
-      target = (Math.round(target / step) + (e.key === 'ArrowRight' ? 1 : -1)) * step;
-      setTimeout(() => { keyReady = true; }, 700);
-    });
-
-    window.addEventListener('mousemove', e => {
-      if (!reduceMotion) {
-        tiltXTarget = (e.clientY / window.innerHeight - .5) * .24;
-        tiltYTarget = (e.clientX / window.innerWidth - .5) * .12;
-      }
-      if (!dragging) return;
-      dragDelta = e.clientX - dragStartX;
-      target = dragStartTarget + dragDelta * dragSpeed();
-    });
-
-    stage.addEventListener('mousedown', e => {
-      if (intro || e.button !== 0) return;
-      e.preventDefault();
-      dragging = true;
-      dragStartX = e.clientX;
-      dragStartTarget = target;
-      dragDelta = 0;
-      stage.classList.add('is-grabbing');
-    });
-
-    window.addEventListener('mouseup', () => {
-      if (!dragging) return;
-      dragging = false;
-      stage.classList.remove('is-grabbing');
-      snap();
-    });
-
-    stage.addEventListener('touchstart', e => {
-      if (intro) return;
-      dragging = true;
-      dragStartX = e.touches[0].clientX;
-      dragStartTarget = target;
-      dragDelta = 0;
-    }, { passive: true });
-
-    stage.addEventListener('touchmove', e => {
-      e.preventDefault();
-      if (!dragging) return;
-      const t = e.touches[0];
-      dragDelta = t.clientX - dragStartX;
-      target = dragStartTarget + dragDelta * dragSpeed();
-      // the ring tilts a little toward the finger, like it does for the mouse
-      if (!reduceMotion) {
-        tiltXTarget = (t.clientY / innerHeight - .5) * .24;
-        tiltYTarget = (t.clientX / innerWidth - .5) * .12;
-      }
-    }, { passive: false });
-
-    stage.addEventListener('touchend', () => {
-      tiltXTarget = tiltYTarget = 0;
-      if (!dragging) return;
-      dragging = false;
-      snap();
-    });
-
-    // a drag must not count as a click on the centre image
-    hero.addEventListener('click', e => {
-      if (intro || Math.abs(dragDelta) > 5) e.preventDefault();
-    });
-    projectName.addEventListener('click', () => { if (activeIndex >= 0) location.href = detailUrl(activeIndex); });
-
-    window.addEventListener('resize', layout);
-
-    /* boot */
-    Promise.all(projects.map(loadImage)).then(loaded => {
-      items = loaded.map((data, i) => {
-        const el = document.createElement('figure');
-        el.className = 'ring-item';
-        el.style.margin = '0';
-        const img = document.createElement('img');
-        img.src = data.src;
-        img.alt = '';
-        el.appendChild(img);
-        ringInner.appendChild(el);
-        return { el, src: data.src, aspect: data.aspect, w: ITEM_H * data.aspect, h: ITEM_H, x: 0, z: 3, s: INTRO_SCALE, o: 0 };
-      });
-      layout();
-      items.forEach((item, i) => { item.z = radius + i * 0.01; });
-      setActive(0);
-      requestAnimationFrame(frame);
-      if (reduceMotion) skipIntro();
-      else setTimeout(playIntro, 200);
-    });
-  })();
-
+/*
+  3D 프로젝트 목록 — 프로젝트마다 이미지를 여러 장 넣을 수 있어요.
+  images 에 경로를 적으면 실제 이미지가 쓰이고 (예: '../images/3d/01-1.jpg'),
+  비워두면('') 회색 임시 이미지가 표시됩니다.
+*/
+const PROJECTS = [
+  { title: 'Project 01', images: ['', '', '', ''] },
+  { title: 'Project 02', images: ['', '', ''] },
+  { title: 'Project 03', images: ['', '', ''] },
+  { title: 'Project 04', images: ['', '', '', '', ''] },
+  { title: 'Project 05', images: ['', '', ''] },
+  { title: 'Project 06', images: ['', ''] },
+  { title: 'Project 07', images: ['', '', '', ''] },
+  { title: 'Project 08', images: ['', '', ''] },
+];
 </script>
 
+<!-- ======================= 3D object ======================= -->
+<script type="importmap">
+{ "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.165.0/build/three.module.js" } }
+</script>
+<script type="module">
+import * as THREE from 'three';
+
+const TILT_Y = THREE.MathUtils.degToRad(42), TILT_X = THREE.MathUtils.degToRad(28);
+const FOLLOW = .12, ENV_SPIN = .15, BOB_AMP = .07, BOB_FREQ = .9, INTRO = .8, INTRO_TILT = .5;
+
+const host = document.getElementById('app');
+const veil = document.getElementById('veil');
+let visible = true;
+if ('IntersectionObserver' in window) new IntersectionObserver(e => { visible = e[0].isIntersecting; }).observe(host);
+
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(35, innerWidth / innerHeight, .1, 100);
+camera.position.set(0, 0, 12.6);
+const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.setClearColor(0x000000, 0);
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.05;
+host.appendChild(renderer.domElement);
+function resize() {
+  const w = host.clientWidth || innerWidth, h = host.clientHeight || innerHeight;
+  renderer.setSize(w, h);
+  camera.aspect = w / h;
+  camera.updateProjectionMatrix();
+}
+resize();
+
+/* soft grey studio environment for the chrome reflections */
+function studio(w = 512, h = 256) {
+  const c = document.createElement('canvas'); c.width = w; c.height = h;
+  const g = c.getContext('2d');
+  let seed = 20000;
+  const rnd = () => (seed = (seed * 1664525 + 1013904223) >>> 0) / 4294967296;
+  g.fillStyle = '#5c5c5c'; g.fillRect(0, 0, w, h);
+  const blob = (x, y, r, v, a) => {
+    for (const off of [-w, 0, w]) {
+      const gr = g.createRadialGradient(x + off, y, 0, x + off, y, r);
+      gr.addColorStop(0, `rgba(${v},${v},${v},${a})`); gr.addColorStop(1, `rgba(${v},${v},${v},0)`);
+      g.fillStyle = gr; g.fillRect(x + off - r, y - r, r * 2, r * 2);
+    }
+  };
+  for (let i = 0; i < 24; i++) blob(rnd() * w, rnd() * h, (.16 + rnd() * .32) * w, Math.round(255 * Math.pow(rnd(), 1.1)), .5 + rnd() * .3);
+  for (let i = 0; i < 4; i++) blob(rnd() * w, (.36 + rnd() * .28) * h, (.15 + rnd() * .12) * w, 34 + Math.floor(rnd() * 22), .5);
+  for (let i = 0; i < 4; i++) blob(rnd() * w, (rnd() < .5 ? .02 + rnd() * .22 : .76 + rnd() * .22) * h, (.1 + rnd() * .1) * w, 0, 1);
+  for (let i = 0; i < 4; i++) blob(rnd() * w, rnd() * h, (.11 + rnd() * .08) * w, 255, .7);
+  for (let i = 0; i < 18; i++) blob(rnd() * w, rnd() * h, (.03 + rnd() * .08) * w, 255, .95);
+  const t = new THREE.CanvasTexture(c);
+  t.mapping = THREE.EquirectangularReflectionMapping;
+  t.colorSpace = THREE.SRGBColorSpace;
+  return t;
+}
+const pmrem = new THREE.PMREMGenerator(renderer);
+const envTex = studio();
+scene.environment = pmrem.fromEquirectangular(envTex).texture;
+envTex.dispose(); pmrem.dispose();
+
+/* chrome material with a click ripple */
+const material = new THREE.MeshStandardMaterial({ color: 0xffffff, metalness: 1, roughness: 0, envMapIntensity: 1.2 });
+material.onBeforeCompile = shader => {
+  Object.assign(shader.uniforms, {
+    uRipCenter: { value: new THREE.Vector3() }, uRipTime: { value: -1 }, uRipSpeed: { value: 1.7 },
+    uRipWavelength: { value: .22 }, uRipWidth: { value: .55 }, uRipAmp: { value: .05 },
+    uRipNormal: { value: 1.3 }, uRipDecay: { value: 1.7 },
+  });
+  material.userData.shader = shader;
+  shader.vertexShader = `
+    uniform vec3 uRipCenter;
+    uniform float uRipTime, uRipSpeed, uRipWavelength, uRipWidth, uRipAmp, uRipNormal, uRipDecay;
+    float ripEnv(float d, float r) { return exp(-pow((d - r) / uRipWidth, 2.0)) * exp(-uRipTime * uRipDecay); }
+  ` + shader.vertexShader;
+  shader.vertexShader = shader.vertexShader.replace('#include <beginnormal_vertex>', `#include <beginnormal_vertex>
+    if (uRipTime >= 0.0) {
+      vec3 rDir = position - uRipCenter; float d = length(rDir);
+      rDir = d > 1e-4 ? rDir / d : vec3(0.0);
+      float r = uRipTime * uRipSpeed; float k = 6.2831853 / uRipWavelength;
+      float slope = cos((d - r) * k) * ripEnv(d, r) * k;
+      objectNormal = normalize(objectNormal - rDir * slope * uRipNormal * 0.05);
+    }`);
+  shader.vertexShader = shader.vertexShader.replace('#include <begin_vertex>', `#include <begin_vertex>
+    if (uRipTime >= 0.0) {
+      float d2 = distance(position, uRipCenter); float r2 = uRipTime * uRipSpeed;
+      float wave = sin((d2 - r2) * (6.2831853 / uRipWavelength)) * ripEnv(d2, r2);
+      transformed += normal * wave * uRipAmp;
+    }`);
+};
+
+/* the object: a soft, pebble-like sculpture (smooth, indexed sphere pushed by layered waves) */
+const geo = new THREE.SphereGeometry(1, 256, 192);
+const p = geo.attributes.position, v = new THREE.Vector3();
+for (let i = 0; i < p.count; i++) {
+  v.fromBufferAttribute(p, i);
+  const n = v.clone().normalize();
+  const bump = 1
+    + .16 * Math.sin(2.1 * n.x + 1.3) * Math.sin(2.6 * n.y + .4)
+    + .10 * Math.sin(3.4 * n.z + 2.0 * n.y + .7)
+    + .06 * Math.sin(5.2 * n.x - 3.1 * n.z + 1.9)
+    - .14 * Math.exp(-Math.pow((n.y - .15) * 3.2, 2)) * Math.max(0, n.z); // a soft waist on the front
+  v.copy(n).multiplyScalar(bump);
+  v.y *= 1.28;
+  p.setXYZ(i, v.x, v.y, v.z);
+}
+geo.computeVertexNormals();
+geo.computeBoundingBox();
+const size = new THREE.Vector3(); geo.boundingBox.getSize(size);
+const center = new THREE.Vector3(); geo.boundingBox.getCenter(center);
+geo.translate(-center.x, -center.y, -center.z);
+
+const holder = new THREE.Group();
+scene.add(holder);
+const mesh = new THREE.Mesh(geo, material);
+const baseScale = 2.6 * .96 / size.y;
+holder.add(mesh);
+
+let mobileScale = innerWidth <= 640 ? 1.4 : 1;
+const applyScale = (k = 1) => holder.scale.setScalar(baseScale * mobileScale * k);
+applyScale();
+addEventListener('resize', () => { resize(); mobileScale = innerWidth <= 640 ? 1.4 : 1; applyScale(); });
+
+/* pointer follow */
+let tx = 0, ty = 0, rx = 0, ry = 0;
+addEventListener('pointermove', e => {
+  if (innerWidth <= 640) return;
+  tx = (e.clientX / innerWidth * 2 - 1) * TILT_Y;
+  ty = (e.clientY / innerHeight * 2 - 1) * TILT_X;
+});
+
+/* click: centre → ripple, sides → full spin */
+const ray = new THREE.Raycaster(), ndc = new THREE.Vector2();
+const RIP_TOTAL = 2, SPIN_DUR = 1.15, SIDE = .5;
+const pressIn = (RIP_TOTAL - .05) / 2, pressOut = pressIn + .05, pressEnd = pressIn + pressOut;
+let ripT = -1, spinT = -1, spinDir = 1, introDone = false;
+const easeInOutCubic = t => t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+const easeOutCubic = t => 1 - Math.pow(1 - t, 3);
+const easeSine = t => -(Math.cos(Math.PI * t) - 1) / 2;
+
+renderer.domElement.addEventListener('pointerdown', e => {
+  if (!introDone || ripT >= 0 || spinT >= 0) return;
+  const r = renderer.domElement.getBoundingClientRect();
+  ndc.set((e.clientX - r.left) / r.width * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1);
+  ray.setFromCamera(ndc, camera);
+  const hit = ray.intersectObject(mesh)[0];
+  if (!hit) return;
+  if (Math.abs(hit.point.x) >= SIDE) { spinT = 0; spinDir = hit.point.x >= 0 ? 1 : -1; return; }
+  const sh = material.userData.shader;
+  if (sh) { sh.uniforms.uRipCenter.value.copy(mesh.worldToLocal(hit.point.clone())); sh.uniforms.uRipTime.value = 0; }
+  ripT = 0;
+});
+
+const clock = new THREE.Clock();
+let time = 0, introT = 0;
+function tick() {
+  const dt = Math.min(clock.getDelta(), .05);
+  time += dt;
+
+  let spin = 0;
+  if (spinT >= 0) {
+    spinT += dt;
+    const k = Math.min(spinT / SPIN_DUR, 1);
+    spin = spinDir * Math.PI * 2 * easeInOutCubic(k);
+    if (k >= 1) spinT = -1;
+  }
+
+  introT += dt;
+  const ik = Math.min(introT / INTRO, 1);
+  if (!introDone) {
+    veil.style.opacity = String(1 - ik);
+    if (ik >= 1) {
+      veil.style.display = 'none';
+      introDone = true;
+      window.__objectIntroDone = true;
+      dispatchEvent(new Event('objectintrodone'));
+    }
+  } else {
+    rx += (tx - rx) * FOLLOW;
+    ry += (ty - ry) * FOLLOW;
+  }
+  holder.rotation.y = rx + spin;
+  holder.rotation.x = ry - (1 - easeOutCubic(ik)) * INTRO_TILT;
+  holder.position.y = Math.sin(time * BOB_FREQ) * BOB_AMP;
+
+  let press = 0;
+  if (ripT >= 0) {
+    if (ripT < pressIn) press = easeSine(ripT / pressIn);
+    else if (ripT < pressEnd) press = 1 - easeSine((ripT - pressIn) / pressOut);
+    ripT += dt;
+    const sh = material.userData.shader;
+    if (ripT > RIP_TOTAL) { ripT = -1; if (sh) sh.uniforms.uRipTime.value = -1; }
+    else if (sh) sh.uniforms.uRipTime.value = ripT;
+  }
+  applyScale(1 - .05 * press);
+
+  scene.environmentRotation.y += ENV_SPIN * dt;
+  if ((!document.body.classList.contains('playing') && visible) || !introDone) renderer.render(scene, camera);
+  requestAnimationFrame(tick);
+}
+tick();
+</script>
+
+<!-- ======================= strip, artwork, text ======================= -->
+<script>
+(() => {
+  const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ---------- items ---------- */
+  const ITEMS = [];
+  PROJECTS.forEach((p, pi) => p.images.forEach((src, ii) => ITEMS.push({
+    title: p.title, project: pi, idx: ii + 1, total: p.images.length, src,
+    letter: String.fromCharCode(65 + pi), num: String(ii + 1).padStart(2, '0'),
+  })));
+  const label = it => `${it.title} ${it.idx}/${it.total}`;
+  const workCase = document.getElementById('workCase');
+  const setCase = it => { workCase.href = `project-detail.html?project=${String(it.project + 1).padStart(2, '0')}`; };
+  const detailUrl = it => `project-detail.html?project=${String(it.project + 1).padStart(2, '0')}`;
+
+  const ARS = ['4 / 5', '1 / 1', '3 / 2', '4 / 5', '2 / 3'];
+  function placeholder(it, k) {
+    const ar = ARS[(it.project + it.idx) % ARS.length];
+    const [aw, ah] = ar.split('/').map(Number);
+    const h = 1000, w = Math.round(h * aw / ah);
+    const c = document.createElement('canvas'); c.width = w; c.height = h;
+    const g = c.getContext('2d');
+    const tone = 214 + (it.project * 9 + it.idx * 5) % 30;
+    g.fillStyle = `rgb(${tone},${tone},${tone})`; g.fillRect(0, 0, w, h);
+    const cx = w * (.4 + (it.idx % 3) * .1), cy = h * .5, r = Math.min(w, h) * (.18 + (it.project % 4) * .035);
+    g.fillStyle = 'rgba(0,0,0,.09)'; g.beginPath(); g.ellipse(cx + r * .2, cy + r * 1.08, r * 1.1, r * .2, 0, 0, Math.PI * 2); g.fill();
+    const sh = g.createRadialGradient(cx - r * .35, cy - r * .4, r * .08, cx, cy, r * 1.15);
+    sh.addColorStop(0, '#fafafa'); sh.addColorStop(.55, '#b9b9b9'); sh.addColorStop(1, '#5f5f5f');
+    g.fillStyle = sh; g.beginPath();
+    const form = (it.project + it.idx) % 3;
+    if (form === 0) g.arc(cx, cy, r, 0, Math.PI * 2);
+    else if (form === 1 && g.roundRect) g.roundRect(cx - r, cy - r, r * 2, r * 2, r * .35);
+    else { g.arc(cx, cy, r, 0, Math.PI * 2); g.arc(cx, cy, r * .45, 0, Math.PI * 2, true); }
+    g.fill('evenodd');
+    return { url: c.toDataURL('image/jpeg', .85), ar };
+  }
+  function load(it, k) {
+    return new Promise(res => {
+      if (!it.src) return res(placeholder(it, k));
+      const im = new Image();
+      im.onload = () => res({ url: im.src, ar: `${im.naturalWidth} / ${im.naturalHeight}` });
+      im.onerror = () => res(placeholder(it, k));
+      im.src = it.src;
+    });
+  }
+
+  const carousel = document.getElementById('carousel');
+  const playCarousel = document.getElementById('playCarousel');
+  const workName = document.getElementById('workName');
+  const QT = 40, SPEED_S = 1.5, N = ITEMS.length, STRIP = N * QT, SPEED = QT / SPEED_S, EDGE = 24;
+
+  function makeThumb(it, i, first) {
+    const t = document.createElement('div');
+    t.className = 'thumb preview';
+    t.dataset.i = i;
+    t.innerHTML = `<img alt="" src="${it.url}">${first ? '<span class="tile-work">Work</span>' : ''}<span class="tile-letter">${it.letter}</span><span class="tile-num">${it.num}</span>`;
+    return t;
+  }
+
+  /* ---------- big artwork (two layers for cross-fades) ---------- */
+  const bgA = document.getElementById('workBg'), bgB = bgA.cloneNode(false);
+  bgB.id = 'workBgB'; bgA.after(bgB);
+  const layers = [bgA, bgB];
+  let front = 0, token = 0, shown = false;
+  function paint(url, ar, tk, crossfade) {
+    const go = () => {
+      if (tk !== token) return;
+      const el = crossfade ? layers[1 - front] : layers[front];
+      const first = !shown; shown = true;
+      if (ar) el.style.setProperty('--work-ar', ar);
+      el.style.backgroundImage = `url("${url}")`;
+      el.dataset.cur = url;
+      el.classList.remove('leaving', 'entering');
+      if (first) { void el.offsetWidth; el.classList.add('entering'); }
+      el.classList.add('show');
+      if (crossfade) { layers[front].classList.remove('show'); front = 1 - front; }
+    };
+    const im = new Image(); im.src = url;
+    (im.decode ? im.decode() : Promise.reject()).then(go).catch(go);
+  }
+  function openWork(it) {
+    workName.textContent = label(it); setCase(it);
+    document.body.classList.add('work-open');
+    const el = layers[front];
+    if (!(el.dataset.cur === it.url && el.classList.contains('show'))) paint(it.url, it.ar, ++token, false);
+  }
+  function closeWork() {
+    ++token; shown = false;
+    layers.forEach(l => { l.classList.remove('show', 'entering'); l.classList.add('leaving'); });
+    document.body.classList.remove('work-open');
+  }
+
+  /* ---------- drum projection (items squeeze toward the edges) ---------- */
+  const CURVE = 1.5;
+  let cache = { vc: -1 };
+  function curveFor(vc) {
+    if (cache.vc === vc) return cache;
+    const half = vc - EDGE, sinA = Math.sin(CURVE);
+    const r = Math.max(.05, CURVE * Math.cos(CURVE) / sinA);
+    return (cache = { vc, half, sinA, fit: half / (half + QT / 2 * r) });
+  }
+  function project(el, x, cx, cut) {
+    const { half, sinA, fit } = curveFor(cx);
+    let o = (x - cx) / half; o = Math.max(-1, Math.min(1, o));
+    const g = o * CURVE;
+    const dx = fit * half * Math.sin(g) / sinA - o * half;
+    const sx = Math.max(.05, fit * CURVE * Math.cos(g) / sinA);
+    let a = Math.min(1, (1 - Math.abs(o)) / .12);
+    if (cut != null && x < cut) a *= Math.max(0, 1 - (cut - x) / QT);
+    el.style.opacity = a < 1 ? a.toFixed(3) : '1';
+    el.style.transform = `translate(${dx.toFixed(1)}px, 0) scaleX(${sx.toFixed(3)})`;
+    const inv = `scaleX(${(1 / (fit * CURVE / sinA)).toFixed(4)})`;
+    for (let i = 0; i < el.children.length; i++) el.children[i].style.transform = inv;
+  }
+  function layoutAll(els, posOf, cut) {
+    const cx = innerWidth / 2, W = innerWidth;
+    for (let s = 0; s < els.length; s++) {
+      const x = posOf(s);
+      if (x >= EDGE && x <= W - EDGE) project(els[s], x, cx, cut);
+      else if (els[s].style.transform !== 'scaleX(0)') els[s].style.transform = 'scaleX(0)';
+    }
+  }
+
+  /* ---------- play mode (endless strip under the red playhead) ---------- */
+  let thumbs = [], playing = false, B = 0, cut = null, current = -1, hovered = null;
+  let dragging = false, dragX = 0, dragB = 0, sy = 1, syTarget = 1, raf = 0, lastT = 0, morphing = false;
+  let copies = 1, offset = 0, cloned = false;
+  const mod = (a, n) => ((a % n) + n) % n;
+  let centre = innerWidth / 2;
+  addEventListener('resize', () => { centre = innerWidth / 2; });
+
+  function buildClones() {
+    if (cloned) return; cloned = true;
+    copies = Math.max(1, Math.ceil((screen.width || 1920) / STRIP));
+    offset = copies * STRIP;
+    for (let c = 0; c < 2 * copies + 1; c++) thumbs.forEach(t => {
+      const k = t.cloneNode(true); k.classList.add('clone'); k.setAttribute('aria-hidden', 'true'); playCarousel.appendChild(k);
+    });
+  }
+  function layoutPlay() {
+    playCarousel.style.transform = `translate3d(${centre - 20 - offset - mod(B, STRIP)}px, 0, 0) scaleY(${sy.toFixed(4)})`;
+    if (document.body.classList.contains('idle')) return;
+    const x0 = centre - offset - mod(B, STRIP);
+    layoutAll(playCarousel.children, s => x0 + s * QT, cut);
+  }
+  function show(i) {
+    current = i;
+    const it = ITEMS[i];
+    document.body.classList.add('work-open');
+    workName.textContent = label(it); setCase(it);
+    const el = layers[front];
+    const visibleNow = el.classList.contains('show');
+    if (!(el.dataset.cur === it.url && visibleNow)) paint(it.url, it.ar, ++token, visibleNow);
+  }
+  function checkCurrent() {
+    const i = mod(Math.round(B / QT), N);
+    if (i !== current) show(i);
+  }
+  function loop(t) {
+    if (!playing) { raf = 0; return; }
+    const dt = lastT ? Math.max(0, Math.min((t - lastT) / 1000, .05)) : 0;
+    lastT = t;
+    sy += (syTarget - sy) * (1 - Math.exp(-dt * 12));
+    if (!dragging && !morphing && !reduceMotion) B += SPEED * dt;
+    if (!morphing) checkCurrent();
+    layoutPlay();
+    raf = requestAnimationFrame(loop);
+  }
+
+  let idleTimer = 0;
+  const armIdle = () => {
+    clearTimeout(idleTimer);
+    idleTimer = setTimeout(() => { if (playing) document.body.classList.add('idle'); }, 5000);
+  };
+  const wake = () => { if (!playing) return; document.body.classList.remove('idle'); armIdle(); };
+
+  function startPlay() {
+    if (playing || !N) return;
+    playing = true;
+    buildClones();
+    layers.forEach(l => l.classList.remove('leaving'));
+    centre = innerWidth / 2;
+    const i = hovered ? +hovered.dataset.i : 0;
+    B = 0; cut = centre; current = -1;
+    document.body.classList.add('morphing', 'playing');
+    layoutPlay();
+    show(i);
+    armIdle();
+    const target = i * QT, start = performance.now();
+    morphing = true;
+    const step = () => {
+      if (!playing) return;
+      const k = Math.max(0, Math.min(1, (performance.now() - start) / 1000));
+      const e = 1 - Math.pow(1 - k, 3);
+      B = target * e;
+      cut = centre * (1 - e);
+      layoutPlay();
+      if (k < 1) { requestAnimationFrame(step); return; }
+      cut = null; morphing = false;
+      document.body.classList.remove('morphing');
+      lastT = 0;
+      if (!raf) raf = requestAnimationFrame(loop);
+    };
+    requestAnimationFrame(step);
+  }
+  function stopPlay() {
+    if (!playing) return;
+    playing = false; dragging = false; morphing = false; cut = null;
+    cancelAnimationFrame(raf); raf = 0;
+    clearTimeout(idleTimer);
+    document.body.classList.remove('playing', 'idle', 'dragging', 'morphing', 'work-open');
+    ++token; shown = false;
+    layers.forEach(l => { l.classList.remove('show', 'leaving', 'entering'); l.style.backgroundImage = ''; l.dataset.cur = ''; });
+    setTimeout(() => { if (!playing) { sy = syTarget = 1; B = 0; layoutPlay(); workName.textContent = ''; } }, 900);
+  }
+
+  carousel.addEventListener('click', () => { if (!playing) startPlay(); });
+  carousel.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); startPlay(); } });
+  const closeBtn = document.getElementById('minimise');
+  closeBtn.addEventListener('click', stopPlay);
+  closeBtn.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); stopPlay(); } });
+  addEventListener('keydown', e => {
+    if (!playing) return;
+    if (e.key === 'Escape') stopPlay();
+    if (e.key === 'ArrowRight') { B = (Math.round(B / QT) + 1) * QT; wake(); }
+    if (e.key === 'ArrowLeft') { B = (Math.round(B / QT) - 1) * QT; wake(); }
+  });
+
+  // hover the browsing strip → preview the artwork
+  carousel.addEventListener('pointerover', e => {
+    if (playing) return;
+    const t = e.target.closest('.thumb'); if (!t) return;
+    buildClones();
+    hovered = t;
+    openWork(ITEMS[+t.dataset.i]);
+  });
+  carousel.addEventListener('pointerleave', () => { hovered = null; if (!playing) closeWork(); });
+
+  // drag the play strip to scrub
+  document.addEventListener('pointerdown', e => {
+    if (!playing || !(e.target instanceof Element) || !e.target.closest('#playCarousel')) return;
+    e.preventDefault();
+    dragging = true; document.body.classList.add('dragging');
+    syTarget = .8; dragX = e.clientX; dragB = B;
+  });
+  addEventListener('pointermove', e => {
+    if (playing) wake();
+    if (!dragging) return;
+    B = dragB - (e.clientX - dragX);
+    checkCurrent(); layoutPlay();
+  });
+  const endDrag = () => { if (!dragging) return; dragging = false; document.body.classList.remove('dragging'); syTarget = 1; lastT = 0; };
+  addEventListener('pointerup', endDrag);
+  addEventListener('pointercancel', endDrag);
+  playCarousel.addEventListener('dragstart', e => e.preventDefault());
+
+  // clicking the big artwork while playing opens that project
+  layers.forEach(l => l.addEventListener('click', () => {
+    if (playing && current >= 0 && !dragging) location.href = detailUrl(ITEMS[current]);
+  }));
+
+  function layoutBrowse() {
+    if (document.body.classList.contains('intro-spinning')) return;
+    const cx = innerWidth / 2;
+    layoutAll(thumbs, s => cx + s * QT);
+  }
+  addEventListener('resize', layoutBrowse);
+
+  // intro: the strip spins in from the right
+  function spinIn() {
+    const cx = innerWidth / 2, W = innerWidth;
+    const set = off => {
+      carousel.style.transform = `translateX(${-20 + off * QT}px)`;
+      for (let c = 0; c < thumbs.length; c++) {
+        const x = cx + (c + off) * QT;
+        if (x >= EDGE && x <= W - EDGE) project(thumbs[c], x, cx);
+        else if (thumbs[c].style.transform !== 'scaleX(0)') thumbs[c].style.transform = 'scaleX(0)';
+      }
+    };
+    set(20);
+    document.documentElement.classList.remove('intro-pending');
+    document.body.classList.add('intro-spinning');
+    const start = performance.now();
+    const step = () => {
+      const k = Math.max(0, Math.min(1, (performance.now() - start) / 1200));
+      set(20 * Math.pow(1 - k, 3));
+      if (k < 1) { requestAnimationFrame(step); return; }
+      carousel.style.transform = '';
+      document.body.classList.remove('intro-spinning');
+      layoutBrowse();
+    };
+    requestAnimationFrame(step);
+  }
+
+  /* ---------- phones: stacked images + current title ---------- */
+  function buildMobile() {
+    const stack = document.getElementById('mediaStack');
+    ITEMS.forEach(it => {
+      const d = document.createElement('a');
+      d.className = 'media-item'; d.href = detailUrl(it); d.dataset.label = label(it);
+      d.innerHTML = `<img alt="${it.title}" src="${it.url}" loading="lazy">`;
+      stack.appendChild(d);
+    });
+    const tag = document.getElementById('mobileWork'), name = document.getElementById('mobileWorkName');
+    if (!('IntersectionObserver' in window)) return;
+    const seen = new Set();
+    const io = new IntersectionObserver(list => {
+      list.forEach(en => en.isIntersecting ? seen.add(en.target) : seen.delete(en.target));
+      const last = [...seen].pop();
+      if (last) { name.textContent = last.dataset.label; tag.classList.add('show'); } else tag.classList.remove('show');
+    }, { rootMargin: '-50% 0px -50% 0px' });
+    stack.querySelectorAll('.media-item').forEach(m => io.observe(m));
+  }
+
+  /* ---------- boot ---------- */
+  Promise.all(ITEMS.map(load)).then(res => {
+    res.forEach((r, k) => { ITEMS[k].url = r.url; ITEMS[k].ar = r.ar; });
+    ITEMS.forEach((it, i) => { const t = makeThumb(it, i, i === 0); carousel.appendChild(t); thumbs.push(t); });
+    buildMobile();
+    layoutBrowse();
+    let started = false;
+    const go = () => {
+      if (started) return; started = true;
+      if (getComputedStyle(carousel).display === 'none' || reduceMotion) {
+        document.documentElement.classList.remove('intro-pending'); layoutBrowse(); return;
+      }
+      spinIn();
+    };
+    if (window.__objectIntroDone) go(); else addEventListener('objectintrodone', go, { once: true });
+    setTimeout(() => {               // in case the 3D library could not load
+      const veil = document.getElementById('veil');
+      if (veil && !window.__objectIntroDone) veil.style.display = 'none';
+      go();
+    }, 4000);
+  });
+
+  /* ---------- left-middle idle line ---------- */
+  document.getElementById('idleCount').textContent =
+    `${PROJECTS.length} projects — hover the strip, click to play`;
+})();
+</script>
 <script src="../site-cursor.js"></script>
 </body>
 </html>
