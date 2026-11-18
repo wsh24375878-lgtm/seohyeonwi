@@ -46,10 +46,9 @@ p,h1{margin:0}
   <a class="site-name" href="index.html">SEOHYEON WI™</a>
   <nav class="site-cats" aria-label="Work categories">
     <a href="fashion.html">Fashion</a>
-    <a href="portfolio_with_detail_pages/index.html">3D</a>
-    <a href="seohyeon_wi_projects_interactive_v2.html?category=metal-craft">Metal Craft</a>
-    <a href="seohyeon_wi_projects_interactive_v2.html?category=product">Product</a>
-    <a href="seohyeon_wi_projects_interactive_v2.html" class="is-active">Archive</a>
+    <a href="portfolio_with_detail_pages/index.html">Object</a>
+    <a href="seohyeon_wi_projects_interactive_v2.html?category=graphic">Graphic</a>
+    <a href="seohyeon_wi_projects_interactive_v2.html" class="is-active" aria-current="page">Archive</a>
   </nav>
   <nav class="site-info" aria-label="About and contact">
     <a href="about.html">About</a>
@@ -76,20 +75,40 @@ p,h1{margin:0}
   </section>
 
   <nav class="pager ui-text">
-    <a class="muted" href="seohyeon_wi_projects_interactive_v2.html">← Back to archive</a>
+    <a class="muted" id="backLink" href="seohyeon_wi_projects_interactive_v2.html">← Back to archive</a>
     <a class="muted" id="nextLink" href="project-detail.html?project=02">Next project →</a>
   </nav>
 </main>
 <div class="cursor" aria-hidden="true"></div>
+<script src="works-data.js"></script>
 <script>
-const raw = new URLSearchParams(location.search).get('project') || '01';
-const n = /^\d{1,2}$/.test(raw) ? Math.min(8, Math.max(1, Number(raw))) : 1;
+// project-detail.html?project=02&category=graphic → titles come from works-data.js
+const params = new URLSearchParams(location.search);
+const category = params.get('category') === 'graphic' ? 'graphic' : null;
+const list = category ? window.OTHER_WORKS[category] : null;
+const total = list ? list.length : 8;
+const raw = params.get('project') || '01';
+const n = /^\d{1,2}$/.test(raw) ? Math.min(total, Math.max(1, Number(raw))) : 1;
 const project = String(n).padStart(2, '0');
-const next = String(n % 8 + 1).padStart(2, '0');
-document.title = `Project ${project} — SEOHYEON WI™`;
-document.getElementById('projectTitle').textContent = `Project ${project}`;
-document.getElementById('projectMeta').textContent = `${project} / 08 — Archive, 2026`;
-document.getElementById('nextLink').href = `project-detail.html?project=${next}`;
+const next = String(n % total + 1).padStart(2, '0');
+const work = list ? list[n - 1] : null;
+const title = work ? work.title : `Project ${project}`;
+const label = category ? 'Graphic' : 'Archive';
+document.title = `${title} — SEOHYEON WI™`;
+document.getElementById('projectTitle').textContent = title;
+document.getElementById('projectMeta').textContent =
+  `${project} / ${String(total).padStart(2, '0')} — ${[label, work && work.type, work ? work.year : '2026'].filter(Boolean).join(', ')}`;
+document.getElementById('nextLink').href = `project-detail.html?project=${next}${category ? `&category=${category}` : ''}`;
+if (category) {
+  const back = document.getElementById('backLink');
+  back.href = 'seohyeon_wi_projects_interactive_v2.html?category=graphic';
+  back.textContent = '← Back to graphic';
+  document.querySelectorAll('.site-cats a').forEach(a => {
+    const on = a.textContent.trim() === 'Graphic';
+    a.classList.toggle('is-active', on);
+    if (on) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current');
+  });
+}
 </script>
 <script src="site-clock.js"></script>
 <script src="site-cursor.js"></script>

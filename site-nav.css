@@ -37,8 +37,7 @@
   text-decoration-thickness: 1px;
 }
 .site-top .site-name:hover { text-decoration: none; }
-.site-left { display: flex; align-items: center; gap: 16px; }
-.site-clock { color: #8c8c8c; font-variant-numeric: tabular-nums; white-space: nowrap; pointer-events: none; }
+.site-clock { color: #8c8c8c; font-variant-numeric: tabular-nums; white-space: nowrap; margin-right: 14px; }
 
 /* ---------- shared type ---------- */
 .big-text {
@@ -79,7 +78,7 @@ a.muted:hover { color: #050505; }
     gap: 8px;
   }
   .site-info { gap: 10px; }
-  .site-left { gap: 10px; }
+  .site-clock { margin-right: 0; }
   .big-text { font-size: clamp(20px, 5vw, 34px); }
   .ui-text { font-size: 12px; }
 }

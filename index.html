@@ -16,7 +16,6 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#fff;font-f
 .top{position:absolute;left:24px;right:24px;top:18px;display:flex;justify-content:space-between;align-items:center;font-size:15px;line-height:1;color:#050505;z-index:5}
 .top a{color:inherit;text-decoration:none}
 .top-right{display:flex;gap:16px}
-.top-left{display:flex;align-items:center;gap:16px}
 .top-clock{color:#8c8c8c;font-variant-numeric:tabular-nums}
 .text{cursor:default}
 .top a:hover,.menu a:hover{text-decoration:underline;text-underline-offset:3px;text-decoration-thickness:1px}.cursor{position:fixed;width:14px;height:14px;border-radius:50%;background:#000;pointer-events:none;transform:translate(-50%,-50%);z-index:999;mix-blend-mode:multiply}
@@ -45,7 +44,6 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#fff;font-f
 .menu{left:14px;right:14px;bottom:18px;font-size:12px}
 .top{left:14px;right:14px;top:16px;font-size:12px}
 .top-right{gap:10px}
-.top-left{gap:10px}
 .preloader-text,.lang-choice{font-size:12px}
 .preloader-text{width:75%}
 }
@@ -129,10 +127,7 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#fff;font-f
 </script>
 <div class="page">
 <header class="top">
-  <div class="top-left">
-    <a href="index.html">SEOHYEON WI™</a>
-    <span class="top-clock" id="topClock" aria-label="Current time in Seoul">Seoul 00:00:00</span>
-  </div>
+  <a href="index.html">SEOHYEON WI™</a>
   <nav class="top-right" aria-label="About and contact">
     <a href="about.html">About</a>
     <a href="contact.html">Contact</a>
@@ -140,10 +135,10 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#fff;font-f
 </header>
 <div class="text" id="interactiveText">2000, born, Seoul, Korea, Sungshin Women’s University, fashion design, clothes, objects, images, materials, colors, shapes, collection, brand, product, observation, curiosity, question, experiment, making, editing, rebuilding, from imagination to reality, designer in progress</div>
 <nav class="menu" aria-label="Work categories">
+  <span class="top-clock" id="topClock" aria-label="Current time in Seoul">Seoul 00:00</span>
   <a href="fashion.html">Fashion</a>
-  <a href="portfolio_with_detail_pages/index.html">3D</a>
-  <a href="seohyeon_wi_projects_interactive_v2.html?category=metal-craft">Metal Craft</a>
-  <a href="seohyeon_wi_projects_interactive_v2.html?category=product">Product</a>
+  <a href="portfolio_with_detail_pages/index.html">Object</a>
+  <a href="seohyeon_wi_projects_interactive_v2.html?category=graphic">Graphic</a>
   <a href="seohyeon_wi_projects_interactive_v2.html">Archive</a>
 </nav>
 </div>
@@ -233,7 +228,7 @@ function animate(){
 animate();
 
 // Seoul time in the top bar
-const seoulTime=new Intl.DateTimeFormat("en-GB",{timeZone:"Asia/Seoul",hour:"2-digit",minute:"2-digit",second:"2-digit",hour12:false});
+const seoulTime=new Intl.DateTimeFormat("en-GB",{timeZone:"Asia/Seoul",hour:"2-digit",minute:"2-digit",hour12:false});
 const topClock=document.getElementById("topClock");
 const tickClock=()=>{ topClock.textContent=`Seoul ${seoulTime.format(new Date())}`; };
 tickClock(); setInterval(tickClock,1000);

@@ -6,153 +6,176 @@
 <title>Archive — SEOHYEON WI™</title>
 <style>
 *{box-sizing:border-box}
-html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#fff;color:#050505;font-family:Arial,Helvetica,sans-serif;font-weight:400}
+html,body{margin:0;min-height:100%;background:#fff;color:#050505;font-family:Arial,Helvetica,sans-serif;font-weight:400}
+body{overflow-x:hidden}
 a{color:inherit;text-decoration:none}
-.page{position:relative;width:100vw;height:100vh;height:100dvh;overflow:hidden;background:#fff}
+button{font:inherit;color:inherit}
+p,h2{margin:0}
 
-/* ---------- title (same as main page) ---------- */
-.text{position:absolute;left:24px;top:54px;width:min(65vw,1080px);margin:0;font-size:clamp(26px,3.25vw,56px);line-height:1.05;font-weight:400;letter-spacing:-.04em;color:#050505;z-index:3}
-.letter{display:inline-block;position:relative;will-change:transform;white-space:pre}
-.word{display:inline-block;white-space:nowrap}
+/* white strip behind the fixed top bar while scrolling */
+.top-fade{position:fixed;top:0;left:0;right:0;height:46px;background:#fff;z-index:99}
 
-/* ---------- gallery ---------- */
-.gallery{position:absolute;left:0;right:0;top:calc(50% - 170px);height:360px;overflow:hidden;z-index:4}
-.track{position:absolute;left:-90px;top:0;height:330px;display:flex;align-items:flex-start;gap:28px;width:max-content;will-change:transform}
-.card{flex:0 0 auto;position:relative;overflow:hidden;background:#ebebeb}
-.card:nth-child(3n+2) .art{background:#e4e4e4}
-.card:nth-child(3n) .art{background:#f0f0f0}
-.card-label{position:absolute;left:14px;bottom:12px;font-size:15px;line-height:1;color:#8c8c8c;opacity:0;transform:translateY(4px);transition:opacity .3s ease,transform .3s ease}
-.card:hover .card-label{opacity:1;transform:none}
-.card:nth-child(8n+1){width:405px;height:247px;margin-top:67px}
-.card:nth-child(8n+2){width:255px;height:295px;margin-top:0}
-.card:nth-child(8n+3){width:433px;height:228px;margin-top:33px}
-.card:nth-child(8n+4){width:255px;height:295px;margin-top:0}
-.card:nth-child(8n+5){width:383px;height:235px;margin-top:38px}
-.card:nth-child(8n+6){width:300px;height:270px;margin-top:12px}
-.card:nth-child(8n+7){width:420px;height:245px;margin-top:30px}
-.card:nth-child(8n+8){width:255px;height:295px;margin-top:0}
-.art{width:100%;height:100%;background:#ebebeb;transition:transform .5s cubic-bezier(.16,1,.3,1)}
-.card:hover .art{transform:scale(1.055)}
-.card:nth-child(8n+1){animation:floatA 6.6s ease-in-out infinite}
-.card:nth-child(8n+2){animation:floatB 7.4s ease-in-out infinite}
-.card:nth-child(8n+3){animation:floatC 6.9s ease-in-out infinite}
-.card:nth-child(8n+4){animation:floatD 7.8s ease-in-out infinite}
-.card:nth-child(8n+5){animation:floatE 6.3s ease-in-out infinite}
-.card:nth-child(8n+6){animation:floatF 7.1s ease-in-out infinite}
-.card:nth-child(8n+7){animation:floatG 6.8s ease-in-out infinite}
-.card:nth-child(8n+8){animation:floatH 7.5s ease-in-out infinite}
-@keyframes floatA{50%{translate:0 7px}}@keyframes floatB{50%{translate:0 -8px}}@keyframes floatC{50%{translate:0 6px}}@keyframes floatD{50%{translate:0 -7px}}@keyframes floatE{50%{translate:0 8px}}@keyframes floatF{50%{translate:0 -6px}}@keyframes floatG{50%{translate:0 7px}}@keyframes floatH{50%{translate:0 -8px}}
+.page{padding:46px 24px 80px}
 
-/* ---------- speed zones ---------- */
-.speed-zone{position:absolute;z-index:30;top:calc(50% - 170px);right:0;width:78px;height:360px;cursor:e-resize}
-.speed-zone.left{right:auto;left:0;cursor:w-resize;z-index:15}
-.speed-hint{position:absolute;top:50%;right:23px;font-size:15px;color:#8c8c8c;opacity:0;transform:translateX(5px);transition:opacity .25s ease,transform .25s ease}
-.speed-hint.left-hint{right:auto;left:23px;transform:translateX(-5px)}
-.speed-zone.active .speed-hint{opacity:1;transform:translateX(0)}
+/* ---------- filters (stay under the top bar) ---------- */
+.filters{position:sticky;top:46px;z-index:50;display:flex;flex-wrap:wrap;gap:6px 22px;padding:8px 0 18px;background:#fff;font-size:15px;line-height:1}
+.filter{all:unset;cursor:pointer;color:#8c8c8c;transition:color .2s ease}
+.filter:hover,.filter.is-active{color:#050505}
+.filter.is-active .name{text-decoration:underline;text-underline-offset:3px;text-decoration-thickness:1px}
+.filter .count{font-size:10px;vertical-align:top;margin-left:2px;font-variant-numeric:tabular-nums}
+.filter:focus-visible{outline:2px solid #777;outline-offset:3px}
 
-@media (max-width:900px){.speed-zone{width:55px}}
+/* ---------- one row per project ---------- */
+.list{border-top:1px solid #050505}
+.row{display:grid;grid-template-columns:minmax(180px,1fr) 4fr;gap:24px;padding:18px 0 20px;border-bottom:1px solid #e7e7e7;opacity:0;transform:translateY(12px);transition:opacity .5s cubic-bezier(.33,1,.68,1),transform .5s cubic-bezier(.33,1,.68,1)}
+.row.is-in{opacity:1;transform:none}
+.meta{font-size:15px;line-height:1.3}
+.meta .num{display:block;margin-bottom:10px;font-variant-numeric:tabular-nums}
+.meta .title{display:block}
+.meta .title:hover{text-decoration:underline;text-underline-offset:3px;text-decoration-thickness:1px}
+.muted{color:#8c8c8c}
+
+.strip{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;margin-right:-24px;padding-right:24px}
+.strip::-webkit-scrollbar{display:none}
+.strip a{flex:0 0 auto;display:block;height:200px;background:#e5e5e5;border-radius:2px;overflow:hidden}
+.strip img{display:block;height:100%;width:auto;-webkit-user-drag:none;transition:opacity .25s ease}
+.strip:hover img{opacity:.55}
+.strip a:hover img{opacity:1}
+
+.empty{padding:40px 0;font-size:15px;color:#8c8c8c}
+
 @media (max-width:700px){
-.text{left:14px;top:64px;width:88vw;font-size:clamp(20px,5vw,34px)}
-.gallery{top:calc(50% - 140px);height:300px}
-.track{left:-120px;gap:15px}
-.card:nth-child(8n+1){width:280px;height:205px;margin-top:50px}
-.card:nth-child(8n+2){width:175px;height:205px;margin-top:0}
-.card:nth-child(8n+3){width:290px;height:190px;margin-top:20px}
-.card:nth-child(8n+4){width:175px;height:205px;margin-top:0}
-.card:nth-child(8n+5){width:260px;height:175px;margin-top:25px}
-.card:nth-child(8n+6){width:210px;height:190px;margin-top:10px}
-.card:nth-child(8n+7){width:280px;height:200px;margin-top:22px}
-.card:nth-child(8n+8){width:175px;height:205px;margin-top:0}
-.speed-zone{width:48px;top:calc(50% - 140px);height:300px}.speed-hint{display:none}
+  .top-fade{height:62px}
+  .page{padding:62px 14px 56px}
+  .filters{top:62px;gap:6px 14px;font-size:12px;padding:6px 0 14px}
+  .row{grid-template-columns:1fr;gap:10px;padding:14px 0 16px}
+  .meta{font-size:12px;display:flex;gap:10px;align-items:baseline;flex-wrap:wrap}
+  .meta .num{display:inline;margin:0}
+  .strip{margin-right:-14px;padding-right:14px}
+  .strip a{height:140px}
 }
 </style>
 <link rel="stylesheet" href="site-nav.css">
 <link rel="stylesheet" href="site-cursor.css">
 </head>
 <body>
+<div class="top-fade" aria-hidden="true"></div>
 <header class="site-top">
   <a class="site-name" href="index.html">SEOHYEON WI™</a>
   <nav class="site-cats" aria-label="Work categories">
     <a href="fashion.html">Fashion</a>
-    <a href="portfolio_with_detail_pages/index.html">3D</a>
-    <a href="seohyeon_wi_projects_interactive_v2.html?category=metal-craft" data-category="metal-craft">Metal Craft</a>
-    <a href="seohyeon_wi_projects_interactive_v2.html?category=product" data-category="product">Product</a>
-    <a href="seohyeon_wi_projects_interactive_v2.html" data-category="">Archive</a>
+    <a href="portfolio_with_detail_pages/index.html">Object</a>
+    <a href="seohyeon_wi_projects_interactive_v2.html?category=graphic" data-filter="graphic">Graphic</a>
+    <a href="seohyeon_wi_projects_interactive_v2.html" data-filter="all">Archive</a>
   </nav>
   <nav class="site-info" aria-label="About and contact">
     <a href="about.html">About</a>
     <a href="contact.html">Contact</a>
   </nav>
 </header>
-<div class="page">
-  <section class="gallery">
-    <div class="track" id="track"></div>
-  </section>
 
-  <div class="speed-zone left" id="speedZoneLeft" aria-label="Reverse gallery"><div class="speed-hint left-hint">←</div></div>
-  <div class="speed-zone" id="speedZone" aria-label="Speed up gallery"><div class="speed-hint">→</div></div>
-</div>
-<div class="cursor"></div>
+<main class="page">
+  <div class="filters" id="filters" role="tablist" aria-label="Filter work by category"></div>
+  <section class="list" id="list" aria-live="polite"></section>
+</main>
+<div class="cursor" aria-hidden="true"></div>
 
+<script src="fashion-data.js"></script>
+<script src="works-data.js"></script>
 <script>
-/* ---------- category: page title + active menu item ---------- */
-const CATEGORIES = {
-  'metal-craft': { name: 'Metal Craft' },
-  'product':     { name: 'Product' },
-};
-const selected = new URLSearchParams(location.search).get('category') || '';
-const category = CATEGORIES[selected];
-if (category) document.title = `${category.name} — SEOHYEON WI™`;
-document.querySelectorAll('.site-cats a[data-category]').forEach(link => {
-  if (link.dataset.category === (category ? selected : '')) {
-    link.classList.add('is-active');
-    link.setAttribute('aria-current', 'page');
+(() => {
+  const ORDER = ['all', 'fashion', 'object', 'graphic'];
+  const NAMES = { all: 'All', ...WorksData.CATEGORY_NAMES };
+  const filtersEl = document.getElementById('filters');
+  const listEl = document.getElementById('list');
+  const param = new URLSearchParams(location.search).get('category');
+  let current = ORDER.includes(param) ? param : 'all';
+  let works = [];
+
+  // the top bar underlines Graphic when filtered to it, otherwise Archive
+  function markTopBar() {
+    const key = current === 'graphic' ? 'graphic' : 'all';
+    document.querySelectorAll('.site-cats a[data-filter]').forEach(a => {
+      const on = a.dataset.filter === key;
+      a.classList.toggle('is-active', on);
+      if (on) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current');
+    });
   }
-});
 
-/* ---------- cards ---------- */
-const track = document.getElementById('track');
-for (let i = 0; i < 32; i++) {
-  const project = String(i % 8 + 1).padStart(2, '0');
-  const card = document.createElement('a');
-  card.className = 'card';
-  card.href = `project-detail.html?project=${project}`;
-  card.setAttribute('aria-label', `View Project ${project}`);
-  card.innerHTML = `<div class="art"></div><span class="card-label">Project ${project}</span>`;
-  track.appendChild(card);
-}
+  function renderFilters() {
+    filtersEl.innerHTML = '';
+    ORDER.forEach(key => {
+      const count = key === 'all' ? works.length : works.filter(w => w.category === key).length;
+      const b = document.createElement('button');
+      b.className = 'filter' + (key === current ? ' is-active' : '');
+      b.type = 'button';
+      b.setAttribute('role', 'tab');
+      b.setAttribute('aria-selected', String(key === current));
+      b.innerHTML = `<span class="name">${NAMES[key]}</span><span class="count">${count}</span>`;
+      b.addEventListener('click', () => setFilter(key));
+      filtersEl.appendChild(b);
+    });
+  }
 
-/* ---------- gallery motion ---------- */
-const zone = document.getElementById('speedZone');
-const zoneLeft = document.getElementById('speedZoneLeft');
-const baseSpeed = .18, hoverSpeed = baseSpeed * 25;
-let position = -90, currentSpeed = baseSpeed, targetSpeed = baseSpeed, last = performance.now();
+  function renderList() {
+    const shown = current === 'all' ? works : works.filter(w => w.category === current);
+    listEl.innerHTML = '';
+    if (!shown.length) { listEl.innerHTML = '<p class="empty">No work here yet.</p>'; return; }
+    shown.forEach((w, i) => {
+      const row = document.createElement('article');
+      row.className = 'row';
+      const meta = [w.categoryName, w.info, w.year].filter(Boolean).join(' · ');
+      row.innerHTML =
+        `<div class="meta"><span class="num muted">${String(i + 1).padStart(2, '0')}</span>` +
+        `<a class="title" href="${w.url}">${w.title}</a><span class="muted">${meta}</span></div>` +
+        `<div class="strip">${w.images.map((im, k) =>
+          `<a href="${w.url}" aria-label="${w.title}, image ${k + 1}" style="aspect-ratio:${im.ar}"><img src="${im.url}" alt="" loading="lazy"></a>`).join('')}</div>`;
+      listEl.appendChild(row);
+      setTimeout(() => row.classList.add('is-in'), 40 + i * 45);   // rows rise in one after another
+      enableDragScroll(row.querySelector('.strip'));
+    });
+  }
 
-function bindZone(el, speed) {
-  const on = () => { targetSpeed = speed; el.classList.add('active'); };
-  const off = () => { targetSpeed = baseSpeed; el.classList.remove('active'); };
-  el.addEventListener('mouseenter', on);
-  el.addEventListener('mouseleave', off);
-  el.addEventListener('touchstart', on, { passive: true });
-  el.addEventListener('touchend', off, { passive: true });
-}
-bindZone(zone, hoverSpeed);
-bindZone(zoneLeft, -hoverSpeed);
+  function setFilter(key) {
+    if (key === current) return;
+    current = key;
+    history.replaceState(null, '', key === 'all' ? 'seohyeon_wi_projects_interactive_v2.html' : `seohyeon_wi_projects_interactive_v2.html?category=${key}`);
+    document.title = `${key === 'all' ? 'Archive' : NAMES[key]} — SEOHYEON WI™`;
+    markTopBar();
+    renderFilters();
+    renderList();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
 
-function animate(now) {
-  // gallery
-  const dt = Math.min((now - last) / 16.6667, 2);
-  last = now;
-  currentSpeed += (targetSpeed - currentSpeed) * .05;
-  position += currentSpeed * dt;
-  const w = track.scrollWidth;
-  if (position > 0) position -= w * .42;
-  else if (position < -w * .42) position += w * .42;
-  track.style.transform = `translate3d(${position}px,0,0)`;
+  // Graphic / Archive in the top bar just switch the filter on this page
+  document.querySelectorAll('.site-cats a[data-filter]').forEach(a => {
+    a.addEventListener('click', e => { e.preventDefault(); setFilter(a.dataset.filter); });
+  });
 
-  requestAnimationFrame(animate);
-}
-requestAnimationFrame(animate);
+  // drag the image rows sideways with the mouse (touch scrolls natively)
+  function enableDragScroll(strip) {
+    let down = false, startX = 0, startLeft = 0, moved = 0;
+    strip.addEventListener('pointerdown', e => {
+      if (e.pointerType !== 'mouse' || e.button !== 0) return;
+      down = true; moved = 0; startX = e.clientX; startLeft = strip.scrollLeft;
+    });
+    addEventListener('pointermove', e => {
+      if (!down) return;
+      moved = Math.max(moved, Math.abs(e.clientX - startX));
+      strip.scrollLeft = startLeft - (e.clientX - startX);
+    });
+    addEventListener('pointerup', () => { down = false; });
+    strip.addEventListener('click', e => { if (moved > 6) { e.preventDefault(); moved = 0; } }, true);
+  }
+
+  document.title = `${current === 'all' ? 'Archive' : NAMES[current]} — SEOHYEON WI™`;
+  markTopBar();
+  WorksData.loadAll().then(list => {
+    works = list;
+    renderFilters();
+    renderList();
+  });
+})();
 </script>
 <script src="site-clock.js"></script>
 <script src="site-cursor.js"></script>

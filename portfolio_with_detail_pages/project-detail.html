@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>3D Project — SEOHYEON WI™</title>
+<title>Object — SEOHYEON WI™</title>
 <style>
 *{box-sizing:border-box}
 html,body{margin:0;min-height:100%;background:#fff;color:#050505;font-family:Arial,Helvetica,sans-serif;font-weight:400}
@@ -46,9 +46,8 @@ p,h1{margin:0}
   <a class="site-name" href="../index.html">SEOHYEON WI™</a>
   <nav class="site-cats" aria-label="Work categories">
     <a href="../fashion.html">Fashion</a>
-    <a href="index.html" class="is-active">3D</a>
-    <a href="../seohyeon_wi_projects_interactive_v2.html?category=metal-craft">Metal Craft</a>
-    <a href="../seohyeon_wi_projects_interactive_v2.html?category=product">Product</a>
+    <a href="index.html" class="is-active" aria-current="page">Object</a>
+    <a href="../seohyeon_wi_projects_interactive_v2.html?category=graphic">Graphic</a>
     <a href="../seohyeon_wi_projects_interactive_v2.html">Archive</a>
   </nav>
   <nav class="site-info" aria-label="About and contact">
@@ -60,10 +59,10 @@ p,h1{margin:0}
 <main class="page">
   <section class="head">
     <div>
-      <h1 class="big-text" id="projectTitle">Project 01</h1>
+      <h1 class="big-text" id="projectTitle">Object 01</h1>
       <p class="desc ui-text">Replace this with the project description — the concept, your role, tools and process.</p>
     </div>
-    <p class="meta ui-text muted" id="projectMeta">01 / 08 — 3D, 2026</p>
+    <p class="meta ui-text muted" id="projectMeta">01 / 08 — Object, 2026</p>
   </section>
 
   <section class="hero"><span class="label ui-text muted">Cover image</span></section>
@@ -76,7 +75,7 @@ p,h1{margin:0}
   </section>
 
   <nav class="pager ui-text">
-    <a class="muted" href="index.html">← Back to 3D</a>
+    <a class="muted" href="index.html">← Back to Object</a>
     <a class="muted" id="nextLink" href="project-detail.html?project=02">Next project →</a>
   </nav>
 </main>
@@ -86,9 +85,9 @@ const raw = new URLSearchParams(location.search).get('project') || '01';
 const n = /^\d{1,2}$/.test(raw) ? Math.min(8, Math.max(1, Number(raw))) : 1;
 const project = String(n).padStart(2, '0');
 const next = String(n % 8 + 1).padStart(2, '0');
-document.title = `3D Project ${project} — SEOHYEON WI™`;
-document.getElementById('projectTitle').textContent = `Project ${project}`;
-document.getElementById('projectMeta').textContent = `${project} / 08 — 3D, 2026`;
+document.title = `Object ${project} — SEOHYEON WI™`;
+document.getElementById('projectTitle').textContent = `Object ${project}`;
+document.getElementById('projectMeta').textContent = `${project} / 08 — Object, 2026`;
 document.getElementById('nextLink').href = `project-detail.html?project=${next}`;
 </script>
 <script src="../site-clock.js"></script>
