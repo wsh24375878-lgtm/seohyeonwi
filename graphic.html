@@ -126,12 +126,24 @@ function bindZone(el, speed) {
 bindZone(zone, hoverSpeed);
 bindZone(zoneLeft, -hoverSpeed);
 
+// mouse wheel / trackpad: the cards slide sideways as fast as you scroll, then ease back to the slow drift
+const WHEEL_PUSH = .06;            // speed added per px of scroll
+const WHEEL_MAX = 70;              // fastest the wheel can push (px per frame)
+let wheelSpeed = 0;
+addEventListener('wheel', e => {
+  e.preventDefault();
+  const d = Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : e.deltaY;
+  // scroll down / right → cards move left, scroll up / left → cards move right
+  wheelSpeed = Math.max(-WHEEL_MAX, Math.min(WHEEL_MAX, wheelSpeed - d * WHEEL_PUSH));
+}, { passive: false });
+
 function animate(now) {
   // gallery
-  const dt = Math.min((now - last) / 16.6667, 2);
+  const dt = Math.max(0, Math.min((now - last) / 16.6667, 2));
   last = now;
   currentSpeed += (targetSpeed - currentSpeed) * .05;
-  position += currentSpeed * dt;
+  wheelSpeed *= Math.pow(.9, dt);  // wheel momentum fades out smoothly
+  position += (currentSpeed + wheelSpeed) * dt;
   const w = track.scrollWidth;
   if (position > 0) position -= w * .42;
   else if (position < -w * .42) position += w * .42;
