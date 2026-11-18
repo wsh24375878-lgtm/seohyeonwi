@@ -1,15 +1,12 @@
-/* Seoul time at the very start of the category row in the shared top bar. */
+/* Seoul time in the bottom-left corner of the category pages (HH:MM:SS, same as the main page). */
 (() => {
-  const cats = document.querySelector('.site-top .site-cats');
-  if (!cats) return;
-
-  const clock = document.createElement('span');
-  clock.className = 'site-clock';
+  const clock = document.createElement('div');
+  clock.className = 'corner-clock';
   clock.setAttribute('aria-label', 'Current time in Seoul');
-  cats.prepend(clock);
+  document.body.appendChild(clock);
 
   const fmt = new Intl.DateTimeFormat('en-GB', {
-    timeZone: 'Asia/Seoul', hour: '2-digit', minute: '2-digit', hour12: false,
+    timeZone: 'Asia/Seoul', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false,
   });
   const tick = () => { clock.textContent = `Seoul ${fmt.format(new Date())}`; };
   tick();

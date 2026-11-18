@@ -14,6 +14,9 @@ p,h2{margin:0}
 
 /* white strip behind the fixed top bar while scrolling */
 .top-fade{position:fixed;top:0;left:0;right:0;height:46px;background:#fff;z-index:99}
+/* white strip under the corner clock so rows slide behind it */
+.bottom-fade{position:fixed;left:0;right:0;bottom:0;height:54px;background:#fff;z-index:89}
+@media (max-width:700px){.bottom-fade{display:none}}
 
 .page{padding:46px 24px 80px}
 
@@ -60,6 +63,7 @@ p,h2{margin:0}
 </head>
 <body>
 <div class="top-fade" aria-hidden="true"></div>
+<div class="bottom-fade" aria-hidden="true"></div>
 <header class="site-top">
   <a class="site-name" href="index.html">SEOHYEON WI™</a>
   <nav class="site-cats" aria-label="Work categories">
@@ -177,6 +181,7 @@ p,h2{margin:0}
   });
 })();
 </script>
+<script src="site-clock.js"></script>
 <script src="site-cursor.js"></script>
 </body>
 </html>
