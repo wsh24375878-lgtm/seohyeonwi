@@ -11,14 +11,18 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#fff;font-f
 .text{position:absolute;left:24px;top:54px;width:min(65vw,1080px);font-size:clamp(26px,3.25vw,56px);line-height:1.05;font-weight:400;letter-spacing:-.04em;color:#050505;z-index:3}
 .letter{display:inline-block;position:relative;will-change:transform;white-space:pre}
 .word{display:inline-block;white-space:nowrap}
-.menu{position:absolute;left:24px;right:24px;bottom:24px;display:flex;justify-content:space-between;align-items:center;font-size:15px;line-height:1;color:#050505;z-index:5}.menu a{color:inherit;text-decoration:none}
+/* categories stacked bottom-left in the same big type as the intro text */
+.menu{position:absolute;left:24px;bottom:22px;display:flex;flex-direction:column;align-items:flex-start;font-size:clamp(26px,3.25vw,56px);line-height:1.05;letter-spacing:-.04em;color:#050505;z-index:5}
+.menu a{color:inherit;text-decoration:none;transition:color .35s ease}
+.menu:hover a{color:#c8c8c8}
+.menu a:hover,.menu a:focus-visible{color:#050505}
 /* top bar: name on the left, about / contact on the right */
 .top{position:absolute;left:24px;right:24px;top:18px;display:flex;justify-content:space-between;align-items:center;font-size:15px;line-height:1;color:#050505;z-index:5}
 .top a{color:inherit;text-decoration:none}
 .top-right{display:flex;gap:16px}
-.top-clock{color:#8c8c8c;font-variant-numeric:tabular-nums}
+.top-clock{position:absolute;right:24px;bottom:24px;z-index:5;font-size:15px;line-height:1;color:#8c8c8c;font-variant-numeric:tabular-nums}
 .text{cursor:default}
-.top a:hover,.menu a:hover{text-decoration:underline;text-underline-offset:3px;text-decoration-thickness:1px}.cursor{position:fixed;width:14px;height:14px;border-radius:50%;background:#000;pointer-events:none;transform:translate(-50%,-50%);z-index:999;mix-blend-mode:multiply}
+.top a:hover{text-decoration:underline;text-underline-offset:3px;text-decoration-thickness:1px}.cursor{position:fixed;width:14px;height:14px;border-radius:50%;background:#000;pointer-events:none;transform:translate(-50%,-50%);z-index:999;mix-blend-mode:multiply}
 /* first-visit intro screen */
 .preloader{position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;background:#fff;transition:opacity .6s ease}
 .preloader.is-done{opacity:0;pointer-events:none}
@@ -41,7 +45,8 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#fff;font-f
 .lang-choice button{padding:10px 6px}  /* bigger tap area on phones */
 @media (max-width:700px){
 .text{left:14px;top:48px;width:88vw;font-size:clamp(20px,5vw,34px)}
-.menu{left:14px;right:14px;bottom:18px;font-size:12px}
+.menu{left:14px;bottom:16px;font-size:clamp(20px,5vw,34px)}
+.top-clock{right:14px;bottom:18px;font-size:12px}
 .top{left:14px;right:14px;top:16px;font-size:12px}
 .top-right{gap:10px}
 .preloader-text,.lang-choice{font-size:12px}
@@ -134,8 +139,8 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#fff;font-f
   </nav>
 </header>
 <div class="text" id="interactiveText">2000, born, Seoul, Korea, Sungshin Women’s University, fashion design, clothes, objects, images, materials, colors, shapes, collection, brand, product, observation, curiosity, question, experiment, making, editing, rebuilding, from imagination to reality, designer in progress</div>
+<span class="top-clock" id="topClock" aria-label="Current time in Seoul">Seoul 00:00</span>
 <nav class="menu" aria-label="Work categories">
-  <span class="top-clock" id="topClock" aria-label="Current time in Seoul">Seoul 00:00</span>
   <a href="fashion.html">Fashion</a>
   <a href="portfolio_with_detail_pages/index.html">Object</a>
   <a href="seohyeon_wi_projects_interactive_v2.html?category=graphic">Graphic</a>
