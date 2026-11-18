@@ -11,13 +11,14 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#fff;font-f
 .text{position:absolute;left:24px;top:54px;width:min(65vw,1080px);font-size:clamp(26px,3.25vw,56px);line-height:1.05;font-weight:400;letter-spacing:-.04em;color:#050505;z-index:3}
 .letter{display:inline-block;position:relative;will-change:transform;white-space:pre}
 .word{display:inline-block;white-space:nowrap}
+/* a word inside the moving text that is also a link (e.g. "contact") */
+.time-word{font-variant-numeric:tabular-nums}   /* digits keep the same width as they change */
 .menu{position:absolute;left:24px;right:24px;bottom:24px;display:flex;justify-content:space-between;align-items:center;font-size:15px;line-height:1;color:#050505;z-index:5}.menu a{color:inherit;text-decoration:none}
 .menu a:hover{text-decoration:underline;text-underline-offset:3px;text-decoration-thickness:1px}
 /* top bar: name on the left, about / contact on the right */
 .top{position:absolute;left:24px;right:24px;top:18px;display:flex;justify-content:space-between;align-items:center;font-size:15px;line-height:1;color:#050505;z-index:5}
 .top a{color:inherit;text-decoration:none}
 .top-right{display:flex;gap:16px}
-.top-clock{color:#050505;font-variant-numeric:tabular-nums}
 .text{cursor:default}
 .top a:hover{text-decoration:underline;text-underline-offset:3px;text-decoration-thickness:1px}.cursor{position:fixed;width:14px;height:14px;border-radius:50%;background:#000;pointer-events:none;transform:translate(-50%,-50%);z-index:999;mix-blend-mode:multiply}
 /* first-visit intro screen */
@@ -131,14 +132,14 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#fff;font-f
   <a href="index.html">SEOHYEON WI™</a>
   <div class="top-right">
     <a href="about.html">About</a>
-    <span class="top-clock" id="topClock" aria-label="Current time in Seoul">Seoul 00:00</span>
+    <a href="contact.html">Contact</a>
   </div>
 </header>
-<div class="text" id="interactiveText">2000, born, Seoul, Korea, Sungshin Women’s University, fashion design, clothes, objects, images, materials, colors, shapes, collection, brand, product, observation, curiosity, question, experiment, making, editing, rebuilding, from imagination to reality, designer in progress</div>
+<div class="text" id="interactiveText">2000, born, Seoul, Korea, Sungshin Women’s University, fashion design, clothes, objects, images, materials, colors, shapes, collection, brand, product, observation, curiosity, experiment, making, editing, rebuilding, from imagination to reality, designer in progress, Seoul&nbsp;{time}</div>
 <nav class="menu" aria-label="Work categories">
   <a href="fashion.html">Fashion</a>
   <a href="portfolio_with_detail_pages/index.html">Object</a>
-  <a href="seohyeon_wi_projects_interactive_v2.html?category=graphic">Graphic</a>
+  <a href="graphic.html">Graphic</a>
   <a href="seohyeon_wi_projects_interactive_v2.html">Archive</a>
 </nav>
 </div>
@@ -148,14 +149,21 @@ const text=document.getElementById("interactiveText");
 const originalText=text.textContent;
 text.innerHTML="";
 // letters are grouped by word so lines only break between words
+// "{time}" in the text becomes the live Seoul time (HH:MM), whose digits move like every other letter
+const seoulTime=new Intl.DateTimeFormat("en-GB",{timeZone:"Asia/Seoul",hour:"2-digit",minute:"2-digit",hour12:false});
+const timeLetters=[];
 originalText.split(" ").forEach((word,w,words)=>{
+ const at=word.indexOf("{time}");               // "Seoul {time}," is kept together as one word
+ const isTime=at>=0;
+ const shown=isTime?word.replace("{time}",seoulTime.format(new Date())):word;
  const wordSpan=document.createElement("span");
- wordSpan.className="word";
- [...word].forEach(char=>{
+ wordSpan.className=isTime?"word time-word":"word";
+ [...shown].forEach((char,c)=>{
    const span=document.createElement("span");
    span.className="letter";
    span.textContent=char;
    wordSpan.appendChild(span);
+   if(isTime&&c>=at&&c<at+5) timeLetters.push(span);
  });
  text.appendChild(wordSpan);
  if(w<words.length-1) text.appendChild(document.createTextNode(" "));
@@ -181,7 +189,7 @@ function scatterFrom(px,py){
  });
  scatterStart=performance.now();
 }
-text.addEventListener("click",e=>scatterFrom(e.clientX,e.clientY));
+text.addEventListener("click",e=>{ if(e.target.closest("a")) return; scatterFrom(e.clientX,e.clientY); });
 function scatterAmount(now){
  if(scatterStart<0) return 0;
  const t=now-scatterStart;
@@ -227,11 +235,12 @@ function animate(){
 }
 animate();
 
-// Seoul time in the top bar
-const seoulTime=new Intl.DateTimeFormat("en-GB",{timeZone:"Asia/Seoul",hour:"2-digit",minute:"2-digit",hour12:false});
-const topClock=document.getElementById("topClock");
-const tickClock=()=>{ topClock.textContent=`Seoul ${seoulTime.format(new Date())}`; };
-tickClock(); setInterval(tickClock,1000);
+// keep the time inside the moving text current (only the digits that changed are swapped)
+const tickClock=()=>{
+ const now=seoulTime.format(new Date());
+ timeLetters.forEach((span,i)=>{ if(span.textContent!==now[i]) span.textContent=now[i]; });
+};
+setInterval(tickClock,1000);
 </script>
 <script src="site-cursor.js"></script>
 </body>

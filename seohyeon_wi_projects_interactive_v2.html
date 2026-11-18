@@ -65,7 +65,7 @@ p,h2{margin:0}
   <nav class="site-cats" aria-label="Work categories">
     <a href="fashion.html">Fashion</a>
     <a href="portfolio_with_detail_pages/index.html">Object</a>
-    <a href="seohyeon_wi_projects_interactive_v2.html?category=graphic" data-filter="graphic">Graphic</a>
+    <a href="graphic.html">Graphic</a>
     <a href="seohyeon_wi_projects_interactive_v2.html" data-filter="all">Archive</a>
   </nav>
   <nav class="site-info" aria-label="About and contact">
@@ -94,7 +94,7 @@ p,h2{margin:0}
 
   // the top bar underlines Graphic when filtered to it, otherwise Archive
   function markTopBar() {
-    const key = current === 'graphic' ? 'graphic' : 'all';
+    const key = 'all';
     document.querySelectorAll('.site-cats a[data-filter]').forEach(a => {
       const on = a.dataset.filter === key;
       a.classList.toggle('is-active', on);

@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Graphic — SEOHYEON WI™</title>
+<style>
+*{box-sizing:border-box}
+html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#fff;color:#050505;font-family:Arial,Helvetica,sans-serif;font-weight:400}
+a{color:inherit;text-decoration:none}
+.page{position:relative;width:100vw;height:100vh;height:100dvh;overflow:hidden;background:#fff}
+
+/* ---------- title (same as main page) ---------- */
+.text{position:absolute;left:24px;top:54px;width:min(65vw,1080px);margin:0;font-size:clamp(26px,3.25vw,56px);line-height:1.05;font-weight:400;letter-spacing:-.04em;color:#050505;z-index:3}
+.letter{display:inline-block;position:relative;will-change:transform;white-space:pre}
+.word{display:inline-block;white-space:nowrap}
+
+/* ---------- gallery ---------- */
+.gallery{position:absolute;left:0;right:0;top:calc(50% - 170px);height:360px;overflow:hidden;z-index:4}
+.track{position:absolute;left:-90px;top:0;height:330px;display:flex;align-items:flex-start;gap:28px;width:max-content;will-change:transform}
+.card{flex:0 0 auto;position:relative;overflow:hidden;background:#ebebeb}
+.card:nth-child(3n+2) .art{background:#e4e4e4}
+.card:nth-child(3n) .art{background:#f0f0f0}
+.card-label{position:absolute;left:14px;bottom:12px;font-size:15px;line-height:1;color:#8c8c8c;opacity:0;transform:translateY(4px);transition:opacity .3s ease,transform .3s ease}
+.card:hover .card-label{opacity:1;transform:none}
+.card:nth-child(8n+1){width:405px;height:247px;margin-top:67px}
+.card:nth-child(8n+2){width:255px;height:295px;margin-top:0}
+.card:nth-child(8n+3){width:433px;height:228px;margin-top:33px}
+.card:nth-child(8n+4){width:255px;height:295px;margin-top:0}
+.card:nth-child(8n+5){width:383px;height:235px;margin-top:38px}
+.card:nth-child(8n+6){width:300px;height:270px;margin-top:12px}
+.card:nth-child(8n+7){width:420px;height:245px;margin-top:30px}
+.card:nth-child(8n+8){width:255px;height:295px;margin-top:0}
+.art{width:100%;height:100%;background:#ebebeb;transition:transform .5s cubic-bezier(.16,1,.3,1)}
+.card:hover .art{transform:scale(1.055)}
+.card:nth-child(8n+1){animation:floatA 6.6s ease-in-out infinite}
+.card:nth-child(8n+2){animation:floatB 7.4s ease-in-out infinite}
+.card:nth-child(8n+3){animation:floatC 6.9s ease-in-out infinite}
+.card:nth-child(8n+4){animation:floatD 7.8s ease-in-out infinite}
+.card:nth-child(8n+5){animation:floatE 6.3s ease-in-out infinite}
+.card:nth-child(8n+6){animation:floatF 7.1s ease-in-out infinite}
+.card:nth-child(8n+7){animation:floatG 6.8s ease-in-out infinite}
+.card:nth-child(8n+8){animation:floatH 7.5s ease-in-out infinite}
+@keyframes floatA{50%{translate:0 7px}}@keyframes floatB{50%{translate:0 -8px}}@keyframes floatC{50%{translate:0 6px}}@keyframes floatD{50%{translate:0 -7px}}@keyframes floatE{50%{translate:0 8px}}@keyframes floatF{50%{translate:0 -6px}}@keyframes floatG{50%{translate:0 7px}}@keyframes floatH{50%{translate:0 -8px}}
+
+/* ---------- speed zones ---------- */
+.speed-zone{position:absolute;z-index:30;top:calc(50% - 170px);right:0;width:78px;height:360px;cursor:e-resize}
+.speed-zone.left{right:auto;left:0;cursor:w-resize;z-index:15}
+.speed-hint{position:absolute;top:50%;right:23px;font-size:15px;color:#8c8c8c;opacity:0;transform:translateX(5px);transition:opacity .25s ease,transform .25s ease}
+.speed-hint.left-hint{right:auto;left:23px;transform:translateX(-5px)}
+.speed-zone.active .speed-hint{opacity:1;transform:translateX(0)}
+
+@media (max-width:900px){.speed-zone{width:55px}}
+@media (max-width:700px){
+.text{left:14px;top:64px;width:88vw;font-size:clamp(20px,5vw,34px)}
+.gallery{top:calc(50% - 140px);height:300px}
+.track{left:-120px;gap:15px}
+.card:nth-child(8n+1){width:280px;height:205px;margin-top:50px}
+.card:nth-child(8n+2){width:175px;height:205px;margin-top:0}
+.card:nth-child(8n+3){width:290px;height:190px;margin-top:20px}
+.card:nth-child(8n+4){width:175px;height:205px;margin-top:0}
+.card:nth-child(8n+5){width:260px;height:175px;margin-top:25px}
+.card:nth-child(8n+6){width:210px;height:190px;margin-top:10px}
+.card:nth-child(8n+7){width:280px;height:200px;margin-top:22px}
+.card:nth-child(8n+8){width:175px;height:205px;margin-top:0}
+.speed-zone{width:48px;top:calc(50% - 140px);height:300px}.speed-hint{display:none}
+}
+</style>
+<link rel="stylesheet" href="site-nav.css">
+<link rel="stylesheet" href="site-cursor.css">
+</head>
+<body>
+<header class="site-top">
+  <a class="site-name" href="index.html">SEOHYEON WI™</a>
+  <nav class="site-cats" aria-label="Work categories">
+    <a href="fashion.html">Fashion</a>
+    <a href="portfolio_with_detail_pages/index.html">Object</a>
+    <a href="graphic.html" class="is-active" aria-current="page">Graphic</a>
+    <a href="seohyeon_wi_projects_interactive_v2.html">Archive</a>
+  </nav>
+  <nav class="site-info" aria-label="About and contact">
+    <a href="about.html">About</a>
+    <a href="contact.html">Contact</a>
+  </nav>
+</header>
+<div class="page">
+  <section class="gallery">
+    <div class="track" id="track"></div>
+  </section>
+
+  <div class="speed-zone left" id="speedZoneLeft" aria-label="Reverse gallery"><div class="speed-hint left-hint">←</div></div>
+  <div class="speed-zone" id="speedZone" aria-label="Speed up gallery"><div class="speed-hint">→</div></div>
+</div>
+<div class="cursor"></div>
+
+<script src="works-data.js"></script>
+<script>
+/* ---------- cards: the graphic works from works-data.js, repeated so the strip never runs out ---------- */
+const GRAPHIC = window.OTHER_WORKS.graphic;
+const track = document.getElementById('track');
+for (let i = 0; i < 32; i++) {
+  const k = i % GRAPHIC.length;
+  const work = GRAPHIC[k];
+  const card = document.createElement('a');
+  card.className = 'card';
+  card.href = `project-detail.html?project=${String(k + 1).padStart(2, '0')}&category=graphic`;
+  card.setAttribute('aria-label', `View ${work.title}`);
+  card.innerHTML = `<div class="art"></div><span class="card-label">${work.title}</span>`;
+  track.appendChild(card);
+}
+
+/* ---------- gallery motion ---------- */
+const zone = document.getElementById('speedZone');
+const zoneLeft = document.getElementById('speedZoneLeft');
+const baseSpeed = .18, hoverSpeed = baseSpeed * 25;
+let position = -90, currentSpeed = baseSpeed, targetSpeed = baseSpeed, last = performance.now();
+
+function bindZone(el, speed) {
+  const on = () => { targetSpeed = speed; el.classList.add('active'); };
+  const off = () => { targetSpeed = baseSpeed; el.classList.remove('active'); };
+  el.addEventListener('mouseenter', on);
+  el.addEventListener('mouseleave', off);
+  el.addEventListener('touchstart', on, { passive: true });
+  el.addEventListener('touchend', off, { passive: true });
+}
+bindZone(zone, hoverSpeed);
+bindZone(zoneLeft, -hoverSpeed);
+
+function animate(now) {
+  // gallery
+  const dt = Math.min((now - last) / 16.6667, 2);
+  last = now;
+  currentSpeed += (targetSpeed - currentSpeed) * .05;
+  position += currentSpeed * dt;
+  const w = track.scrollWidth;
+  if (position > 0) position -= w * .42;
+  else if (position < -w * .42) position += w * .42;
+  track.style.transform = `translate3d(${position}px,0,0)`;
+
+  requestAnimationFrame(animate);
+}
+requestAnimationFrame(animate);
+</script>
+<script src="site-clock.js"></script>
+<script src="site-cursor.js"></script>
+</body>
+</html>
