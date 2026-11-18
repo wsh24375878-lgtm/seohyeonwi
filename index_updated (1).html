@@ -16,6 +16,9 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#fff;font-f
 .top{position:absolute;left:24px;right:24px;top:18px;display:flex;justify-content:space-between;align-items:center;font-size:15px;line-height:1;color:#050505;z-index:5}
 .top a{color:inherit;text-decoration:none}
 .top-right{display:flex;gap:16px}
+.top-left{display:flex;align-items:center;gap:16px}
+.top-clock{color:#8c8c8c;font-variant-numeric:tabular-nums}
+.text{cursor:default}
 .top a:hover,.menu a:hover{text-decoration:underline;text-underline-offset:3px;text-decoration-thickness:1px}.cursor{position:fixed;width:14px;height:14px;border-radius:50%;background:#000;pointer-events:none;transform:translate(-50%,-50%);z-index:999;mix-blend-mode:multiply}
 /* first-visit intro screen */
 .preloader{position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;background:#fff;transition:opacity .6s ease}
@@ -42,6 +45,7 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#fff;font-f
 .menu{left:14px;right:14px;bottom:18px;font-size:12px}
 .top{left:14px;right:14px;top:16px;font-size:12px}
 .top-right{gap:10px}
+.top-left{gap:10px}
 .preloader-text,.lang-choice{font-size:12px}
 .preloader-text{width:75%}
 }
@@ -125,7 +129,10 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#fff;font-f
 </script>
 <div class="page">
 <header class="top">
-  <a href="index.html">SEOHYEON WI™</a>
+  <div class="top-left">
+    <a href="index.html">SEOHYEON WI™</a>
+    <span class="top-clock" id="topClock" aria-label="Current time in Seoul">Seoul 00:00:00</span>
+  </div>
   <nav class="top-right" aria-label="About and contact">
     <a href="about.html">About</a>
     <a href="contact.html">Contact</a>
@@ -160,7 +167,34 @@ originalText.split(" ").forEach((word,w,words)=>{
 });
 const letters=[...document.querySelectorAll(".letter")];
 let mouse={x:innerWidth/2,y:innerHeight/2};
-const states=letters.map(()=>({x:0,y:0,vx:0,vy:0}));
+const states=letters.map(()=>({x:0,y:0,vx:0,vy:0,sx:0,sy:0,sr:0}));
+// click the text: letters scatter, hold for a moment, then slowly gather back
+let scatter=0, scatterStart=-1;
+const OUT=650, HOLD=450, BACK=2400;
+const easeOut=t=>1-Math.pow(1-t,3);
+const easeInOut=t=>t<.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2;
+function scatterFrom(px,py){
+ const reach=Math.min(innerWidth,innerHeight);
+ letters.forEach((letter,i)=>{
+   const r=letter.getBoundingClientRect();
+   const cx=r.left+r.width/2-states[i].x, cy=r.top+r.height/2-states[i].y;
+   const a=Math.atan2(cy-py,cx-px)+(Math.random()-.5)*1.2;
+   const d=reach*(.12+Math.random()*.38);
+   states[i].sx=Math.cos(a)*d;
+   states[i].sy=Math.sin(a)*d;
+   states[i].sr=(Math.random()-.5)*50;
+ });
+ scatterStart=performance.now();
+}
+text.addEventListener("click",e=>scatterFrom(e.clientX,e.clientY));
+function scatterAmount(now){
+ if(scatterStart<0) return 0;
+ const t=now-scatterStart;
+ if(t<OUT) return easeOut(t/OUT);
+ if(t<OUT+HOLD) return 1;
+ if(t<OUT+HOLD+BACK) return 1-easeInOut((t-OUT-HOLD)/BACK);
+ scatterStart=-1; return 0;
+}
 document.addEventListener("mousemove",e=>{
  mouse.x=e.clientX; mouse.y=e.clientY;
 });
@@ -171,6 +205,7 @@ document.addEventListener("touchmove",followTouch,{passive:true});
 document.addEventListener("touchend",()=>{ mouse.x=-9999; mouse.y=-9999; },{passive:true});
 if(matchMedia("(hover: none)").matches){ mouse.x=-9999; mouse.y=-9999; }
 function animate(){
+ scatter=scatterAmount(performance.now());
  letters.forEach((letter,i)=>{
    const rect=letter.getBoundingClientRect();
    const centerX=rect.left+rect.width/2;
@@ -185,15 +220,23 @@ function animate(){
      states[i].vx+=Math.cos(angle)*push;
      states[i].vy+=Math.sin(angle)*push;
    }
-   states[i].vx+=-states[i].x*.035;
-   states[i].vy+=-states[i].y*.035;
+   // the spring pulls toward the scattered spot while scattering, otherwise home
+   states[i].vx+=-(states[i].x-states[i].sx*scatter)*.035;
+   states[i].vy+=-(states[i].y-states[i].sy*scatter)*.035;
    states[i].vx*=.90; states[i].vy*=.90;
    states[i].x+=states[i].vx; states[i].y+=states[i].vy;
-   letter.style.transform=`translate(${states[i].x}px,${states[i].y}px)`;
+   const rot=states[i].sr*scatter;
+   letter.style.transform=rot?`translate(${states[i].x}px,${states[i].y}px) rotate(${rot.toFixed(2)}deg)`:`translate(${states[i].x}px,${states[i].y}px)`;
  });
  requestAnimationFrame(animate);
 }
 animate();
+
+// Seoul time in the top bar
+const seoulTime=new Intl.DateTimeFormat("en-GB",{timeZone:"Asia/Seoul",hour:"2-digit",minute:"2-digit",second:"2-digit",hour12:false});
+const topClock=document.getElementById("topClock");
+const tickClock=()=>{ topClock.textContent=`Seoul ${seoulTime.format(new Date())}`; };
+tickClock(); setInterval(tickClock,1000);
 </script>
 <script src="site-cursor.js"></script>
 </body>
