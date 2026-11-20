@@ -594,7 +594,7 @@ function toSubject(obj) {
   const box = new THREE.Box3();
   geos.forEach(g => { g.computeBoundingBox(); box.union(g.boundingBox); });
   const sph = box.getBoundingSphere(new THREE.Sphere());
-  const s = HERO_R * 1.45 / (sph.radius || 1);    // a little bigger than the first object
+  const s = HERO_R * 2.0 / (sph.radius || 1);     // starts at the bigger, zoomed-in size
   const group = new THREE.Group();
   geos.forEach(g => {
     g.translate(-sph.center.x, -sph.center.y, -sph.center.z);
