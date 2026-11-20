@@ -8,36 +8,36 @@
    ========================================================= */
 window.FASHION_WORKS = [
   // 졸업 컬렉션 — 혼란 (Confusion)
-  { project: '01', group: 'Confusion', title: 'Confusion — Final Look', src: 'images/fashion/confusion-final-look.jpg', info: 'Graduation Collection',
+  { project: '01', group: 'Confusion', title: 'Confusion — Final Look', src: '', info: 'Graduation Collection',
     desc: 'Inflated volumes and trailing threads — the fear of the unknown, turned into a body you can wear.' },
-  { project: '02', group: 'Confusion', title: 'Confusion — Final Work', src: 'images/fashion/confusion-final-work.jpg', info: 'Graduation Collection',
+  { project: '02', group: 'Confusion', title: 'Confusion — Final Work', src: '', info: 'Graduation Collection',
     desc: 'Starting from the film "Alien", the unknown is broken down and rebuilt as clothing instead of being avoided.' },
-  { project: '03', group: 'Confusion', title: 'Confusion — Mood Board', src: 'images/fashion/confusion-mood-board.jpg', info: 'Research',
+  { project: '03', group: 'Confusion', title: 'Confusion — Mood Board', src: '', info: 'Research',
     desc: 'Organic, parasitic forms and a cold palette of shadow mint, lucent white and midnight denim.' },
-  { project: '04', group: 'Confusion', title: 'Confusion — Concept & Material', src: 'images/fashion/confusion-concept-material.jpg', info: 'Concept',
+  { project: '04', group: 'Confusion', title: 'Confusion — Concept & Material', src: '', info: 'Concept',
     desc: 'The concept of confusion, and a material board of belts, buckles, padding and worn denim.' },
-  { project: '05', group: 'Confusion', title: 'Confusion — Design Sketch', src: 'images/fashion/confusion-design-sketch.jpg', info: 'Sketch',
+  { project: '05', group: 'Confusion', title: 'Confusion — Design Sketch', src: '', info: 'Sketch',
     desc: 'Idea sketches exploring padded volume, straps and layered drapery across the line-up.' },
-  { project: '06', group: 'Confusion', title: 'Confusion — Textile Design', src: 'images/fashion/confusion-textile-design.jpg', info: 'Textile',
+  { project: '06', group: 'Confusion', title: 'Confusion — Textile Design', src: '', info: 'Textile',
     desc: 'Original textile prints developed for the collection, with mock-up layouts on garments.' },
-  { project: '07', group: 'Confusion', title: 'Confusion — Final Sketch', src: 'images/fashion/confusion-final-sketch.jpg', info: 'Sketch',
+  { project: '07', group: 'Confusion', title: 'Confusion — Final Sketch', src: '', info: 'Sketch',
     desc: 'The final look: exaggerated padded volume carried by straps and denim, finished with print.' },
-  { project: '08', group: 'Confusion', title: 'Confusion — Making Process', src: 'images/fashion/confusion-making-process.jpg', info: 'Process',
+  { project: '08', group: 'Confusion', title: 'Confusion — Making Process', src: '', info: 'Process',
     desc: 'Material tests and repeated fittings to find the balance between volume and structure.' },
-  { project: '09', group: 'Confusion', title: 'Confusion — Tech Pack, Top', src: 'images/fashion/confusion-tech-pack-top.jpg', info: 'Tech Pack',
+  { project: '09', group: 'Confusion', title: 'Confusion — Tech Pack, Top', src: '', info: 'Tech Pack',
     desc: 'Sample work order for the padded top — measurements, details and construction notes.' },
-  { project: '10', group: 'Confusion', title: 'Confusion — Tech Pack, Skirt', src: 'images/fashion/confusion-tech-pack-skirt.jpg', info: 'Tech Pack',
+  { project: '10', group: 'Confusion', title: 'Confusion — Tech Pack, Skirt', src: '', info: 'Tech Pack',
     desc: 'Sample work order for the wrapped denim skirt with belt details.' },
   // 기성복 디자인 — Ready-to-wear
-  { project: '11', group: 'Ready-to-wear', title: 'Ready-to-wear — Line-up', src: 'images/fashion/rtw-line-up.jpg', info: 'Ready-to-wear',
+  { project: '11', group: 'Ready-to-wear', title: 'Ready-to-wear — Line-up', src: '', info: 'Ready-to-wear',
     desc: 'A ready-to-wear line-up of layered, utility-driven pieces.' },
-  { project: '12', group: 'Ready-to-wear', title: 'Ready-to-wear — Tech Pack 01', src: 'images/fashion/rtw-tech-pack-01.jpg', info: 'Tech Pack',
+  { project: '12', group: 'Ready-to-wear', title: 'Ready-to-wear — Tech Pack 01', src: '', info: 'Tech Pack',
     desc: 'Cargo skirt with fold-over waist and drawcord hem.' },
-  { project: '13', group: 'Ready-to-wear', title: 'Ready-to-wear — Tech Pack 02', src: 'images/fashion/rtw-tech-pack-02.jpg', info: 'Tech Pack',
+  { project: '13', group: 'Ready-to-wear', title: 'Ready-to-wear — Tech Pack 02', src: '', info: 'Tech Pack',
     desc: 'Wide trousers with crossing belt straps.' },
-  { project: '14', group: 'Ready-to-wear', title: 'Ready-to-wear — Tech Pack 03', src: 'images/fashion/rtw-tech-pack-03.jpg', info: 'Tech Pack',
+  { project: '14', group: 'Ready-to-wear', title: 'Ready-to-wear — Tech Pack 03', src: '', info: 'Tech Pack',
     desc: 'Knit top with an asymmetric open shoulder.' },
-  { project: '15', group: 'Ready-to-wear', title: 'Ready-to-wear — Tech Pack 04', src: 'images/fashion/rtw-tech-pack-04.jpg', info: 'Tech Pack',
+  { project: '15', group: 'Ready-to-wear', title: 'Ready-to-wear — Tech Pack 04', src: '', info: 'Tech Pack',
     desc: 'Denim bustier with belt-buckle closures.' },
 ];
 
@@ -49,8 +49,9 @@ window.FashionData = (() => {
   const HERO_H = 3.1;
 
   const PALETTE = [
-    ['#d9d3c9', '#2a2724'], ['#1f2422', '#e9e4da'], ['#b9573e', '#f3e6d6'], ['#cfd6c8', '#26302a'],
-    ['#d8d0dc', '#3b3142'], ['#e7e3dc', '#161616'], ['#26303a', '#efe7da'], ['#c9b79c', '#2b241c'],
+    // grey stand-ins (light grey background, darker grey silhouette)
+    ['#e6e6e6', '#bdbdbd'], ['#ebebeb', '#c4c4c4'], ['#e2e2e2', '#b8b8b8'], ['#ededed', '#c8c8c8'],
+    ['#e4e4e4', '#bababa'], ['#e9e9e9', '#c2c2c2'], ['#e0e0e0', '#b5b5b5'], ['#eeeeee', '#cacaca'],
   ];
   const ASPECTS = [1080 / 1350, 1080 / 1293, 1080 / 1349, 1, 1080 / 1440, 1080 / 1350, 4 / 3, 1080 / 1349];
 
