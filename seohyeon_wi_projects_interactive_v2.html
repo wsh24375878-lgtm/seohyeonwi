@@ -88,7 +88,8 @@ body.mode-space .scroller{visibility:hidden}
 body:not(.mode-space) .space{opacity:0;visibility:hidden;pointer-events:none}
 body.mode-space .space{transition:opacity .7s cubic-bezier(.65,0,.35,1)}
 .orb{position:absolute;left:50%;top:50%;width:0;height:0}
-.plane{position:absolute;left:0;top:0;background:var(--skeleton);overflow:hidden;will-change:transform,opacity;cursor:none}
+.plane{position:absolute;left:0;top:0;background:var(--skeleton);overflow:hidden;will-change:transform,opacity;cursor:pointer}
+body.mode-space .cursor{display:none}
 .plane img{display:block;width:100%;height:100%;object-fit:cover;-webkit-user-drag:none;user-select:none;pointer-events:none}
 @media (hover:none){.plane{cursor:pointer}}
 /* words left and right of the sphere */
@@ -171,7 +172,6 @@ body.mode-space .space{transition:opacity .7s cubic-bezier(.65,0,.35,1)}
       <p class="t"><span id="capTitle"></span></p>
       <p class="s"><span id="capSub"></span></p>
     </div>
-    <p class="space-hint">Drag to explore — click an image to open</p>
     <button class="space-index" id="spaceIndex" type="button">View all work</button>
   </div>
 </section>
@@ -280,13 +280,27 @@ body.mode-space .space{transition:opacity .7s cubic-bezier(.65,0,.35,1)}
     if (e.isTrusted) hasMouse = true;
     if (!hasMouse) return;
     mx = e.clientX; my = e.clientY;
-    const t = document.elementFromPoint(mx, my)?.closest('.tile, .plane') || null;
+    if (inSpace()) {
+      // sphere: hover shows the title; with an image open, the label reads "View" on it and "Close" elsewhere
+      const t = document.elementFromPoint(mx, my)?.closest('.plane') || null;
+      const p = t ? planes[+t.dataset.p] : null;
+      hoverTile = t;
+      if (open) {
+        label.textContent = p === open ? 'View' : 'Close';
+        label.classList.add('show');
+      } else {
+        label.classList.remove('show');
+        setCaption(p ? p.work : null);
+      }
+      return;
+    }
+    label.textContent = 'View';
+    const t = document.elementFromPoint(mx, my)?.closest('.tile') || null;
     if (t !== hoverTile) {
       hoverTile?.classList.remove('is-hover');
       hoverTile = t;
       t?.classList.add('is-hover');
       label.classList.toggle('show', !!t);
-      if (inSpace()) setCaption(t ? planes[+t.dataset.p].work : null);
     }
   });
   // after scrolling under a still mouse, re-check which tile is under it
@@ -324,106 +338,137 @@ body.mode-space .space{transition:opacity .7s cubic-bezier(.65,0,.35,1)}
     cap.classList.add('show');
   }
 
+  /* ---------- layout numbers (all in CSS px) ----------
+     - one 3:4 plane per work, at least 18 planes (works repeat to fill)
+     - plane height 82px (60px on phones), sphere radius 250px;
+       both × 0.8 on screens 1025–1440px wide
+     - perspective camera: fov 60°, so the camera sits 0.866 × screen height away */
+  const MIN_PLANES = 18, PLANE_AR = .75;
   function buildSphere() {
-    // every work gives up to 3 images; repeat the set until the sphere is full enough
-    const items = [];
-    works.forEach(w => w.images.slice(0, 3).forEach(img => items.push({ work: w, img })));
-    if (!items.length) return;
-    const N = Math.min(90, Math.max(48, items.length));
+    if (!works.length) return;
+    const N = Math.max(works.length, MIN_PLANES);
     const golden = Math.PI * (3 - Math.sqrt(5));
     for (let i = 0; i < N; i++) {
-      const it = items[i % items.length];
-      const yy = 1 - (i + .5) / N * 2, rr = Math.sqrt(1 - yy * yy), th = golden * i;
+      const w = works[i % works.length];
+      const yy = i * (2 / N) - 1 + 1 / N, rr = Math.sqrt(1 - yy * yy), th = golden * i;   // even spread (golden spiral)
       const el = document.createElement('div');
       el.className = 'plane';
       el.dataset.p = i;
-      el.innerHTML = `<img src="${it.img.url}" alt="" draggable="false">`;
+      el.innerHTML = w.images[0] ? `<img src="${w.images[0].url}" alt="" draggable="false">` : '';
       orb.appendChild(el);
-      planes.push({ el, work: it.work, ar: Math.min(1.5, Math.max(.62, it.img.ar || .8)),
-        x: Math.cos(th) * rr, y: yy, z: Math.sin(th) * rr, delay: Math.random() * .5, hov: 0 });
+      planes.push({ el, work: w, x: Math.cos(th) * rr, y: yy, z: Math.sin(th) * rr, ex: 0 });
     }
     sizePlanes();
   }
 
-  let R = 300;
+  let R = 250, PH = 82;
   function sizePlanes() {
-    const small = innerWidth <= 640;
-    R = Math.min(innerWidth, innerHeight) * (small ? .4 : .34);
-    const base = R * (small ? .4 : .34);
-    planes.forEach(p => {
-      p.w = p.ar >= 1 ? base : base * p.ar;
-      p.h = p.ar >= 1 ? base / p.ar : base;
-      p.el.style.width = p.w + 'px'; p.el.style.height = p.h + 'px';
-    });
+    const W = innerWidth, k = W >= 1025 && W <= 1440 ? .8 : 1;
+    PH = W <= 640 ? 60 : 82 * k;
+    R = W <= 640 ? Math.max(0, (W - 48) / 2 - PH / 2) : 250 * k;
   }
   addEventListener('resize', sizePlanes);
 
-  /* turning: drag with momentum, the wheel spins it, and it drifts slowly on its own */
-  let yaw = 0, pitch = .25, vYaw = 0, vPitch = 0, dragging = false, px = 0, py = 0, moved = 0;
-  let introStart = performance.now(), exitStart = -1;
+  /* ---------- turning ----------
+     drag / wheel add to a velocity that slows with friction (.94) and is followed with smoothing (.11);
+     on its own the sphere turns .001 rad per frame around an axis tilted 23° — it stops once you touch it */
+  const DRAG = .001, WHEEL = .0002, FRICTION = .94, SMOOTH = .11, AUTO = .001, TILT = 23 * Math.PI / 180;
+  const AXIS = [Math.sin(TILT), Math.cos(TILT), 0];
+  let M = [1, 0, 0, 0, 1, 0, 0, 0, 1];                  // current rotation (3×3, row-major)
+  let vx = 0, vy = 0, tx = 0, ty = 0, sx = 0, sy = 0, autoOn = true;
+  function rotate(ax, ay, az, a) {                      // M = R(axis, a) · M
+    if (!a) return;
+    const c = Math.cos(a), s = Math.sin(a), t = 1 - c;
+    const r = [t * ax * ax + c, t * ax * ay - s * az, t * ax * az + s * ay,
+               t * ax * ay + s * az, t * ay * ay + c, t * ay * az - s * ax,
+               t * ax * az - s * ay, t * ay * az + s * ax, t * az * az + c];
+    const m = M, o = new Array(9);
+    for (let i = 0; i < 3; i++) for (let j = 0; j < 3; j++) o[i * 3 + j] = r[i * 3] * m[j] + r[i * 3 + 1] * m[3 + j] + r[i * 3 + 2] * m[6 + j];
+    M = o;
+  }
+
+  let dragging = false, px = 0, py = 0, moved = 0;
+  let introStart = performance.now();
+  let open = null, openAt = 0, closing = null, closeAt = 0;   // the plane opened by a click
+  const pointerPlane = (x, y) => document.elementFromPoint(x, y)?.closest('.plane');
   space.addEventListener('pointerdown', e => {
-    if (e.target.closest('button') || exitStart >= 0) return;
-    dragging = true; moved = 0; px = e.clientX; py = e.clientY; vYaw = vPitch = 0;
-    space.setPointerCapture(e.pointerId);
-    space.classList.add('is-grabbing');
+    if (e.target.closest('button')) return;
+    dragging = true; moved = 0; px = e.clientX; py = e.clientY;
+    try { space.setPointerCapture(e.pointerId); } catch (err) {}
+    if (!open) space.classList.add('is-grabbing');
   });
   space.addEventListener('pointermove', e => {
     if (!dragging) return;
     const dx = e.clientX - px, dy = e.clientY - py;
-    px = e.clientX; py = e.clientY; moved += Math.abs(dx) + Math.abs(dy);
-    vYaw = dx * .005; vPitch = dy * .005;
-    yaw += vYaw; pitch = Math.max(-1.2, Math.min(1.2, pitch + vPitch));
+    px = e.clientX; py = e.clientY; moved += Math.hypot(dx, dy);
+    if (open) return;
+    vx += dx * DRAG; vy += dy * DRAG; autoOn = false;
   });
   const endDrag = e => {
     if (!dragging) return;
     dragging = false;
     space.classList.remove('is-grabbing');
-    if (e.type === 'pointerup' && moved < 6) {
-      const hit = document.elementFromPoint(e.clientX, e.clientY)?.closest('.plane');
-      if (hit) pick(planes[+hit.dataset.p]);
-    }
+    if (e.type !== 'pointerup' || moved >= 10) return;
+    const hit = pointerPlane(e.clientX, e.clientY), p = hit ? planes[+hit.dataset.p] : null;
+    if (open) {
+      if (p === open) enterGrid(open.work);            // second click on the open image → the grid at that work
+      else closeOpen();                                // click anywhere else → close it
+    } else if (p) openPlane(p);                        // first click → the image opens large in the middle
   };
   space.addEventListener('pointerup', endDrag);
   space.addEventListener('pointercancel', endDrag);
   space.addEventListener('wheel', e => {
     e.preventDefault();
-    vYaw += Math.max(-60, Math.min(60, e.deltaY)) * .00035;
+    if (open) return;
+    vx += e.deltaY * WHEEL; autoOn = false;
   }, { passive: false });
+  addEventListener('keydown', e => { if (e.key === 'Escape' && open && inSpace()) closeOpen(); });
 
-  const easeOut = t => 1 - Math.pow(1 - Math.min(Math.max(t, 0), 1), 4);
-  (function spin(now) {
+  function openPlane(p) { closing = null; open = p; openAt = performance.now(); setCaption(p.work); }
+  function closeOpen() { if (!open) return; closing = open; closeAt = performance.now(); open = null; label.classList.remove('show'); }
+
+  const clamp01 = t => Math.min(Math.max(t, 0), 1);
+  const power4 = t => 1 - Math.pow(1 - clamp01(t), 5);           // gsap "power4.out"
+  const power3 = t => 1 - Math.pow(1 - clamp01(t), 4);           // gsap "power3.out"
+  (function spin() {
     requestAnimationFrame(spin);
-    if (!inSpace() && exitStart < 0) return;
-    if (!dragging) {
-      yaw += vYaw + (reduce ? 0 : .0015);
-      pitch = Math.max(-1.2, Math.min(1.2, pitch + vPitch));
-      vYaw *= .94; vPitch *= .9;
-    }
-    const cy = Math.cos(yaw), sy = Math.sin(yaw), cp = Math.cos(pitch), sp = Math.sin(pitch);
-    const D = R * 2.6;
-    const t = (now - introStart) / 1000;
-    const ex = exitStart >= 0 ? easeOut((now - exitStart) / 700) : 0;
-    planes.forEach(p => {
-      const x1 = p.x * cy + p.z * sy, z1 = -p.x * sy + p.z * cy;
-      const y2 = p.y * cp - z1 * sp, z2 = p.y * sp + z1 * cp;
-      const k = reduce ? 1 : easeOut((t - p.delay) / 1.4);   // intro: planes bloom out from the centre
-      const r = R * k * (1 + ex * 1.4);                        // exit: the sphere opens outward
-      const persp = D / (D - z2 * r);
-      p.hov += ((p.el === hoverTile ? 1 : 0) - p.hov) * .15;
-      const s = persp * (.4 + .6 * k) * (1 + .08 * p.hov);
-      const depth = (z2 + 1) / 2;
-      p.el.style.transform = `translate3d(${(x1 * r * persp - p.w / 2).toFixed(1)}px,${(y2 * r * persp - p.h / 2).toFixed(1)}px,0) scale(${s.toFixed(3)})`;
-      p.el.style.opacity = ((.2 + .8 * depth) * Math.min(1, k * 1.5) * (1 - ex)).toFixed(3);
-      p.el.style.zIndex = Math.round(depth * 1000);
-    });
-  })(performance.now());
+    if (!inSpace()) return;
+    const now = performance.now();
+    // velocity → target angle (friction), then smooth follow
+    tx += vx; ty += vy; vx *= FRICTION; vy *= FRICTION;
+    const nx = sx + (tx - sx) * SMOOTH, ny = sy + (ty - sy) * SMOOTH;
+    rotate(0, 1, 0, nx - sx); rotate(1, 0, 0, ny - sy);
+    sx = nx; sy = ny;
+    if (autoOn && !reduce && !open) rotate(AXIS[0], AXIS[1], AXIS[2], AUTO);
 
-  /* switching between the sphere and the grid */
-  function pick(p) {
-    if (exitStart >= 0) return;
-    exitStart = performance.now();
-    setTimeout(() => { enterGrid(p.work); exitStart = -1; }, 380);
-  }
+    const H = innerHeight, D = H / (2 * Math.tan(Math.PI / 6));   // camera distance for fov 60°
+    const ti = reduce ? 1 : (now - introStart) / 1000;
+    const exOpen = open ? power4((now - openAt) / 800) : 0;
+    const exClose = closing ? 1 - power4((now - closeAt) / 800) : 0;
+    if (closing && exClose <= 0) closing = null;
+    const spread = Math.max(exOpen, exClose);                     // how far the others are pushed out and faded
+    const bigH = .7 * H, bigW = bigH * PLANE_AR;
+    const m = M;
+    planes.forEach((p, i) => {
+      // intro: planes burst out from the middle with a little overshoot (1s, power3.out)
+      const it = clamp01(ti), ke = power3(it), over = 1 + .1 * Math.sin(Math.PI * it);
+      const x = (m[0] * p.x + m[1] * p.y + m[2] * p.z) * R * ke * over;
+      const y = (m[3] * p.x + m[4] * p.y + m[5] * p.z) * R * ke * over;
+      const z = (m[6] * p.x + m[7] * p.y + m[8] * p.z) * R * ke * over;
+      const e = p === open ? exOpen : p === closing ? exClose : 0;   // this plane's open amount
+      const push = e > 0 ? 1 : 1 + .8 * spread;                      // others are pushed out ×1.8
+      let X = x * push, Y = y * push, Z = z * push;
+      X += (0 - X) * e; Y += (0 - Y) * e; Z += (0 - Z) * e;           // the open plane moves to the middle
+      const s = D / (D - Z);
+      const w = (PH * PLANE_AR) + (bigW - PH * PLANE_AR) * e, h = PH + (bigH - PH) * e;
+      const ww = w * s, hh = h * s;
+      p.el.style.width = ww.toFixed(1) + 'px'; p.el.style.height = hh.toFixed(1) + 'px';
+      p.el.style.transform = `translate3d(${(X * s - ww / 2).toFixed(1)}px,${(-Y * s - hh / 2).toFixed(1)}px,0)`;
+      p.el.style.opacity = e > 0 ? 1 : (1 - spread).toFixed(3);
+      p.el.style.zIndex = e > 0 ? 5000 : Math.round(1000 + Z);
+      p.el.style.visibility = ke <= .001 ? 'hidden' : '';
+    });
+  })();
   function enterGrid(work, push = true, key) {
     key = key || (work ? work.category : 'all');
     if (push) history.pushState(null, '', gridUrl(key));
@@ -446,6 +491,7 @@ body.mode-space .space{transition:opacity .7s cubic-bezier(.65,0,.35,1)}
     document.title = 'Archive — SEOHYEON WI™';
     label.classList.remove('show'); hoverTile = null;
     window.scrollTo(0, 0); y = 0;
+    open = null; closing = null; setCaption(null);
     document.body.classList.add('mode-space');
     space.classList.remove('is-in'); void space.offsetWidth; space.classList.add('is-in');
     introStart = performance.now();
