@@ -4,73 +4,97 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>Archive — SEOHYEON WI™</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
 <style>
+/* =========================================================
+   Archive — image grid
+   Centred heading, 3:4 tiles in 3 / 2 / 1 columns, small title + serif
+   category under each tile, "View" label following the cursor,
+   eased scrolling and soft glass bands at the top and bottom edge.
+   (The previous design is saved as ../_archive-original-design-20261120.html)
+   ========================================================= */
+:root{
+  --ink:#0a0a0a; --muted:#8c8c8c; --skeleton:#ededed;
+  --chip:rgba(237,237,237,.5);
+  --pad:8px; --col-gap:8px; --row-gap:40px; --cols:3;
+  --serif:'Instrument Serif','Times New Roman',serif;
+  --sans:Arial,Helvetica,sans-serif;
+}
 *{box-sizing:border-box}
-html,body{margin:0;min-height:100%;background:#fff;color:#050505;font-family:Arial,Helvetica,sans-serif;font-weight:400}
+html,body{margin:0;background:#fff;color:var(--ink);font-family:var(--sans);font-weight:400;-webkit-font-smoothing:antialiased}
 body{overflow-x:hidden}
 a{color:inherit;text-decoration:none}
 button{font:inherit;color:inherit}
-p,h2{margin:0}
+p,h1,h2{margin:0;font-weight:400}
 
-/* white strip behind the fixed top bar while scrolling */
-.top-fade{position:fixed;top:0;left:0;right:0;height:46px;background:#fff;z-index:99}
-/* white strip under the corner clock so rows slide behind it */
-.bottom-fade{position:fixed;left:0;right:0;bottom:0;height:54px;background:#fff;z-index:89}
-@media (max-width:700px){.bottom-fade{display:none}}
+/* eased scrolling: the page keeps its real height, the content is drawn fixed and glides to the scroll position */
+.scroller{position:fixed;top:0;left:0;width:100%;will-change:transform}
+body.native .scroller{position:static;transform:none!important}
 
-.page{padding:46px 24px 80px}
+/* ---------- heading ---------- */
+.head{padding:200px var(--pad) 80px;text-align:center}
+.head-line{font-size:16px;line-height:1.2;letter-spacing:-.01em}
+.head-line .serif{font-family:var(--serif);font-size:17px}
+.filters{display:flex;justify-content:center;flex-wrap:wrap;gap:2px;margin-top:22px}
+.filter{all:unset;cursor:pointer;padding:6px 8px 4px;border-radius:4px;background:var(--chip);-webkit-backdrop-filter:blur(40px);backdrop-filter:blur(40px);font-size:12px;line-height:1;color:var(--muted);transition:color .2s ease,background-color .2s ease}
+.filter:hover{color:var(--ink)}
+.filter.is-active{color:var(--ink);background:#e4e4e4}
+.filter sup{font-size:9px;margin-left:2px;font-variant-numeric:tabular-nums}
+.filter:focus-visible{outline:2px solid #777;outline-offset:2px}
 
-/* ---------- filters (stay under the top bar) ---------- */
-.filters{position:sticky;top:46px;z-index:50;display:flex;flex-wrap:wrap;gap:6px 22px;padding:8px 0 18px;background:#fff;font-size:15px;line-height:1}
-.filter{all:unset;cursor:pointer;color:#8c8c8c;transition:color .2s ease}
-.filter:hover,.filter.is-active{color:#050505}
-.filter.is-active .name{text-decoration:underline;text-underline-offset:3px;text-decoration-thickness:1px}
-.filter .count{font-size:10px;vertical-align:top;margin-left:2px;font-variant-numeric:tabular-nums}
-.filter:focus-visible{outline:2px solid #777;outline-offset:3px}
+/* ---------- grid ---------- */
+.grid{display:grid;grid-template-columns:repeat(var(--cols),1fr);column-gap:var(--col-gap);row-gap:var(--row-gap);padding:0 var(--pad)}
+.tile{display:block;cursor:none}
+.tile-media{position:relative;aspect-ratio:3/4;overflow:hidden;background:var(--skeleton)}
+.tile-media img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;-webkit-user-drag:none;
+  opacity:0;filter:blur(18px);transform:scale(1.04);transition:opacity .6s ease,filter .6s ease,transform .9s cubic-bezier(.16,1,.3,1)}
+.tile-media img.is-loaded{opacity:1;filter:blur(0);transform:none}
+/* hover: a second image (when there is one) fades in through a blur */
+.tile-media img.alt{opacity:0;filter:blur(18px)}
+.tile.is-hover .tile-media img.alt.is-loaded{opacity:1;filter:blur(0)}
+.tile.is-hover .tile-media img.main.has-alt{filter:blur(10px)}
+.chips{position:absolute;top:8px;left:8px;z-index:2;display:flex;gap:2px}
+.chip{padding:6px 8px 4px;border-radius:4px;background:var(--chip);-webkit-backdrop-filter:blur(40px);backdrop-filter:blur(40px);font-size:12px;line-height:1}
+.tile-title{margin-top:12px;font-size:12px;line-height:1.2}
+.tile-cat{margin-top:6px;padding-bottom:6px;font-family:var(--serif);font-size:13px;line-height:1.2;color:var(--muted)}
+.empty{grid-column:1/-1;padding:40px 0;text-align:center;font-size:13px;color:var(--muted)}
 
-/* ---------- one row per project ---------- */
-.list{border-top:1px solid #050505}
-.row{display:grid;grid-template-columns:minmax(180px,1fr) 4fr;gap:24px;padding:18px 0 20px;border-bottom:1px solid #e7e7e7;opacity:0;transform:translateY(12px);transition:opacity .5s cubic-bezier(.33,1,.68,1),transform .5s cubic-bezier(.33,1,.68,1)}
-.row.is-in{opacity:1;transform:none}
-.meta{font-size:15px;line-height:1.3}
-.meta .num{display:block;margin-bottom:10px;font-variant-numeric:tabular-nums}
-.meta .title{display:block}
-.meta .title:hover{text-decoration:underline;text-underline-offset:3px;text-decoration-thickness:1px}
-.muted{color:#8c8c8c}
+/* ---------- footer ---------- */
+.foot{padding:240px var(--pad) 20px;text-align:center;font-family:var(--serif);font-size:13px;line-height:1.2}
 
-.strip{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;margin-right:-24px;padding-right:24px}
-.strip::-webkit-scrollbar{display:none}
-.strip a{flex:0 0 auto;display:block;height:200px;background:#e5e5e5;border-radius:2px;overflow:hidden}
-.strip img{display:block;height:100%;width:auto;-webkit-user-drag:none;transition:opacity .25s ease}
-.strip:hover img{opacity:.55}
-.strip a:hover img{opacity:1}
+/* ---------- glass bands at the top and bottom edge ---------- */
+.glass{position:fixed;left:0;right:0;height:8vh;z-index:80;pointer-events:none;-webkit-backdrop-filter:blur(6px) saturate(1.15);backdrop-filter:blur(6px) saturate(1.15)}
+.glass.top{top:0;-webkit-mask-image:linear-gradient(#000,transparent);mask-image:linear-gradient(#000,transparent)}
+.glass.bottom{bottom:0;-webkit-mask-image:linear-gradient(transparent,#000);mask-image:linear-gradient(transparent,#000)}
 
-.empty{padding:40px 0;font-size:15px;color:#8c8c8c}
+/* ---------- "View" label that follows the cursor ---------- */
+.view-label{position:fixed;left:0;top:0;z-index:120;pointer-events:none;font-size:13px;line-height:1.2;color:#fff;mix-blend-mode:difference;
+  opacity:0;transform:translate(-50%,-50%) scale(.6);transition:opacity .6s cubic-bezier(.16,1,.3,1),transform .75s cubic-bezier(.16,1,.3,1)}
+.view-label.show{opacity:1;transform:translate(-50%,-50%) scale(1)}
+@media (hover:none){.view-label{display:none}.tile{cursor:pointer}}
 
+@media (max-width:1024px){:root{--cols:2}}
 @media (max-width:700px){
-  .top-fade{height:62px}
-  .page{padding:62px 14px 56px}
-  .filters{top:62px;gap:6px 14px;font-size:12px;padding:6px 0 14px}
-  .row{grid-template-columns:1fr;gap:10px;padding:14px 0 16px}
-  .meta{font-size:12px;display:flex;gap:10px;align-items:baseline;flex-wrap:wrap}
-  .meta .num{display:inline;margin:0}
-  .strip{margin-right:-14px;padding-right:14px}
-  .strip a{height:140px}
+  :root{--pad:14px}
+  .head{padding:140px var(--pad) 48px}
+  .head-line{font-size:14px}.head-line .serif{font-size:15px}
 }
+@media (max-width:640px){:root{--cols:1;--row-gap:32px}}
+@media (prefers-reduced-motion:reduce){.tile-media img{transition:none}}
 </style>
 <link rel="stylesheet" href="site-nav.css">
 <link rel="stylesheet" href="site-cursor.css">
 </head>
 <body>
-<div class="top-fade" aria-hidden="true"></div>
-<div class="bottom-fade" aria-hidden="true"></div>
 <header class="site-top">
   <a class="site-name" href="index.html">SEOHYEON WI™</a>
   <nav class="site-cats" aria-label="Work categories">
     <a href="fashion.html">Fashion</a>
     <a href="portfolio_with_detail_pages/index.html">Object</a>
     <a href="graphic.html">Graphic</a>
-    <a href="seohyeon_wi_projects_interactive_v2.html" data-filter="all">Archive</a>
+    <a href="seohyeon_wi_projects_interactive_v2.html" class="is-active" aria-current="page">Archive</a>
   </nav>
   <nav class="site-info" aria-label="About and contact">
     <a href="about.html">About</a>
@@ -78,10 +102,20 @@ p,h2{margin:0}
   </nav>
 </header>
 
-<main class="page">
-  <div class="filters" id="filters" role="tablist" aria-label="Filter work by category"></div>
-  <section class="list" id="list" aria-live="polite"></section>
-</main>
+<div class="scroller" id="scroller">
+  <main>
+    <section class="head">
+      <h1 class="head-line">Archive <span class="serif" id="headSub">— Fashion, Object &amp; Graphic</span></h1>
+      <div class="filters" id="filters" role="tablist" aria-label="Filter work by category"></div>
+    </section>
+    <section class="grid" id="grid" aria-live="polite"></section>
+    <footer class="foot">SEOHYEON WI™ — Archive</footer>
+  </main>
+</div>
+
+<div class="glass top" aria-hidden="true"></div>
+<div class="glass bottom" aria-hidden="true"></div>
+<div class="view-label" id="viewLabel" aria-hidden="true">View</div>
 <div class="cursor" aria-hidden="true"></div>
 
 <script src="fashion-data.js"></script>
@@ -91,21 +125,13 @@ p,h2{margin:0}
   const ORDER = ['all', 'fashion', 'object', 'graphic'];
   const NAMES = { all: 'All', ...WorksData.CATEGORY_NAMES };
   const filtersEl = document.getElementById('filters');
-  const listEl = document.getElementById('list');
+  const grid = document.getElementById('grid');
+  const headSub = document.getElementById('headSub');
   const param = new URLSearchParams(location.search).get('category');
   let current = ORDER.includes(param) ? param : 'all';
   let works = [];
 
-  // the top bar underlines Graphic when filtered to it, otherwise Archive
-  function markTopBar() {
-    const key = 'all';
-    document.querySelectorAll('.site-cats a[data-filter]').forEach(a => {
-      const on = a.dataset.filter === key;
-      a.classList.toggle('is-active', on);
-      if (on) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current');
-    });
-  }
-
+  /* ---------- filters ---------- */
   function renderFilters() {
     filtersEl.innerHTML = '';
     ORDER.forEach(key => {
@@ -115,29 +141,46 @@ p,h2{margin:0}
       b.type = 'button';
       b.setAttribute('role', 'tab');
       b.setAttribute('aria-selected', String(key === current));
-      b.innerHTML = `<span class="name">${NAMES[key]}</span><span class="count">${count}</span>`;
+      b.innerHTML = `${NAMES[key]}<sup>${count}</sup>`;
       b.addEventListener('click', () => setFilter(key));
       filtersEl.appendChild(b);
     });
   }
 
-  function renderList() {
+  function setHead() {
+    const years = works.map(w => parseInt(w.year, 10)).filter(Boolean);
+    const span = years.length ? `, ${Math.min(...years)}—${Math.max(...years)}` : '';
+    headSub.textContent = current === 'all' ? `— Fashion, Object & Graphic${span}` : `— ${NAMES[current]}`;
+  }
+
+  /* ---------- grid ---------- */
+  function revealImg(img) {
+    const done = () => img.classList.add('is-loaded');
+    if (img.complete && img.naturalWidth) done(); else img.addEventListener('load', done, { once: true });
+  }
+  function renderGrid() {
     const shown = current === 'all' ? works : works.filter(w => w.category === current);
-    listEl.innerHTML = '';
-    if (!shown.length) { listEl.innerHTML = '<p class="empty">No work here yet.</p>'; return; }
-    shown.forEach((w, i) => {
-      const row = document.createElement('article');
-      row.className = 'row';
-      const meta = [w.categoryName, w.info, w.year].filter(Boolean).join(' · ');
-      row.innerHTML =
-        `<div class="meta"><span class="num muted">${String(i + 1).padStart(2, '0')}</span>` +
-        `<a class="title" href="${w.url}">${w.title}</a><span class="muted">${meta}</span></div>` +
-        `<div class="strip">${w.images.map((im, k) =>
-          `<a href="${w.url}" aria-label="${w.title}, image ${k + 1}" style="aspect-ratio:${im.ar}"><img src="${im.url}" alt="" loading="lazy"></a>`).join('')}</div>`;
-      listEl.appendChild(row);
-      setTimeout(() => row.classList.add('is-in'), 40 + i * 45);   // rows rise in one after another
-      enableDragScroll(row.querySelector('.strip'));
+    grid.innerHTML = '';
+    if (!shown.length) { grid.innerHTML = '<p class="empty">No work here yet.</p>'; measure(); return; }
+    shown.forEach(w => {
+      const [first, second] = w.images;
+      const t = document.createElement('a');
+      t.className = 'tile';
+      t.href = w.url;
+      t.setAttribute('aria-label', `${w.title} — ${w.categoryName}`);
+      const info = [w.info, w.year].filter(Boolean).join(', ');
+      t.innerHTML =
+        `<div class="tile-media">` +
+          (first ? `<img class="main${second ? ' has-alt' : ''}" src="${first.url}" alt="" loading="lazy">` : '') +
+          (second ? `<img class="alt" src="${second.url}" alt="" loading="lazy">` : '') +
+          `<div class="chips"><span class="chip">${w.categoryName}</span></div>` +
+        `</div>` +
+        `<p class="tile-title">${w.title}</p>` +
+        `<p class="tile-cat">${info || w.categoryName}</p>`;
+      grid.appendChild(t);
+      t.querySelectorAll('img').forEach(revealImg);
     });
+    measure();
   }
 
   function setFilter(key) {
@@ -145,39 +188,55 @@ p,h2{margin:0}
     current = key;
     history.replaceState(null, '', key === 'all' ? 'seohyeon_wi_projects_interactive_v2.html' : `seohyeon_wi_projects_interactive_v2.html?category=${key}`);
     document.title = `${key === 'all' ? 'Archive' : NAMES[key]} — SEOHYEON WI™`;
-    markTopBar();
-    renderFilters();
-    renderList();
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    renderFilters(); setHead(); renderGrid();
+    window.scrollTo(0, 0); y = 0;
   }
 
-  // Graphic / Archive in the top bar just switch the filter on this page
-  document.querySelectorAll('.site-cats a[data-filter]').forEach(a => {
-    a.addEventListener('click', e => { e.preventDefault(); setFilter(a.dataset.filter); });
+  /* ---------- eased scrolling (wheel, touch and keys all use the real page scroll) ---------- */
+  const scroller = document.getElementById('scroller');
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (reduce) document.body.classList.add('native');
+  let y = scrollY;
+  function measure() { if (!reduce) document.body.style.height = scroller.offsetHeight + 'px'; }
+  new ResizeObserver(measure).observe(scroller);
+  (function frame() {
+    if (!reduce) {
+      y += (scrollY - y) * .12;
+      if (Math.abs(scrollY - y) < .1) y = scrollY;
+      scroller.style.transform = `translate3d(0,${-y.toFixed(2)}px,0)`;
+    }
+    requestAnimationFrame(frame);
+  })();
+
+  /* ---------- hover: "View" label follows the cursor, second image fades in ---------- */
+  const label = document.getElementById('viewLabel');
+  let lx = innerWidth / 2, ly = innerHeight / 2, mx = lx, my = ly, hoverTile = null, hasMouse = false;
+  addEventListener('pointermove', e => {
+    if (e.pointerType !== 'mouse') return;
+    if (e.isTrusted) hasMouse = true;
+    if (!hasMouse) return;
+    mx = e.clientX; my = e.clientY;
+    const t = document.elementFromPoint(mx, my)?.closest('.tile') || null;
+    if (t !== hoverTile) {
+      hoverTile?.classList.remove('is-hover');
+      hoverTile = t;
+      t?.classList.add('is-hover');
+      label.classList.toggle('show', !!t);
+    }
   });
+  // after scrolling under a still mouse, re-check which tile is under it
+  addEventListener('scroll', () => dispatchEvent(new PointerEvent('pointermove', { clientX: mx, clientY: my, pointerType: 'mouse' })), { passive: true });
+  (function follow() {
+    lx += (mx - lx) * .18; ly += (my - ly) * .18;
+    label.style.left = lx + 'px'; label.style.top = ly + 'px';
+    requestAnimationFrame(follow);
+  })();
 
-  // drag the image rows sideways with the mouse (touch scrolls natively)
-  function enableDragScroll(strip) {
-    let down = false, startX = 0, startLeft = 0, moved = 0;
-    strip.addEventListener('pointerdown', e => {
-      if (e.pointerType !== 'mouse' || e.button !== 0) return;
-      down = true; moved = 0; startX = e.clientX; startLeft = strip.scrollLeft;
-    });
-    addEventListener('pointermove', e => {
-      if (!down) return;
-      moved = Math.max(moved, Math.abs(e.clientX - startX));
-      strip.scrollLeft = startLeft - (e.clientX - startX);
-    });
-    addEventListener('pointerup', () => { down = false; });
-    strip.addEventListener('click', e => { if (moved > 6) { e.preventDefault(); moved = 0; } }, true);
-  }
-
+  /* ---------- boot ---------- */
   document.title = `${current === 'all' ? 'Archive' : NAMES[current]} — SEOHYEON WI™`;
-  markTopBar();
   WorksData.loadAll().then(list => {
     works = list;
-    renderFilters();
-    renderList();
+    renderFilters(); setHead(); renderGrid();
   });
 })();
 </script>

@@ -55,17 +55,20 @@ a{color:inherit;text-decoration:none}
 @media (max-width:900px){.speed-zone{width:90px}}
 @media (max-width:700px){
 .text{left:14px;top:64px;width:88vw;font-size:clamp(20px,5vw,34px)}
-.gallery{top:calc(50% - 140px);height:300px}
-.track{left:-120px;gap:15px}
-.card:nth-child(8n+1){width:280px;height:205px;margin-top:50px}
-.card:nth-child(8n+2){width:175px;height:205px;margin-top:0}
-.card:nth-child(8n+3){width:290px;height:190px;margin-top:20px}
-.card:nth-child(8n+4){width:175px;height:205px;margin-top:0}
-.card:nth-child(8n+5){width:260px;height:175px;margin-top:25px}
-.card:nth-child(8n+6){width:210px;height:190px;margin-top:10px}
-.card:nth-child(8n+7){width:280px;height:200px;margin-top:22px}
-.card:nth-child(8n+8){width:175px;height:205px;margin-top:0}
-.speed-zone{width:48px;top:calc(50% - 140px);height:300px}.speed-hint{display:none}
+/* phones: smaller cards so 2–3 fit across a narrow screen */
+.gallery{top:calc(50% - 90px);height:190px;touch-action:none}
+.track{left:-60px;gap:10px;height:170px}
+.card:nth-child(8n+1){width:170px;height:124px;margin-top:30px}
+.card:nth-child(8n+2){width:106px;height:124px;margin-top:0}
+.card:nth-child(8n+3){width:176px;height:115px;margin-top:12px}
+.card:nth-child(8n+4){width:106px;height:124px;margin-top:0}
+.card:nth-child(8n+5){width:158px;height:106px;margin-top:15px}
+.card:nth-child(8n+6){width:127px;height:115px;margin-top:6px}
+.card:nth-child(8n+7){width:170px;height:121px;margin-top:13px}
+.card:nth-child(8n+8){width:106px;height:124px;margin-top:0}
+.card-label{font-size:11px;left:8px;bottom:8px}
+/* the finger drags the strip directly, so the edge speed zones are turned off */
+.speed-zone{display:none}
 }
 </style>
 <link rel="stylesheet" href="site-nav.css">
@@ -152,13 +155,52 @@ addEventListener('wheel', e => {
   wheelSpeed = Math.max(-WHEEL_MAX, Math.min(WHEEL_MAX, wheelSpeed - d * WHEEL_PUSH));
 }, { passive: false });
 
+// touch: drag the strip with a finger — it follows the finger, then glides on with the flick
+const gallery = document.querySelector('.gallery');
+const FLING_MAX = 60;              // fastest a flick can throw the strip (px per frame)
+let drag = null, justDragged = false;
+gallery.addEventListener('pointerdown', e => {
+  if (e.pointerType === 'mouse') return;   // desktop keeps the hover / wheel controls
+  drag = { id: e.pointerId, startX: e.clientX, lastX: e.clientX, lastT: performance.now(), v: 0, moved: false };
+  justDragged = false;
+  wheelSpeed = 0;
+});
+gallery.addEventListener('pointermove', e => {
+  if (!drag || e.pointerId !== drag.id) return;
+  if (!drag.moved && Math.abs(e.clientX - drag.startX) > 6) {
+    drag.moved = true;
+    drag.lastX = e.clientX;
+    gallery.setPointerCapture(e.pointerId);
+  }
+  if (!drag.moved) return;
+  const now = performance.now();
+  const dx = e.clientX - drag.lastX;
+  position += dx;
+  drag.v = dx / Math.max(1, now - drag.lastT) * 16.6667;   // px per frame, for the flick
+  drag.lastX = e.clientX; drag.lastT = now;
+});
+const endDrag = e => {
+  if (!drag || e.pointerId !== drag.id) return;
+  if (drag.moved) {
+    justDragged = true;
+    // a recent flick keeps going; a finger that stopped before lifting doesn't
+    const v = performance.now() - drag.lastT < 80 ? drag.v : 0;
+    wheelSpeed = Math.max(-FLING_MAX, Math.min(FLING_MAX, v));
+  }
+  drag = null;
+};
+gallery.addEventListener('pointerup', endDrag);
+gallery.addEventListener('pointercancel', endDrag);
+// a drag shouldn't open the card it ended on
+gallery.addEventListener('click', e => { if (justDragged) { e.preventDefault(); justDragged = false; } }, true);
+
 function animate(now) {
   // gallery
   const dt = Math.max(0, Math.min((now - last) / 16.6667, 2));
   last = now;
   currentSpeed += (targetSpeed - currentSpeed) * .05;
-  wheelSpeed *= Math.pow(.9, dt);  // wheel momentum fades out smoothly
-  position += (currentSpeed + wheelSpeed) * dt;
+  wheelSpeed *= Math.pow(.9, dt);  // wheel / flick momentum fades out smoothly
+  if (!(drag && drag.moved)) position += (currentSpeed + wheelSpeed) * dt;
   const w = track.scrollWidth;
   if (position > 0) position -= w * .42;
   else if (position < -w * .42) position += w * .42;
