@@ -62,7 +62,10 @@
   body.playing .minimise { pointer-events: auto; }
 
   #app, #carousel, .meta { opacity: 1; transition: opacity .3s ease .3s; }
-  body.playing #app, body.playing #carousel, body.playing .meta { opacity: 0; pointer-events: none; transition: opacity .3s ease 0s; }
+  body.playing #carousel, body.playing .meta { opacity: 0; pointer-events: none; transition: opacity .3s ease 0s; }
+  /* every work's object is shown in the main 3D view on white (same moves as the first object),
+     so the grey artwork frame and the old auto-turning preview are not used */
+  .work-bg, .work-live { display: none !important; }
   .playhead, .minimise, #playCarousel { opacity: 0; transition: opacity .3s ease 0s; }
   body.playing .playhead, body.playing .minimise, body.playing #playCarousel { opacity: 1; transition: opacity .3s ease .3s; }
   body.playing .minimise { transition: opacity .18s ease; }
@@ -224,33 +227,53 @@ const envTex = studio();
 scene.environment = pmrem.fromEquirectangular(envTex).texture;
 envTex.dispose(); pmrem.dispose();
 
-/* chrome material with a click ripple */
+/* chrome material with a click "water drop": the spot where you click dips in and springs back,
+   then a few wide rings spread out from it and fade — like one drop falling into still water */
 const material = new THREE.MeshStandardMaterial({ color: 0xffffff, metalness: 1, roughness: 0, envMapIntensity: 1.2 });
+const DROPS = 6;                                                   // drops that can ripple at the same time
+const dropC = Array.from({ length: DROPS }, () => new THREE.Vector3());
+const dropT = new Array(DROPS).fill(-1);                           // seconds since each drop fell (-1 = idle)
+let nextDrop = 0;
 material.onBeforeCompile = shader => {
   Object.assign(shader.uniforms, {
-    uRipCenter: { value: new THREE.Vector3() }, uRipTime: { value: -1 }, uRipSpeed: { value: 1.7 },
-    uRipWavelength: { value: .22 }, uRipWidth: { value: .55 }, uRipAmp: { value: .05 },
-    uRipNormal: { value: 1.3 }, uRipDecay: { value: 1.7 },
+    // up to DROPS drops at once, so a new click starts a new drop even while the last one is still moving
+    uRipCenter: { value: dropC }, uRipTime: { value: dropT },
+    uRipSpeed: { value: 2.2 },      // how fast the ring travels out
+    uRipWavelength: { value: .32 },   // width of the ring
+    uRipWidth: { value: .16 },        // length of the ring train (small = a single ring)
+    uRipAmp: { value: .028 },         // ring height (small = one little drop)
+    uRipNormal: { value: 1.2 },       // how strongly the ring bends the reflection
+    uRipDecay: { value: 5.6 },        // how fast everything calms down (gone in about 0.7 s)
   });
   material.userData.shader = shader;
   shader.vertexShader = `
-    uniform vec3 uRipCenter;
-    uniform float uRipTime, uRipSpeed, uRipWavelength, uRipWidth, uRipAmp, uRipNormal, uRipDecay;
-    float ripEnv(float d, float r) { return exp(-pow((d - r) / uRipWidth, 2.0)) * exp(-uRipTime * uRipDecay); }
+    #define DROPS ${DROPS}
+    uniform vec3 uRipCenter[DROPS];
+    uniform float uRipTime[DROPS];
+    uniform float uRipSpeed, uRipWavelength, uRipWidth, uRipAmp, uRipNormal, uRipDecay;
+    float dropWave(float d, float t) {
+      // the drop's impact: a small dip at the spot that bounces back up and settles
+      float crater = -1.2 * exp(-pow(d / .11, 2.0)) * cos(t * 20.0) * exp(-t * 8.0);
+      // rings: a short train of crests riding just behind the travelling front, lower as they spread
+      float x = d - t * uRipSpeed;
+      float rings = sin(x * 6.2831853 / uRipWavelength) * exp(-pow(x / uRipWidth, 2.0))
+                  * smoothstep(0.0, .08, t) / (1.0 + d * 2.0);
+      return (crater + rings) * exp(-t * uRipDecay);
+    }
   ` + shader.vertexShader;
   shader.vertexShader = shader.vertexShader.replace('#include <beginnormal_vertex>', `#include <beginnormal_vertex>
-    if (uRipTime >= 0.0) {
-      vec3 rDir = position - uRipCenter; float d = length(rDir);
+    for (int i = 0; i < DROPS; i++) {
+      float t = uRipTime[i];
+      if (t < 0.0) continue;
+      vec3 rDir = position - uRipCenter[i]; float d = length(rDir);
       rDir = d > 1e-4 ? rDir / d : vec3(0.0);
-      float r = uRipTime * uRipSpeed; float k = 6.2831853 / uRipWavelength;
-      float slope = cos((d - r) * k) * ripEnv(d, r) * k;
-      objectNormal = normalize(objectNormal - rDir * slope * uRipNormal * 0.05);
-    }`);
+      float slope = (dropWave(d + .01, t) - dropWave(max(d - .01, 0.0), t)) / .02 * uRipAmp;
+      objectNormal -= rDir * slope * uRipNormal;
+    }
+    objectNormal = normalize(objectNormal);`);
   shader.vertexShader = shader.vertexShader.replace('#include <begin_vertex>', `#include <begin_vertex>
-    if (uRipTime >= 0.0) {
-      float d2 = distance(position, uRipCenter); float r2 = uRipTime * uRipSpeed;
-      float wave = sin((d2 - r2) * (6.2831853 / uRipWavelength)) * ripEnv(d2, r2);
-      transformed += normal * wave * uRipAmp;
+    for (int i = 0; i < DROPS; i++) {
+      if (uRipTime[i] >= 0.0) transformed += normal * dropWave(distance(position, uRipCenter[i]), uRipTime[i]) * uRipAmp;
     }`);
 };
 
@@ -279,6 +302,10 @@ const holder = new THREE.Group();
 scene.add(holder);
 const mesh = new THREE.Mesh(geo, material);
 const baseScale = 2.6 * .96 / size.y;
+geo.computeBoundingSphere();
+const HERO_R = geo.boundingSphere.radius;
+// the object on screen: the first (pebble) object, or the open work's object — all share the same moves
+let subject = mesh;
 holder.add(mesh);
 
 let mobileScale = innerWidth <= 640 ? 1.4 : 1;
@@ -296,7 +323,7 @@ addEventListener('pointermove', e => {
 
 /* click: centre → ripple, sides → full spin */
 const ray = new THREE.Raycaster(), ndc = new THREE.Vector2();
-const RIP_TOTAL = 2, SPIN_DUR = 1.15, SIDE = .5;
+const RIP_TOTAL = .7, SPIN_DUR = 1.15, SIDE = .5;
 const pressIn = (RIP_TOTAL - .05) / 2, pressOut = pressIn + .05, pressEnd = pressIn + pressOut;
 let ripT = -1, spinT = -1, spinDir = 1, introDone = false;
 const easeInOutCubic = t => t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
@@ -304,10 +331,14 @@ const easeOutCubic = t => 1 - Math.pow(1 - t, 3);
 const easeSine = t => -(Math.cos(Math.PI * t) - 1) / 2;
 
 function clickEffect(hit) {
-  if (ripT >= 0 || spinT >= 0) return;
-  if (Math.abs(hit.point.x) >= SIDE) { spinT = 0; spinDir = hit.point.x >= 0 ? 1 : -1; return; }
-  const sh = material.userData.shader;
-  if (sh) { sh.uniforms.uRipCenter.value.copy(mesh.worldToLocal(hit.point.clone())); sh.uniforms.uRipTime.value = 0; }
+  if (Math.abs(hit.point.x) >= SIDE) {
+    if (spinT < 0) { spinT = 0; spinDir = hit.point.x >= 0 ? 1 : -1; }
+    return;
+  }
+  // every click drops a new drop right away, even while earlier ones are still spreading
+  dropC[nextDrop].copy(hit.object.worldToLocal(hit.point.clone()));
+  dropT[nextDrop] = 0;
+  nextDrop = (nextDrop + 1) % DROPS;
   ripT = 0;
 }
 
@@ -323,7 +354,7 @@ renderer.domElement.addEventListener('pointerdown', e => {
   const r = renderer.domElement.getBoundingClientRect();
   ndc.set((e.clientX - r.left) / r.width * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1);
   ray.setFromCamera(ndc, camera);
-  press = { x: e.clientX, y: e.clientY, hit: ray.intersectObject(mesh)[0] || null };
+  press = { x: e.clientX, y: e.clientY, hit: ray.intersectObject(subject, true)[0] || null };
   dragging = false;
   lastPX = e.clientX; lastPY = e.clientY;
   viewVY = viewVX = 0;
@@ -353,18 +384,16 @@ const endPress = () => {
 renderer.domElement.addEventListener('pointerup', endPress);
 renderer.domElement.addEventListener('pointercancel', endPress);
 
-/* scroll: the object swells or shrinks, turns and drifts with the wheel, then eases back */
+/* scroll: the object swells or shrinks with the wheel (a small springy bounce) and keeps that size */
 const WHEEL_GROW = .0025;          // size change per wheel step (down = bigger, up = smaller)
 const WHEEL_MIN = -.35, WHEEL_MAX = .6;
-const WHEEL_SPIN = .0009;          // turning per wheel step
 const WHEEL_DRIFT = .45;           // vertical drift at full size change (scene units)
-let wheelAcc = 0, wheelSpinV = 0, wheelRot = 0;
+let wheelAcc = 0;
 let sc = 1, scV = 0, driftY = 0, driftV = 0;
 addEventListener('wheel', e => {
-  if (!introDone || innerWidth <= 640 || document.body.classList.contains('playing')) return;
+  if (!introDone || innerWidth <= 640) return;
   const d = Math.max(-120, Math.min(120, e.deltaY));
   wheelAcc = Math.max(WHEEL_MIN, Math.min(WHEEL_MAX, wheelAcc + d * WHEEL_GROW));
-  wheelSpinV += d * WHEEL_SPIN;
 }, { passive: true });
 
 const clock = new THREE.Clock();
@@ -395,11 +424,9 @@ function tick() {
     rx += (tx - rx) * FOLLOW;
     ry += (ty - ry) * FOLLOW;
   }
-  // wheel: springy size + drift, turning with momentum, all settling back when scrolling stops
-  wheelAcc *= .965;
+  // wheel: springy size + drift toward the size picked with the wheel (it stays there, no easing back)
   scV += ((1 + wheelAcc) - sc) * .12; scV *= .74; sc += scV;
   driftV += (-wheelAcc * WHEEL_DRIFT - driftY) * .1; driftV *= .76; driftY += driftV;
-  wheelRot += wheelSpinV; wheelSpinV *= .94;
 
   // after a drag, the turn keeps a little momentum and eases out
   if (!dragging) {
@@ -408,8 +435,8 @@ function tick() {
   }
 
   holder.rotation.order = 'YXZ';   // turn around the vertical axis first, then tip
-  holder.rotation.y = rx + spin + wheelRot + viewY;
-  holder.rotation.x = ry - (1 - easeOutCubic(ik)) * INTRO_TILT + wheelSpinV * 2 + viewX;
+  holder.rotation.y = rx + spin + viewY;
+  holder.rotation.x = ry - (1 - easeOutCubic(ik)) * INTRO_TILT + viewX;
   holder.position.y = Math.sin(time * BOB_FREQ) * BOB_AMP + driftY;
 
   let press = 0;
@@ -417,14 +444,13 @@ function tick() {
     if (ripT < pressIn) press = easeSine(ripT / pressIn);
     else if (ripT < pressEnd) press = 1 - easeSine((ripT - pressIn) / pressOut);
     ripT += dt;
-    const sh = material.userData.shader;
-    if (ripT > RIP_TOTAL) { ripT = -1; if (sh) sh.uniforms.uRipTime.value = -1; }
-    else if (sh) sh.uniforms.uRipTime.value = ripT;
+    if (ripT > RIP_TOTAL) ripT = -1;
   }
-  applyScale((1 - .05 * press) * sc);
+  for (let i = 0; i < DROPS; i++) if (dropT[i] >= 0) { dropT[i] += dt; if (dropT[i] > RIP_TOTAL) dropT[i] = -1; }
+  applyScale((1 - .012 * press) * sc);
 
   scene.environmentRotation.y += ENV_SPIN * dt;
-  if ((!document.body.classList.contains('playing') && visible) || !introDone) renderer.render(scene, camera);
+  if (visible || !introDone) renderer.render(scene, camera);
   requestAnimationFrame(tick);
 }
 tick();
@@ -539,15 +565,8 @@ function slotObject(it, k) {
   return slotCache.get(k);
 }
 
-/* the hovered / playing work: the same object, live and moving, over the big artwork frame */
-const live = document.createElement('div');
-live.className = 'work-live';
-live.appendChild(snapRenderer.domElement);
-document.body.appendChild(live);
-let liveSlot = null, liveK = -1, liveToken = 0;
-
+/* strip thumbnails: a still render of each slot's object */
 function snapshot(slot, k) {
-  if (liveSlot) liveSlot.wrap.visible = false;
   slot.pivot.rotation.y = slot.spin0;
   slot.pivot.position.y = 0;
   snapScene.add(slot.wrap);
@@ -555,40 +574,64 @@ function snapshot(slot, k) {
   snapRenderer.render(snapScene, snapCam);
   const url = snapRenderer.domElement.toDataURL('image/png');
   snapScene.remove(slot.wrap);
-  if (liveSlot) liveSlot.wrap.visible = true;
   return { url, ar: `${SNAP_W} / ${SNAP_H}` };
 }
 
+/* the hovered / open work: its object takes the first object's place in the main view (white background),
+   so it follows the mouse, turns by drag, zooms with the wheel and drops a water drop on click — no auto-turning */
+function toSubject(obj) {
+  obj.updateMatrixWorld(true);
+  const geos = [];
+  obj.traverse(m => {
+    if (!m.isMesh) return;
+    const g = m.geometry.clone();
+    g.applyMatrix4(m.matrixWorld);
+    Object.keys(g.attributes).forEach(n => { if (n !== 'position' && n !== 'normal') g.deleteAttribute(n); });
+    if (!g.attributes.normal) g.computeVertexNormals();
+    geos.push(g);
+  });
+  const box = new THREE.Box3();
+  geos.forEach(g => { g.computeBoundingBox(); box.union(g.boundingBox); });
+  const sph = box.getBoundingSphere(new THREE.Sphere());
+  const s = HERO_R * 1.3 / (sph.radius || 1);
+  const group = new THREE.Group();
+  geos.forEach(g => {
+    g.translate(-sph.center.x, -sph.center.y, -sph.center.z);
+    g.scale(s, s, s);
+    g.computeBoundingSphere();
+    group.add(new THREE.Mesh(g, material));   // same chrome + water-drop material as the first object
+  });
+  return group;
+}
+const subjectCache = new Map();
+function subjectFor(it, k) {
+  if (!subjectCache.has(k)) subjectCache.set(k, (async () => {
+    let obj = null;
+    if (it.model) {
+      try { obj = await loadModel(it.model); }
+      catch (e) { console.warn(`could not load ${it.model} — using a temporary object`, e); }
+    }
+    return toSubject(obj || TEMP_OBJECTS[k % TEMP_OBJECTS.length]());
+  })());
+  return subjectCache.get(k);
+}
+function setSubject(obj) {
+  if (obj === subject) return;
+  holder.remove(subject);
+  subject = obj;
+  holder.add(obj);
+  ripT = -1;
+  dropT.fill(-1);
+  scV -= .06;                                  // a small springy pop as the new object arrives
+}
+let subjectToken = 0;
 addEventListener('objectwork', async e => {
   const d = e.detail;
-  const my = ++liveToken;
-  if (!d) { live.classList.remove('show'); return; }
-  if (d.k === liveK && liveSlot) { live.classList.add('show'); return; }
-  const slot = await slotObject(d.it, d.k);
-  if (my !== liveToken) return;
-  if (liveSlot) snapScene.remove(liveSlot.wrap);
-  liveSlot = slot; liveK = d.k; liveT = 0;
-  slot.pivot.rotation.y = slot.spin0;
-  snapScene.add(slot.wrap);
-  snapScene.environmentRotation.y = d.k * .7;
-  live.classList.add('show');
+  const my = ++subjectToken;
+  if (!d) { setSubject(mesh); return; }
+  const obj = await subjectFor(d.it, d.k);
+  if (my === subjectToken) setSubject(obj);
 });
-
-let liveT = 0, lastLive = performance.now(), lrx = 0, lry = 0;
-(function liveTick(now) {
-  const dt = Math.min((now - lastLive) / 1000, .05); lastLive = now;
-  if (liveSlot && live.classList.contains('show')) {
-    liveT += dt;
-    // same feel as the main object: follows the mouse, turns slowly, floats
-    lrx += (tx * .6 - lrx) * FOLLOW; lry += (ty * .6 - lry) * FOLLOW;
-    liveSlot.pivot.rotation.y = liveSlot.spin0 + liveT * .6 + lrx;
-    liveSlot.pivot.rotation.x = lry;
-    liveSlot.pivot.position.y = Math.sin(liveT * BOB_FREQ) * BOB_AMP;
-    snapScene.environmentRotation.y += ENV_SPIN * dt;
-    snapRenderer.render(snapScene, snapCam);
-  }
-  requestAnimationFrame(liveTick);
-})(performance.now());
 
 window.setObjectSnap && window.setObjectSnap(async (it, k) => snapshot(await slotObject(it, k), k));
 </script>
@@ -767,7 +810,13 @@ window.setObjectSnap && window.setObjectSnap(async (it, k) => snapshot(await slo
     const dt = lastT ? Math.max(0, Math.min((t - lastT) / 1000, .05)) : 0;
     lastT = t;
     sy += (syTarget - sy) * (1 - Math.exp(-dt * 12));
-    if (!dragging && !morphing && !reduceMotion) B += SPEED * dt;
+    // the strip stays still on the open work; it only moves when the viewer drags it or uses the arrow keys.
+    // After a drag it settles gently on the nearest work.
+    if (!dragging && !morphing) {
+      const snap = Math.round(B / QT) * QT;
+      B += (snap - B) * (reduceMotion ? 1 : 1 - Math.exp(-dt * 10));
+      if (Math.abs(snap - B) < .05) B = snap;
+    }
     if (!morphing) checkCurrent();
     layoutPlay();
     raf = requestAnimationFrame(loop);

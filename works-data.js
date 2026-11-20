@@ -16,7 +16,9 @@ window.OTHER_WORKS = {
       images: ['images/object/reconstructing-fear/01.jpg'] },
     { title: 'Bone Case — Phone', type: '3D · Phone Case', year: '2025',
       desc: 'A phone case built from the organic bone structure of the alien, shaped so the hand naturally finds its grip.',
-      images: [''] },
+      images: [''],
+      // 3D: vase + flower + stamen from "화병 작업 stl" (Metal Living Design, 2025-1), simplified to a 5 MB .glb
+      models: ['models/object/vase.glb'] },
     { title: 'Bone Case — Lighter', type: '3D · Lighter Case', year: '2025',
       desc: 'The same bone language applied to a lighter case, kept light while holding a solid outer form.',
       images: [''] },

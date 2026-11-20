@@ -58,7 +58,9 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#fff;font-f
   <p class="preloader-text" id="preloaderText">SEOHYEON WI™ is a fashion designer working with clothes, objects, images, materials, colors, and shapes — from imagination to reality</p>
 </div>
 <script>
-// intro text (once per session) → language choice (first visit only)
+// intro text → language choice, once per visit (each new browser session).
+// The pick is kept as localStorage 'site-lang' ('ko' / 'en') and as <html data-lang="…">.
+// Choosing Korean does not translate the whole site — only the parts chosen later.
 (() => {
   const preloader = document.getElementById('preloader');
   const el = document.getElementById('preloaderText');
@@ -67,11 +69,13 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#fff;font-f
   let seen = false, lang = null;
   try { seen = sessionStorage.getItem('introSeen') === '1'; } catch (e) {}
   try { lang = localStorage.getItem('site-lang'); } catch (e) {}
-  const needChoice = lang !== 'ko' && lang !== 'en';
+  if (lang === 'ko' || lang === 'en') document.documentElement.dataset.lang = lang;
   const showText = !seen && !reduce;
+  // ask again on every new visit (not only the very first one), and whenever nothing is saved yet
+  const needChoice = !seen || (lang !== 'ko' && lang !== 'en');
 
   if (!showText && !needChoice) { preloader.remove(); return; }
-  if (showText) { try { sessionStorage.setItem('introSeen', '1'); } catch (e) {} }
+  try { sessionStorage.setItem('introSeen', '1'); } catch (e) {}
 
   const finish = () => {
     preloader.classList.add('is-done');
@@ -97,6 +101,7 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#fff;font-f
       const b = e.target.closest('[data-pick]');
       if (!b) return;
       try { localStorage.setItem('site-lang', b.dataset.pick); } catch (err) {}
+      document.documentElement.dataset.lang = b.dataset.pick;
       finish();
     });
   }
