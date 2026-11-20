@@ -28,8 +28,8 @@ p,h1{margin:0}
 .pager{display:flex;justify-content:space-between;margin-top:96px;padding-top:14px;border-top:1px solid #050505}
 /* real images: show the whole page spread, no cropping */
 .hero.has-image{height:auto;min-height:0;background:none}
-.hero.has-image img{height:auto;object-fit:contain}
-.gallery:has(.has-image){grid-template-columns:1fr}
+.hero.has-image img{width:auto;height:auto;max-width:100%;max-height:82vh;margin:0 auto;object-fit:contain}
+.gallery:has(.has-image){grid-template-columns:1fr 1fr;align-items:start}
 .shot.has-image{aspect-ratio:auto;background:none}
 .shot.has-image img{height:auto}
 .gallery.is-empty{display:none}
