@@ -13,7 +13,7 @@ window.OTHER_WORKS = {
   object: [
     { title: 'Reconstructing Fear', type: '3D · Resin', year: '2025',
       desc: 'A living-design project that turns the fear of the unknown into objects you carry every day — modelled in Rhino and ZBrush, printed in resin and finished by hand.',
-      images: ['', ''] },
+      images: ['images/object/reconstructing-fear/01.jpg'] },
     { title: 'Bone Case — Phone', type: '3D · Phone Case', year: '2025',
       desc: 'A phone case built from the organic bone structure of the alien, shaped so the hand naturally finds its grip.',
       images: [''] },
