@@ -306,6 +306,7 @@ geo.computeBoundingSphere();
 const HERO_R = geo.boundingSphere.radius;
 // the object on screen: the first (pebble) object, or the open work's object — all share the same moves
 let subject = mesh;
+const SUBJECT_LIFT = .22;          // other works sit a little higher, above the strip at the bottom
 holder.add(mesh);
 
 let mobileScale = innerWidth <= 640 ? 1.4 : 1;
@@ -387,7 +388,7 @@ renderer.domElement.addEventListener('pointercancel', endPress);
 /* scroll: the object swells or shrinks with the wheel (a small springy bounce) and keeps that size */
 const WHEEL_GROW = .0025;          // size change per wheel step (down = bigger, up = smaller)
 const WHEEL_MIN = -.35, WHEEL_MAX = .6;
-const WHEEL_DRIFT = .45;           // vertical drift at full size change (scene units)
+const WHEEL_DRIFT = 0;             // no vertical drift: the object stays centred while it grows / shrinks
 let wheelAcc = 0;
 let sc = 1, scV = 0, driftY = 0, driftV = 0;
 addEventListener('wheel', e => {
@@ -437,7 +438,7 @@ function tick() {
   holder.rotation.order = 'YXZ';   // turn around the vertical axis first, then tip
   holder.rotation.y = rx + spin + viewY;
   holder.rotation.x = ry - (1 - easeOutCubic(ik)) * INTRO_TILT + viewX;
-  holder.position.y = Math.sin(time * BOB_FREQ) * BOB_AMP + driftY;
+  holder.position.y = Math.sin(time * BOB_FREQ) * BOB_AMP + driftY + (subject === mesh ? 0 : SUBJECT_LIFT);
 
   let press = 0;
   if (ripT >= 0) {
@@ -593,7 +594,7 @@ function toSubject(obj) {
   const box = new THREE.Box3();
   geos.forEach(g => { g.computeBoundingBox(); box.union(g.boundingBox); });
   const sph = box.getBoundingSphere(new THREE.Sphere());
-  const s = HERO_R * 1.3 / (sph.radius || 1);
+  const s = HERO_R * 1.45 / (sph.radius || 1);    // a little bigger than the first object
   const group = new THREE.Group();
   geos.forEach(g => {
     g.translate(-sph.center.x, -sph.center.y, -sph.center.z);
