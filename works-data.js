@@ -39,6 +39,11 @@ window.OTHER_WORKS = {
       desc: 'Two offset black tops held by a single bent tube — a leaning leg, a looping base and a short post stepping down between the tiers.',
       images: [''],
       models: ['models/object/side-table.glb'] },
+    { title: 'Glass Paperweight', type: 'Glass · Paperweight', year: '2025',
+      desc: 'A clear glass block holding a snowy forest — two thin grooves cross near one corner like a window frame, so the scene reads as a view through a window.',
+      images: ['01', '02', '03'].map(n => `images/object/glass-paperweight/${n}.jpg`),
+      // every photo slot in the strip shows the same 3D block
+      models: ['models/object/glass-paperweight.glb', 'models/object/glass-paperweight.glb', 'models/object/glass-paperweight.glb'] },
   ],
   graphic: [
     // FromW2 — goods & graphics
