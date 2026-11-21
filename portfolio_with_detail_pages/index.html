@@ -25,6 +25,9 @@
   body.work-open .side-hint, body.playing .side-hint { opacity: 0; }
   .work-meta a { pointer-events: auto; transition: color .2s ease; }
   .work-meta a:hover { color: #050505; }
+  .work-link, .work-link > span { display: block; }
+  .work-link:hover .case-arrow { color: #050505; }
+  .work-link:hover #workName { text-decoration: underline; text-underline-offset: 3px; }
   body.work-open .work-meta { opacity: 1; }
   body.work-open .meta { opacity: 0; }
   body:not(.playing) .work-meta a { pointer-events: none; }
@@ -129,10 +132,13 @@
   <p class="muted" id="idleCount"></p>
 </div>
 <div class="work-meta" aria-live="polite">
-  <p class="muted">Selected work:</p>
-  <p id="workName"></p>
-  <p class="muted" id="workInfo"></p>
-  <a class="muted" id="workCase" href="project-detail.html?project=01">View Case →</a>
+  <!-- the whole left text is one link to the work's page (its photos) -->
+  <a class="work-link" id="workCase" href="project-detail.html?project=01">
+    <span class="muted">Selected work:</span>
+    <span id="workName"></span>
+    <span class="muted" id="workInfo"></span>
+    <span class="muted case-arrow">View Case →</span>
+  </a>
 </div>
 <div class="side-hint muted">Drag to turn,<br>click to ripple</div>
 
@@ -1022,7 +1028,7 @@ window.setObjectSnap && window.setObjectSnap(async (it, k) => snapshot(await slo
       } else {
         const it = ITEMS[i - 1];
         liveWork(it);
-        mName.textContent = label(it);
+        mName.innerHTML = `<a href="project-detail.html?project=${String(it.project + 1).padStart(2, '0')}">${label(it)}</a>`;
         mInfo.innerHTML = `${it.info || ''} · <a href="project-detail.html?project=${String(it.project + 1).padStart(2, '0')}">View Case →</a>`;
       }
     }
