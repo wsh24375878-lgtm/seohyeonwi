@@ -83,7 +83,9 @@ window.OTHER_WORKS = {
       images: [''] },
     { title: 'Piece of Cake', type: 'Exhibition Poster', year: '2025',
       desc: 'Graduation exhibition poster, feed and sticker design — 24 works gathering into one cake.',
-      images: [''] },
+      // 01 = poster; 02–03 = the Instagram feed grids (cut from screenshots, white made transparent)
+      images: ['images/graphic/piece-of-cake/01.jpg', 'images/graphic/piece-of-cake/02.png', 'images/graphic/piece-of-cake/03.png'],
+      posters: ['images/graphic/piece-of-cake/01.jpg', 'images/graphic/piece-of-cake/02.png', 'images/graphic/piece-of-cake/03.png'] },
     { title: 'FromW2', type: 'Brand Identity', year: '',
       desc: 'Identity and visuals for FromW2, a techwear brand — logo, product imagery and a collaboration with It\'s Skin.',
       images: ['', ''] },
