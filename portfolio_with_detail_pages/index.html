@@ -854,7 +854,8 @@ if (IS_PRODUCT) (() => {
   /* ---------- items ---------- */
   // at least 8 slots in the strip, one object each. Projects are dealt out in turn
   // (5 projects → the first 3 get a second slot); with more than 8 projects every project still gets one.
-  const SLOTS = PROJECTS.length ? Math.max(8, PROJECTS.length) : 0;
+  // Product: one slot per product (no repeats)
+  const SLOTS = !PROJECTS.length ? 0 : IS_PRODUCT ? PROJECTS.length : Math.max(8, PROJECTS.length);
   const perProject = PROJECTS.map((p, pi) => Math.floor(SLOTS / PROJECTS.length) + (pi < SLOTS % PROJECTS.length ? 1 : 0));
   const ITEMS = [];
   for (let s = 0; s < SLOTS && PROJECTS.length; s++) {
@@ -1244,7 +1245,7 @@ if (IS_PRODUCT) (() => {
   });
 
   /* ---------- left-middle: Seoul clock + count (Metal Craft layout) ---------- */
-  document.getElementById('idleCount').textContent = PROJECTS.length ? `${CAT_LABEL} — ${PROJECTS.length} projects` : `${CAT_LABEL} — coming soon`;
+  document.getElementById('idleCount').textContent = PROJECTS.length ? `${CAT_LABEL} — ${PROJECTS.length} project${PROJECTS.length === 1 ? '' : 's'}` : `${CAT_LABEL} — coming soon`;
   const clockEl = document.getElementById('clock');
   const fmt = new Intl.DateTimeFormat('en-GB', { timeZone: 'Asia/Seoul', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
   const tickClock = () => { clockEl.textContent = `${fmt.format(new Date())}, Seoul`; };

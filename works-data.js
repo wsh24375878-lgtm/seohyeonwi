@@ -49,7 +49,13 @@ window.OTHER_WORKS = {
   ],
   // Product — 2D cut-out photos (no 3D). Empty for now; add works like:
   // { title: "…", type: "…", year: "2025", desc: "…", images: ["images/product/…/01.jpg"], cutouts: ["images/product/…/cutout.png"] },
-  product: [],
+  product: [
+    { title: 'Basalt Umbrella', type: 'Umbrella · Tote Bag', year: '2025',
+      desc: '현무암 우산 — waves crashing on black basalt rock, printed across an automatic folding umbrella, with a matching sleeve and a tote bag that carries it.',
+      // 01 = front shot (cover, and the cut-out in the middle of the Product page); then open → details → folded → set
+      images: ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12', '13'].map(n => `images/product/basalt-umbrella/${n}.jpg`),
+      cutouts: ['images/product/basalt-umbrella/01.jpg'] },
+  ],
   graphic: [
     // FromW2 — goods & graphics
     { title: '2025 Wall Calendar', type: 'Poster Calendar', year: '2025',
