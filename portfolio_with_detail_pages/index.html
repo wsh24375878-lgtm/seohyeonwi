@@ -26,6 +26,13 @@
   .work-meta a { pointer-events: auto; transition: color .2s ease; }
   .work-meta a:hover { color: #050505; }
   .work-link, .work-link > span { display: block; }
+  /* "click to spin" tag next to the cursor on the object's edge */
+  .spin-tag { position: fixed; z-index: 9998; left: 0; top: 0; pointer-events: none; white-space: nowrap;
+    font-size: 13px; line-height: 1; color: #050505; background: #fff; padding: 4px 6px;
+    transform: translate(14px, -50%); opacity: 0; transition: opacity .18s ease; }
+  .spin-tag.left { transform: translate(calc(-100% - 14px), -50%); }
+  .spin-tag.on { opacity: 1; }
+  @media (hover: none), (pointer: coarse) { .spin-tag { display: none; } }
   .work-link:hover .case-arrow { color: #050505; }
   .work-link:hover #workName { text-decoration: underline; text-underline-offset: 3px; }
   body.work-open .work-meta { opacity: 1; }
@@ -140,7 +147,7 @@
     <span class="muted case-arrow">View Case →</span>
   </a>
 </div>
-<div class="side-hint muted">Drag to turn,<br>click to ripple</div>
+<div class="side-hint muted">Drag to turn,<br>click to ripple,<br>click the edge to spin</div>
 
 <div class="media-stack" id="mediaStack"></div>
 
@@ -357,6 +364,38 @@ function clickEffect(hit) {
   nextDrop = (nextDrop + 1) % DROPS;
   ripT = 0;
 }
+
+/* mouse over the object's edge (where a click spins it): a small "spin" tag follows the cursor */
+const spinTag = document.createElement('div');
+spinTag.className = 'spin-tag';
+spinTag.setAttribute('aria-hidden', 'true');
+document.body.appendChild(spinTag);
+let hoverEv = null, hoverRaf = 0;
+function checkEdge() {
+  hoverRaf = 0;
+  const e = hoverEv;
+  let side = 0;
+  if (e && introDone && !press && !pinch) {
+    const r = renderer.domElement.getBoundingClientRect();
+    ndc.set((e.clientX - r.left) / r.width * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1);
+    ray.setFromCamera(ndc, camera);
+    const hit = ray.intersectObject(subject, true)[0];
+    if (hit && Math.abs(hit.point.x) >= SIDE) side = hit.point.x >= 0 ? 1 : -1;
+  }
+  if (side) {
+    spinTag.textContent = side > 0 ? 'Click to spin ↻' : '↺ Click to spin';
+    spinTag.classList.toggle('left', side < 0);
+    spinTag.style.left = `${e.clientX}px`;
+    spinTag.style.top = `${e.clientY}px`;
+  }
+  spinTag.classList.toggle('on', !!side);
+}
+renderer.domElement.addEventListener('pointermove', e => {
+  if (e.pointerType !== 'mouse') return;
+  hoverEv = e;
+  if (!hoverRaf) hoverRaf = requestAnimationFrame(checkEdge);
+});
+renderer.domElement.addEventListener('pointerleave', () => { hoverEv = null; spinTag.classList.remove('on'); });
 
 /* drag anywhere on the canvas to turn the object all the way round (360°);
    a plain click on the object still makes the ripple / spin */
