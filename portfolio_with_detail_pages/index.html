@@ -31,7 +31,7 @@
   .product-stage { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; pointer-events: none; }
   .product-stage img { position: absolute; max-width: min(52vw, 720px); max-height: 62vh; object-fit: contain;
     opacity: 0; transition: opacity .45s ease; animation: productFloat 6s ease-in-out infinite; -webkit-user-drag: none; }
-  .product-stage img.on { opacity: 1; }
+  .product-stage img.on { opacity: 1; pointer-events: auto; cursor: pointer; }
   /* Product: previous / next buttons at the sides */
   /* plain arrows in the page's own type — no box, just a wide invisible hit area */
   .p-nav { position: fixed; top: 50%; z-index: 30; width: 64px; height: 96px; margin-top: -48px;
@@ -846,9 +846,27 @@ if (IS_PRODUCT) (() => {
   const first = PROJECTS.find(p => p.cutouts.length);
   const home = first ? first.cutouts[0] : '';
   show(home);
+  // which product is on show → clicking the photo opens its detail page
+  let curProject = first ? PROJECTS.indexOf(first) : 0;
   addEventListener('objectwork', e => {
     const d = e.detail;
     show(d ? d.it.cutout : home);
+    curProject = d ? d.it.project : (first ? PROJECTS.indexOf(first) : 0);
+  });
+  imgs.forEach(im => im.addEventListener('click', () => { if (PROJECTS.length) location.href = caseUrl(curProject); }));
+
+  // "View details →" follows the cursor while it is over the photo
+  const tag = document.createElement('div');
+  tag.className = 'spin-tag'; tag.textContent = 'View details →';
+  document.body.appendChild(tag);
+  imgs.forEach(im => {
+    im.addEventListener('pointermove', e => {
+      if (e.pointerType === 'touch') return;
+      tag.style.left = e.clientX + 'px'; tag.style.top = e.clientY + 'px';
+      tag.classList.toggle('left', e.clientX > innerWidth - 160);
+      tag.classList.add('on');
+    });
+    im.addEventListener('pointerleave', () => tag.classList.remove('on'));
   });
   if (!PROJECTS.length) wrap.insertAdjacentHTML('beforeend', '<p class="product-empty muted">Coming soon</p>');
 
