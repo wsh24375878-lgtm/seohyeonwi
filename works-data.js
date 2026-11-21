@@ -5,6 +5,8 @@
    - Fashion 작업은 fashion-data.js 의 목록을 그대로 가져와요.
    - Object(3D·금속공예·제품) / Graphic 작업은 아래에서 수정하세요.
    - type 은 작업 종류(예: 3D, Metal Craft, Product, Poster …)예요.
+   - posters: Graphic 메인 화면에 뜨는 포스터(디자인 원본)만 적어요. 연출컷·상세컷은 images 에만 두세요.
+     posters 가 비어 있는 작업은 Graphic 메인 화면에 나오지 않아요.
    - images 에 경로를 적으면 실제 이미지가 쓰이고,
      비워두면('') 회색 임시 이미지가 표시됩니다.
    ========================================================= */
@@ -33,16 +35,19 @@ window.OTHER_WORKS = {
     // FromW2 — goods & graphics
     { title: '2025 Wall Calendar', type: 'Poster Calendar', year: '2025',
       desc: 'A 2025 poster calendar in two editions, Columbine and Iris — flowers floating on black, styled into everyday spaces.',
-      images: ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10'].map(n => `images/graphic/wall-calendar/${n}.jpg`) },
+      images: ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10'].map(n => `images/graphic/wall-calendar/${n}.jpg`),
+      posters: ['images/graphic/wall-calendar/09.jpg', 'images/graphic/wall-calendar/10.jpg'] },
     { title: 'Phone Booth Aquarium', type: 'Poster · Phone Case', year: '2025',
       desc: '"From W2 sells fantasy" — goldfish drifting through an old phone booth, made into a poster, phone cases and AirPods cases.',
-      images: ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12', '13', '14'].map(n => `images/graphic/phone-booth/${n}.jpg`) },
+      images: ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12', '13', '14'].map(n => `images/graphic/phone-booth/${n}.jpg`),
+      posters: ['images/graphic/phone-booth/01.jpg'] },
     { title: 'Columbine', type: 'Phone Case', year: '2025',
       desc: 'A blue columbine on glossy black, carried over from the calendar onto phone cases.',
       images: ['01', '02', '03', '04', '05'].map(n => `images/graphic/columbine/${n}.jpg`) },
     { title: '2025 Desk Calendar', type: 'Desk Calendar', year: '2025',
       desc: 'A twelve-month desk calendar with bold red month numerals on soft cream paper.',
-      images: ['01', '02', '03', '04', '05'].map(n => `images/graphic/desk-calendar/${n}.jpg`) },
+      images: ['01', '02', '03', '04', '05'].map(n => `images/graphic/desk-calendar/${n}.jpg`),
+      posters: ['images/graphic/desk-calendar/05.jpg'] },
     { title: 'CIRCULATION', type: 'Exhibition Poster', year: '2022',
       desc: 'Poster for the 2022 SSWU Fashion Industry graduation exhibition — light and reflection as a loop that keeps returning.',
       images: [''] },

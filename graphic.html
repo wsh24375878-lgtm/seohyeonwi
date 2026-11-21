@@ -100,20 +100,19 @@ a{color:inherit;text-decoration:none}
 
 <script src="works-data.js"></script>
 <script>
-/* ---------- cards: the graphic works from works-data.js, repeated so the strip never runs out ---------- */
+/* ---------- cards: only the posters (design originals) from works-data.js — no styled shots or detail cuts.
+   Every poster is one card; the set repeats so the strip never runs out. ---------- */
 const GRAPHIC = window.OTHER_WORKS.graphic;
+const POSTERS = [];
+GRAPHIC.forEach((work, k) => (work.posters || []).filter(Boolean).forEach(src => POSTERS.push({ work, k, src })));
 const track = document.getElementById('track');
-for (let i = 0; i < 32; i++) {
-  const k = i % GRAPHIC.length;
-  const work = GRAPHIC[k];
+for (let i = 0; POSTERS.length && i < 32; i++) {
+  const { work, k, src } = POSTERS[i % POSTERS.length];
   const card = document.createElement('a');
   card.className = 'card';
   card.href = `project-detail.html?project=${String(k + 1).padStart(2, '0')}&category=graphic`;
   card.setAttribute('aria-label', `View ${work.title}`);
-  // each card shows one of the work's images in turn
-  const imgs = work.images.filter(Boolean);
-  const src = imgs.length ? imgs[Math.floor(i / GRAPHIC.length) % imgs.length] : '';
-  card.innerHTML = `<div class="art">${src ? `<img src="${src}" alt="" loading="lazy">` : ''}</div><span class="card-label">${work.title}</span>`;
+  card.innerHTML = `<div class="art"><img src="${src}" alt="" loading="lazy"></div><span class="card-label">${work.title}</span>`;
   track.appendChild(card);
 }
 
