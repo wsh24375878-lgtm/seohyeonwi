@@ -356,11 +356,50 @@ function clickEffect(hit) {
    a plain click on the object still makes the ripple / spin */
 const DRAG_Y = .009;               // radians per px, left-right (≈ one full turn per 700px)
 const DRAG_X = .006;               // radians per px, up-down
-const MAX_PITCH = 1.3;             // keep the up-down view within about ±75°
+const MAX_PITCH = 1.5;             // up-down view goes almost straight over the top / underneath (about ±86°)
 let press = null, dragging = false, lastPX = 0, lastPY = 0;
 let viewY = 0, viewX = 0, viewVY = 0, viewVX = 0;
+
+/* phones: two fingers pinch the object bigger / smaller (it keeps that size);
+   a quick double-tap puts the angle and size back to the start */
+const PINCH_MIN = -.5, PINCH_MAX = 1.6;   // smallest / biggest size relative to the start (0 = start)
+const touches = new Map();
+let pinch = null, lastTap = 0;
+const fingerGap = () => { const [a, b] = [...touches.values()]; return Math.hypot(a.x - b.x, a.y - b.y) || 1; };
+addEventListener('gesturestart', e => e.preventDefault());   // iOS Safari: no page zoom on the object
+renderer.domElement.addEventListener('pointerdown', e => {
+  if (e.pointerType !== 'touch' || !introDone) return;
+  touches.set(e.pointerId, { x: e.clientX, y: e.clientY });
+  if (touches.size === 2) {
+    pinch = { d0: fingerGap(), acc0: wheelAcc };
+    press = null; dragging = false;           // a pinch never turns the object or drops a ripple
+    viewVY = viewVX = 0;
+  }
+  const now = performance.now();
+  if (touches.size === 1 && now - lastTap < 300) {   // double-tap → reset the view
+    viewY = viewX = viewVY = viewVX = 0;
+    wheelAcc = 0;
+    lastTap = 0;
+  } else if (touches.size === 1) lastTap = now;
+});
+renderer.domElement.addEventListener('pointermove', e => {
+  if (!touches.has(e.pointerId)) return;
+  touches.set(e.pointerId, { x: e.clientX, y: e.clientY });
+  if (pinch && touches.size >= 2) {
+    const k = fingerGap() / pinch.d0;          // fingers apart → bigger, together → smaller
+    wheelAcc = Math.max(PINCH_MIN, Math.min(PINCH_MAX, (1 + pinch.acc0) * k - 1));
+  }
+});
+const liftFinger = e => {
+  touches.delete(e.pointerId);
+  if (touches.size < 2) pinch = null;
+};
+renderer.domElement.addEventListener('pointerup', liftFinger);
+renderer.domElement.addEventListener('pointercancel', liftFinger);
+
 renderer.domElement.addEventListener('pointerdown', e => {
   if (!introDone || (e.pointerType === 'mouse' && e.button !== 0)) return;
+  if (pinch || touches.size > 1) return;   // second finger down: pinching, not turning
   const r = renderer.domElement.getBoundingClientRect();
   ndc.set((e.clientX - r.left) / r.width * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1);
   ray.setFromCamera(ndc, camera);
@@ -371,7 +410,7 @@ renderer.domElement.addEventListener('pointerdown', e => {
   renderer.domElement.setPointerCapture(e.pointerId);
 });
 renderer.domElement.addEventListener('pointermove', e => {
-  if (!press) return;
+  if (!press || pinch) return;
   if (!dragging && Math.hypot(e.clientX - press.x, e.clientY - press.y) > 5) {
     dragging = true;
     renderer.domElement.style.cursor = 'grabbing';
