@@ -412,9 +412,33 @@ const touches = new Map();
 let pinch = null, lastTap = 0;
 const fingerGap = () => { const [a, b] = [...touches.values()]; return Math.hypot(a.x - b.x, a.y - b.y) || 1; };
 addEventListener('gesturestart', e => e.preventDefault());   // iOS Safari: no page zoom on the object
+/* phones: a sideways swipe on the empty screen (not on the object) goes to the next / previous object,
+   like flipping through photos; a finger on the object itself still turns it */
+const SWIPE_MIN = 45;              // px sideways before a swipe counts
+let swipe = null;
+renderer.domElement.addEventListener('pointerdown', e => {
+  if (e.pointerType !== 'touch' || !introDone || innerWidth > 700) return;
+  swipe = null;
+  if (touches.size) return;        // only a single-finger swipe
+  const r = renderer.domElement.getBoundingClientRect();
+  ndc.set((e.clientX - r.left) / r.width * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1);
+  ray.setFromCamera(ndc, camera);
+  if (!ray.intersectObject(subject, true)[0]) swipe = { id: e.pointerId, x: e.clientX, y: e.clientY };
+});
+const endSwipe = e => {
+  if (!swipe || e.pointerId !== swipe.id) return;
+  const dx = e.clientX - swipe.x, dy = e.clientY - swipe.y;
+  swipe = null;
+  if (Math.abs(dx) > SWIPE_MIN && Math.abs(dx) > Math.abs(dy) * 1.3)
+    dispatchEvent(new CustomEvent('objectswipe', { detail: dx < 0 ? 1 : -1 }));   // swipe left → next
+};
+renderer.domElement.addEventListener('pointerup', endSwipe);
+renderer.domElement.addEventListener('pointercancel', () => { swipe = null; });
+
 renderer.domElement.addEventListener('pointerdown', e => {
   if (e.pointerType !== 'touch' || !introDone) return;
   touches.set(e.pointerId, { x: e.clientX, y: e.clientY });
+  if (touches.size > 1) swipe = null;      // second finger: it's a pinch, not a swipe
   if (touches.size === 2) {
     pinch = { d0: fingerGap(), acc0: wheelAcc };
     press = null; dragging = false;           // a pinch never turns the object or drops a ripple
@@ -445,6 +469,7 @@ renderer.domElement.addEventListener('pointercancel', liftFinger);
 renderer.domElement.addEventListener('pointerdown', e => {
   if (!introDone || (e.pointerType === 'mouse' && e.button !== 0)) return;
   if (pinch || touches.size > 1) return;   // second finger down: pinching, not turning
+  if (swipe && e.pointerId === swipe.id) return;   // phones: finger on the empty screen swipes, doesn't turn
   const r = renderer.domElement.getBoundingClientRect();
   ndc.set((e.clientX - r.left) / r.width * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1);
   ray.setFromCamera(ndc, camera);
@@ -1084,9 +1109,13 @@ window.setObjectSnap && window.setObjectSnap(async (it, k) => snapshot(await slo
       });
     }, { passive: true });
     // tapping a cell brings it to the middle
-    cells.forEach(c => c.addEventListener('click', () => {
-      strip.scrollTo({ left: c.offsetLeft + c.offsetWidth / 2 - strip.clientWidth / 2, behavior: reduceMotion ? 'auto' : 'smooth' });
-    }));
+    const centre = c => strip.scrollTo({ left: c.offsetLeft + c.offsetWidth / 2 - strip.clientWidth / 2, behavior: reduceMotion ? 'auto' : 'smooth' });
+    cells.forEach(c => c.addEventListener('click', () => centre(c)));
+    // a sideways swipe on the empty screen steps one object along the strip
+    addEventListener('objectswipe', e => {
+      const i = Math.max(0, Math.min(cells.length - 1, cur + e.detail));
+      if (i !== cur) centre(cells[i]);
+    });
   }
 
   /* ---------- boot ---------- */
