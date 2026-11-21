@@ -30,6 +30,15 @@ window.OTHER_WORKS = {
     { title: 'Alien Case — AirPods Max', type: '3D · Headphone Case', year: '2025',
       desc: 'An exaggerated spine that wraps the headphones like a living creature, balancing function and form.',
       images: ['', ''] },
+    // furniture — 3D files rebuilt from the product photos (bent black tube + black panels)
+    { title: 'Tube Chair', type: 'Furniture · Chair', year: '2025',
+      desc: 'One bent steel tube draws the whole chair — a stepped backrest, a curl at the arm and a triangle at the foot — around a glossy black seat.',
+      images: ['images/object/tube-chair/01.jpg'],
+      models: ['models/object/tube-chair.glb'] },
+    { title: 'Two-Tier Side Table', type: 'Furniture · Side Table', year: '2025',
+      desc: 'Two offset black tops held by a single bent tube — a leaning leg, a looping base and a short post stepping down between the tiers.',
+      images: [''],
+      models: ['models/object/side-table.glb'] },
   ],
   graphic: [
     // FromW2 — goods & graphics
