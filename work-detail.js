@@ -11,7 +11,7 @@
   const pad = v => String(v).padStart(2, '0');
   const work = list[n - 1];
   const prefix = cfg.prefix || '';
-  const label = category === 'graphic' ? 'Graphic' : category === 'object' ? 'Object' : (cfg.label || 'Archive');
+  const label = category === 'graphic' ? 'Graphic' : category === 'object' ? '3D' : category === 'product' ? 'Product' : (cfg.label || 'Archive');
   const title = work ? work.title : `Project ${pad(n)}`;
   const $ = id => document.getElementById(id);
 
@@ -27,9 +27,11 @@
   // back link and the active item in the top bar
   const back = $('backLink');
   if (back && cfg.backUrl) { back.href = cfg.backUrl; back.textContent = cfg.backText; }
-  if (category === 'graphic') {
+  if (back && category === 'product') { back.href = 'index.html?cat=product'; back.textContent = '← Back to Product'; }
+  if (category === 'graphic' || category === 'product') {
+    const name = category === 'graphic' ? 'Graphic' : 'Product';
     document.querySelectorAll('.site-cats a').forEach(a => {
-      const on = a.textContent.trim() === 'Graphic';
+      const on = a.textContent.trim() === name;
       a.classList.toggle('is-active', on);
       if (on) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current');
     });

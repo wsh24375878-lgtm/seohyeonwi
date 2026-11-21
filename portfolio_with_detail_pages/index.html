@@ -26,6 +26,22 @@
   .work-meta a { pointer-events: auto; transition: color .2s ease; }
   .work-meta a:hover { color: #050505; }
   .work-link, .work-link > span { display: block; }
+
+  /* ---------- Product page (index.html?cat=product): a 2D cut-out photo in the middle instead of the 3D object ---------- */
+  .product-stage { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; pointer-events: none; }
+  .product-stage img { position: absolute; max-width: min(52vw, 720px); max-height: 62vh; object-fit: contain;
+    opacity: 0; transition: opacity .45s ease; animation: productFloat 6s ease-in-out infinite; -webkit-user-drag: none; }
+  .product-stage img.on { opacity: 1; }
+  @keyframes productFloat { 50% { translate: 0 -10px; } }
+  .product-empty { font-size: 15px; margin: 0; }
+  @media (max-width: 700px) {
+    .product-stage { bottom: 150px; top: 60px; }       /* between the menu and the strip */
+    .product-stage img { max-width: 80vw; max-height: 100%; }
+  }
+  .is-product .side-hint { display: none; }
+  .is-product #app { filter: none; }
+  /* no works yet: hide the strip */
+  .is-empty #carousel, .is-empty .carousel-label, .is-empty .m-strip, .is-empty .m-mark { display: none !important; }
   /* "click to spin" tag next to the cursor on the object's edge */
   .spin-tag { position: fixed; z-index: 9998; left: 0; top: 0; pointer-events: none; white-space: nowrap;
     font-size: 13px; line-height: 1; color: #050505; background: #fff; padding: 4px 6px;
@@ -121,7 +137,8 @@
   <a class="site-name" href="../index.html">SEOHYEON WI™</a>
   <nav class="site-cats" aria-label="Work categories">
     <a href="../fashion.html">Fashion</a>
-    <a href="index.html" class="is-active" aria-current="page">Object</a>
+    <a href="index.html" id="nav3d" class="is-active" aria-current="page">3D</a>
+    <a href="index.html?cat=product" id="navProduct">Product</a>
     <a href="../graphic.html">Graphic</a>
     <a href="../seohyeon_wi_projects_interactive_v2.html">Archive</a>
   </nav>
@@ -161,7 +178,7 @@
 <div class="carousel-label">Click to play</div>
 
 <!-- phones: current work + the sideways strip -->
-<div class="m-head" id="mHead" aria-live="polite"><span id="mName">Object</span><span class="muted" id="mInfo">Swipe to see each object</span></div>
+<div class="m-head" id="mHead" aria-live="polite"><span id="mName">3D</span><span class="muted" id="mInfo">Swipe to see each object</span></div>
 <div class="m-mark" aria-hidden="true"></div>
 <div class="m-strip" id="mStrip" aria-label="Object work"></div>
 <div class="cursor" aria-hidden="true"></div>
@@ -169,17 +186,35 @@
 <script src="../works-data.js"></script>
 <script>
 /*
-  Object 프로젝트 목록 — works-data.js 의 object 목록을 그대로 써요.
+  이 페이지 하나로 두 카테고리를 보여줘요.
+  - 3D      : index.html             → works-data.js 의 object 목록 (가운데에 3D 오브젝트)
+  - Product : index.html?cat=product → works-data.js 의 product 목록 (가운데에 2D 누끼 이미지)
   (작업을 바꾸려면 works-data.js 를 수정하세요. 경로는 사이트 폴더 기준이라 앞에 ../ 를 붙여요.)
 */
-const PROJECTS = window.OTHER_WORKS.object.map(w => ({
+const PAGE_CAT = new URLSearchParams(location.search).get('cat') === 'product' ? 'product' : 'object';
+const IS_PRODUCT = PAGE_CAT === 'product';
+window.PAGE_CAT = PAGE_CAT;
+const CAT_LABEL = IS_PRODUCT ? 'Product' : '3D';
+// detail page link for a project (Product keeps its category in the address)
+const caseUrl = pi => `project-detail.html?project=${String(pi + 1).padStart(2, '0')}${IS_PRODUCT ? '&category=product' : ''}`;
+const PROJECTS = (window.OTHER_WORKS[PAGE_CAT] || []).map(w => ({
   title: w.title,
   info: [w.type, w.year].filter(Boolean).join(', '),
   images: w.images.map(src => (src ? '../' + src : '')),
   // 3D 파일 자리: works-data.js 의 object 항목에 models: ['models/파일.glb', ...] 를 넣으면
   // 같은 순서의 칸이 그 모델로 바뀌어요. 비어 있으면 임시 3D 오브제가 들어가요.
   models: (w.models || []).map(src => (src ? '../' + src : '')),
+  // Product: 누끼 이미지(배경 없는 PNG). cutouts 가 없으면 images 를 써요.
+  cutouts: (w.cutouts || w.images || []).filter(Boolean).map(src => '../' + src),
 }));
+document.title = `${CAT_LABEL} — SEOHYEON WI™`;
+document.documentElement.classList.toggle('is-product', IS_PRODUCT);
+document.documentElement.classList.toggle('is-empty', !PROJECTS.length);
+if (IS_PRODUCT) {
+  const a = document.getElementById('nav3d'), b = document.getElementById('navProduct');
+  a.classList.remove('is-active'); a.removeAttribute('aria-current');
+  b.classList.add('is-active'); b.setAttribute('aria-current', 'page');
+}
 // the 3D renderer (module script below) hands over its snapshot function here
 const objectSnap = new Promise(res => { window.setObjectSnap = res; });
 </script>
@@ -193,6 +228,9 @@ const objectSnap = new Promise(res => { window.setObjectSnap = res; });
 </script>
 <script type="module">
 import * as THREE from 'three';
+
+// Product page: no 3D at all (the cut-out photos are shown instead — see the script after this one)
+if (window.PAGE_CAT !== 'product') {
 
 const TILT_Y = THREE.MathUtils.degToRad(42), TILT_X = THREE.MathUtils.degToRad(28);
 const FOLLOW = .12, ENV_SPIN = .15, BOB_AMP = .07, BOB_FREQ = .9, INTRO = .8, INTRO_TILT = .5;
@@ -753,6 +791,59 @@ addEventListener('objectwork', async e => {
 });
 
 window.setObjectSnap && window.setObjectSnap(async (it, k) => snapshot(await slotObject(it, k), k));
+}   // end of the 3D-only part
+</script>
+
+<!-- ======================= Product: 2D cut-out photo in the middle instead of the 3D object ======================= -->
+<script>
+if (IS_PRODUCT) (() => {
+  const veil = document.getElementById('veil');
+  veil.style.transition = 'opacity .6s ease';
+  requestAnimationFrame(() => { veil.style.opacity = '0'; });
+  setTimeout(() => {
+    veil.style.display = 'none';
+    window.__objectIntroDone = true;
+    dispatchEvent(new Event('objectintrodone'));
+  }, 600);
+
+  // two stacked images so one photo cross-fades into the next
+  const wrap = document.createElement('div');
+  wrap.className = 'product-stage';
+  wrap.innerHTML = '<img alt=""><img alt="">';
+  document.getElementById('app').appendChild(wrap);
+  const imgs = [...wrap.querySelectorAll('img')];
+  let front = 0, shownSrc = '';
+  function show(src) {
+    if (!src || src === shownSrc) return;
+    shownSrc = src;
+    const next = imgs[1 - front];
+    next.onload = () => { next.classList.add('on'); imgs[front].classList.remove('on'); front = 1 - front; };
+    next.src = src;
+  }
+  // the first product's cut-out is shown until a work is picked
+  const first = PROJECTS.find(p => p.cutouts.length);
+  const home = first ? first.cutouts[0] : '';
+  show(home);
+  addEventListener('objectwork', e => {
+    const d = e.detail;
+    show(d ? d.it.cutout : home);
+  });
+  if (!PROJECTS.length) wrap.insertAdjacentHTML('beforeend', '<p class="product-empty muted">Coming soon</p>');
+
+  // phones: swipe sideways anywhere above the strip → next / previous product
+  let sw = null;
+  addEventListener('pointerdown', e => {
+    if (e.pointerType !== 'touch' || e.target.closest('.m-strip, a, button, .site-top')) return;
+    sw = { id: e.pointerId, x: e.clientX, y: e.clientY };
+  });
+  addEventListener('pointerup', e => {
+    if (!sw || e.pointerId !== sw.id) return;
+    const dx = e.clientX - sw.x, dy = e.clientY - sw.y;
+    sw = null;
+    if (Math.abs(dx) > 45 && Math.abs(dx) > Math.abs(dy) * 1.3)
+      dispatchEvent(new CustomEvent('objectswipe', { detail: dx < 0 ? 1 : -1 }));
+  });
+})();
 </script>
 
 <!-- ======================= strip, artwork, text ======================= -->
@@ -761,15 +852,16 @@ window.setObjectSnap && window.setObjectSnap(async (it, k) => snapshot(await slo
   const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   /* ---------- items ---------- */
-  // 8 slots in the strip, one 3D object each. Projects are dealt out in turn
-  // (5 projects → the first 3 get a second slot). Change SLOTS to show more or fewer.
-  const SLOTS = 8;
+  // at least 8 slots in the strip, one object each. Projects are dealt out in turn
+  // (5 projects → the first 3 get a second slot); with more than 8 projects every project still gets one.
+  const SLOTS = PROJECTS.length ? Math.max(8, PROJECTS.length) : 0;
   const perProject = PROJECTS.map((p, pi) => Math.floor(SLOTS / PROJECTS.length) + (pi < SLOTS % PROJECTS.length ? 1 : 0));
   const ITEMS = [];
   for (let s = 0; s < SLOTS && PROJECTS.length; s++) {
     const pi = s % PROJECTS.length, p = PROJECTS[pi], ii = Math.floor(s / PROJECTS.length);
     ITEMS.push({
       title: p.title, info: p.info, project: pi, idx: ii + 1, total: perProject[pi], src: '', model: p.models[ii] || '',
+      cutout: p.cutouts.length ? p.cutouts[ii % p.cutouts.length] : '',
       letter: String.fromCharCode(65 + pi), num: String(s + 1).padStart(2, '0'), k: s,
     });
   }
@@ -777,8 +869,8 @@ window.setObjectSnap && window.setObjectSnap(async (it, k) => snapshot(await slo
   const label = it => `${it.title} ${it.idx}/${it.total}`;
   const workCase = document.getElementById('workCase');
   const workInfo = document.getElementById('workInfo');
-  const setCase = it => { workCase.href = `project-detail.html?project=${String(it.project + 1).padStart(2, '0')}`; workInfo.textContent = it.info; };
-  const detailUrl = it => `project-detail.html?project=${String(it.project + 1).padStart(2, '0')}`;
+  const setCase = it => { workCase.href = caseUrl(it.project); workInfo.textContent = it.info; };
+  const detailUrl = it => caseUrl(it.project);
 
   const ARS = ['4 / 5', '1 / 1', '3 / 2', '4 / 5', '2 / 3'];
   function placeholder(it, k) {
@@ -803,6 +895,14 @@ window.setObjectSnap && window.setObjectSnap(async (it, k) => snapshot(await slo
   }
   // every slot is a 3D object render; if the 3D library can't load, a flat stand-in is drawn instead
   function load(it, k) {
+    // Product: the strip shows the cut-out photo itself
+    if (IS_PRODUCT) return new Promise(res => {
+      if (!it.cutout) return res(placeholder(it, k));
+      const im = new Image();
+      im.onload = () => res({ url: it.cutout, ar: `${im.naturalWidth} / ${im.naturalHeight}` });
+      im.onerror = () => res(placeholder(it, k));
+      im.src = it.cutout;
+    });
     const timeout = new Promise(res => setTimeout(() => res(null), 8000));
     return Promise.race([objectSnap.then(snap => snap(it, k)), timeout])
       .then(r => r || placeholder(it, k))
@@ -897,7 +997,7 @@ window.setObjectSnap && window.setObjectSnap(async (it, k) => snapshot(await slo
   addEventListener('resize', () => { centre = innerWidth / 2; });
 
   function buildClones() {
-    if (cloned) return; cloned = true;
+    if (cloned || !N) return; cloned = true;   // no works (empty Product page): nothing to clone
     copies = Math.max(1, Math.ceil((screen.width || 1920) / STRIP));
     offset = copies * STRIP;
     for (let c = 0; c < 2 * copies + 1; c++) thumbs.forEach(t => {
@@ -905,6 +1005,7 @@ window.setObjectSnap && window.setObjectSnap(async (it, k) => snapshot(await slo
     });
   }
   function layoutPlay() {
+    if (!N) return;
     playCarousel.style.transform = `translate3d(${centre - 20 - offset - mod(B, STRIP)}px, 0, 0) scaleY(${sy.toFixed(4)})`;
     if (document.body.classList.contains('idle')) return;
     const x0 = centre - offset - mod(B, STRIP);
@@ -1068,6 +1169,8 @@ window.setObjectSnap && window.setObjectSnap(async (it, k) => snapshot(await slo
   function buildMobile() {
     const strip = document.getElementById('mStrip');
     const mName = document.getElementById('mName'), mInfo = document.getElementById('mInfo');
+    mName.textContent = CAT_LABEL;
+    if (!N) mInfo.textContent = 'Coming soon';
     const cells = [];
     const hero = document.createElement('button');
     hero.type = 'button'; hero.className = 'm-cell hero is-current'; hero.textContent = '○';
@@ -1088,12 +1191,12 @@ window.setObjectSnap && window.setObjectSnap(async (it, k) => snapshot(await slo
       cells[i].classList.add('is-current');
       if (i === 0) {
         liveWork(null);
-        mName.textContent = 'Object'; mInfo.textContent = 'Swipe to see each object';
+        mName.textContent = CAT_LABEL; mInfo.textContent = N ? 'Swipe to see each object' : 'Coming soon';
       } else {
         const it = ITEMS[i - 1];
         liveWork(it);
-        mName.innerHTML = `<a href="project-detail.html?project=${String(it.project + 1).padStart(2, '0')}">${label(it)}</a>`;
-        mInfo.innerHTML = `${it.info || ''} · <a href="project-detail.html?project=${String(it.project + 1).padStart(2, '0')}">View Case →</a>`;
+        mName.innerHTML = `<a href="${caseUrl(it.project)}">${label(it)}</a>`;
+        mInfo.innerHTML = `${it.info || ''} · <a href="${caseUrl(it.project)}">View Case →</a>`;
       }
     }
     // while swiping, whichever cell sits on the middle mark is shown right away
@@ -1141,7 +1244,7 @@ window.setObjectSnap && window.setObjectSnap(async (it, k) => snapshot(await slo
   });
 
   /* ---------- left-middle: Seoul clock + count (Metal Craft layout) ---------- */
-  document.getElementById('idleCount').textContent = `Object — ${PROJECTS.length} projects`;
+  document.getElementById('idleCount').textContent = PROJECTS.length ? `${CAT_LABEL} — ${PROJECTS.length} projects` : `${CAT_LABEL} — coming soon`;
   const clockEl = document.getElementById('clock');
   const fmt = new Intl.DateTimeFormat('en-GB', { timeZone: 'Asia/Seoul', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
   const tickClock = () => { clockEl.textContent = `${fmt.format(new Date())}, Seoul`; };

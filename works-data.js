@@ -1,9 +1,11 @@
 /* =========================================================
    전체 작업 목록 — Archive(전체 보기)와 Graphic 화면이 이 목록을 써요.
 
-   카테고리: Fashion · Object · Graphic
+   카테고리: Fashion · 3D · Product · Graphic
    - Fashion 작업은 fashion-data.js 의 목록을 그대로 가져와요.
-   - Object(3D·금속공예·제품) / Graphic 작업은 아래에서 수정하세요.
+   - 3D(object 목록) / Product(product 목록) / Graphic 작업은 아래에서 수정하세요.
+   - product: Product 화면 가운데에 뜨는 건 누끼 이미지예요. cutouts: ['images/product/...png'] 에 배경 없는 PNG 를 적어요.
+     cutouts 가 없으면 images 의 사진을 대신 써요.
    - type 은 작업 종류(예: 3D, Metal Craft, Product, Poster …)예요.
    - posters: Graphic 메인 화면에 뜨는 포스터(디자인 원본)만 적어요. 연출컷·상세컷은 images 에만 두세요.
      posters 가 비어 있는 작업은 Graphic 메인 화면에 나오지 않아요.
@@ -45,6 +47,9 @@ window.OTHER_WORKS = {
       // every photo slot in the strip shows the same 3D block
       models: ['models/object/glass-paperweight.glb', 'models/object/glass-paperweight.glb', 'models/object/glass-paperweight.glb'] },
   ],
+  // Product — 2D cut-out photos (no 3D). Empty for now; add works like:
+  // { title: "…", type: "…", year: "2025", desc: "…", images: ["images/product/…/01.jpg"], cutouts: ["images/product/…/cutout.png"] },
+  product: [],
   graphic: [
     // FromW2 — goods & graphics
     { title: '2025 Wall Calendar', type: 'Poster Calendar', year: '2025',
@@ -75,13 +80,14 @@ window.OTHER_WORKS = {
 };
 
 window.WorksData = (() => {
-  const CATEGORY_NAMES = { fashion: 'Fashion', object: 'Object', graphic: 'Graphic' };
+  const CATEGORY_NAMES = { fashion: 'Fashion', object: '3D', product: 'Product', graphic: 'Graphic' };
   const pad = n => String(n).padStart(2, '0');
 
   // where each work opens
   const detailUrl = (cat, n) => {
     if (cat === 'fashion') return `fashion-detail.html?project=${pad(n)}`;
     if (cat === 'object') return `portfolio_with_detail_pages/project-detail.html?project=${pad(n)}`;
+    if (cat === 'product') return `portfolio_with_detail_pages/project-detail.html?project=${pad(n)}&category=product`;
     return `project-detail.html?project=${pad(n)}&category=${cat}`;
   };
 

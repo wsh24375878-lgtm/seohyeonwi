@@ -139,7 +139,8 @@ body.mode-space .cursor{display:none}
   <a class="site-name" href="index.html">SEOHYEON WI™</a>
   <nav class="site-cats" aria-label="Work categories">
     <a href="fashion.html">Fashion</a>
-    <a href="portfolio_with_detail_pages/index.html">Object</a>
+    <a href="portfolio_with_detail_pages/index.html">3D</a>
+    <a href="portfolio_with_detail_pages/index.html?cat=product">Product</a>
     <a href="graphic.html">Graphic</a>
     <a href="seohyeon_wi_projects_interactive_v2.html" class="is-active" aria-current="page">Archive</a>
   </nav>
@@ -152,7 +153,7 @@ body.mode-space .cursor{display:none}
 <div class="scroller" id="scroller">
   <main>
     <section class="head">
-      <h1 class="head-line">Archive <span class="serif" id="headSub">— Fashion, Object &amp; Graphic</span></h1>
+      <h1 class="head-line">Archive <span class="serif" id="headSub">— Fashion, 3D, Product &amp; Graphic</span></h1>
       <div class="filters" id="filters" role="tablist" aria-label="Filter work by category"></div>
       <button class="to-space" id="toSpace" type="button">← Back to the sphere</button>
     </section>
@@ -165,7 +166,7 @@ body.mode-space .cursor{display:none}
   <div class="orb" id="orb"></div>
   <div class="space-side" aria-hidden="true">
     <p><span><span>Seohyeon</span></span> <span><span>Wi</span></span></p>
-    <p class="serif"><span><span>Fashion, Object</span></span> <span><span>&amp; Graphic</span></span></p>
+    <p class="serif"><span><span>Fashion, 3D, Product</span></span> <span><span>&amp; Graphic</span></span></p>
   </div>
   <div class="space-foot">
     <div class="space-cap" id="spaceCap" aria-live="polite">
@@ -185,7 +186,7 @@ body.mode-space .cursor{display:none}
 <script src="works-data.js"></script>
 <script>
 (() => {
-  const ORDER = ['all', 'fashion', 'object', 'graphic'];
+  const ORDER = ['all', 'fashion', 'object', 'product', 'graphic'];
   const NAMES = { all: 'All', ...WorksData.CATEGORY_NAMES };
   const filtersEl = document.getElementById('filters');
   const grid = document.getElementById('grid');
@@ -213,7 +214,7 @@ body.mode-space .cursor{display:none}
   function setHead() {
     const years = works.map(w => parseInt(w.year, 10)).filter(Boolean);
     const span = years.length ? `, ${Math.min(...years)}—${Math.max(...years)}` : '';
-    headSub.textContent = current === 'all' ? `— Fashion, Object & Graphic${span}` : `— ${NAMES[current]}`;
+    headSub.textContent = current === 'all' ? `— Fashion, 3D, Product & Graphic${span}` : `— ${NAMES[current]}`;
   }
 
   /* ---------- grid ---------- */
