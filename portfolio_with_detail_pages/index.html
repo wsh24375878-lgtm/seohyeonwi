@@ -32,6 +32,25 @@
   .product-stage img { position: absolute; max-width: min(52vw, 720px); max-height: 62vh; object-fit: contain;
     opacity: 0; transition: opacity .45s ease; animation: productFloat 6s ease-in-out infinite; -webkit-user-drag: none; }
   .product-stage img.on { opacity: 1; }
+  /* Product: previous / next buttons at the sides */
+  /* plain arrows in the page's own type — no box, just a wide invisible hit area */
+  .p-nav { position: fixed; top: 50%; z-index: 30; width: 64px; height: 96px; margin-top: -48px;
+    display: flex; align-items: center; justify-content: center; padding: 0;
+    border: 0; background: none; color: #111; opacity: .45;
+    font: 400 22px/1 Arial, Helvetica, sans-serif; cursor: pointer;
+    transition: opacity .2s, transform .25s; }
+  .p-nav:hover { opacity: 1; }
+  .p-nav-prev:hover { transform: translateX(-4px); }
+  .p-nav-next:hover { transform: translateX(4px); }
+  .p-nav:focus-visible { outline: 1px solid #111; outline-offset: -8px; opacity: 1; }
+  /* just outside the product image (which is at most min(52vw, 720px) wide), clear of the side text */
+  .p-nav-prev { left: max(200px, calc(50% - min(26vw, 360px) - 84px)); }
+  .p-nav-next { right: max(40px, calc(50% - min(26vw, 360px) - 84px)); }
+  @media (max-width: 700px) {
+    .p-nav { width: 48px; height: 80px; margin-top: -40px; font-size: 20px; top: calc(50% - 45px); }
+    .p-nav-prev { left: 0; }
+    .p-nav-next { right: 0; }
+  }
   @keyframes productFloat { 50% { translate: 0 -10px; } }
   .product-empty { font-size: 15px; margin: 0; }
   @media (max-width: 700px) {
@@ -1102,6 +1121,31 @@ if (IS_PRODUCT) (() => {
     if (e.key === 'ArrowRight') { B = (Math.round(B / QT) + 1) * QT; wake(); }
     if (e.key === 'ArrowLeft') { B = (Math.round(B / QT) - 1) * QT; wake(); }
   });
+
+  // Product: ‹ › buttons at both sides step to the previous / next product
+  if (IS_PRODUCT && N > 1) {
+    const step = dir => {
+      if (getComputedStyle(carousel).display === 'none') {          // phones: same as a swipe
+        dispatchEvent(new CustomEvent('objectswipe', { detail: dir }));
+        return;
+      }
+      if (!playing) {                                                // first press: open the next / last product
+        hovered = thumbs[dir > 0 ? 1 : N - 1];
+        startPlay(); hovered = null;
+        return;
+      }
+      if (morphing) return;
+      B = (Math.round(B / QT) + dir) * QT;
+      checkCurrent(); layoutPlay(); wake();
+    };
+    [['prev', -1, '←', 'Previous product'], ['next', 1, '→', 'Next product']].forEach(([cls, dir, txt, lbl]) => {
+      const b = document.createElement('button');
+      b.type = 'button'; b.className = `p-nav p-nav-${cls}`; b.textContent = txt;
+      b.setAttribute('aria-label', lbl);
+      b.addEventListener('click', e => { e.stopPropagation(); step(dir); });
+      document.body.appendChild(b);
+    });
+  }
 
   // hover the browsing strip → preview the artwork
   carousel.addEventListener('pointerover', e => {
