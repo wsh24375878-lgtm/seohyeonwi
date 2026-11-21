@@ -71,8 +71,9 @@ window.OTHER_WORKS = {
       images: ['01', '02', '03', '04', '05'].map(n => `images/graphic/columbine/${n}.jpg`) },
     { title: '2025 Desk Calendar', type: 'Desk Calendar', year: '2025',
       desc: 'A twelve-month desk calendar with bold red month numerals on soft cream paper.',
-      images: ['01', '02', '03', '04', '05'].map(n => `images/graphic/desk-calendar/${n}.jpg`),
-      posters: ['images/graphic/desk-calendar/05.jpg'] },
+      // 06 = the December page cropped from the 12-month sheet (05) — the cover
+      images: ['06', '01', '02', '03', '04', '05'].map(n => `images/graphic/desk-calendar/${n}.jpg`),
+      posters: ['images/graphic/desk-calendar/06.jpg'] },
     { title: '2025 Annual Planner', type: 'Wall Planner', year: '2025',
       desc: '年間計劃 — a one-sheet year planner for FromW2: twelve months in sky blue, weekends in pink, holidays starred, with room for the year\'s goals.',
       images: ['images/graphic/annual-planner/01.jpg'],
