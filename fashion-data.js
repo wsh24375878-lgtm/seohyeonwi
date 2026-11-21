@@ -39,6 +39,13 @@ window.FASHION_WORKS = [
     desc: 'Knit top with an asymmetric open shoulder.' },
   { project: '15', group: 'Ready-to-wear', title: 'Ready-to-wear — Tech Pack 04', src: '', info: 'Tech Pack',
     desc: 'Denim bustier with belt-buckle closures.' },
+  // Miseki seoul 26FW — mood board first (cover), then the book spread and the flats
+  { project: '16', group: 'Miseki seoul 26FW', title: 'Miseki seoul 26FW — Mood Board', src: 'images/fashion/miseki-seoul/01.jpg', info: 'Mood Board', year: '2025',
+    desc: 'A mood board for Miseki seoul 26FW — misty greens and grey-blues, wet grass, blurred light and black layered looks.' },
+  { project: '17', group: 'Miseki seoul 26FW', title: 'Miseki seoul 26FW — Book', src: 'images/fashion/miseki-seoul/02.jpg', info: 'Mood Book', year: '2025',
+    desc: 'The mood board laid out as a printed book spread opposite the Miseki seoul wordmark.' },
+  { project: '18', group: 'Miseki seoul 26FW', title: 'Miseki seoul 26FW — Flats', src: 'images/fashion/miseki-seoul/03.jpg', info: 'Technical Flats', year: '2025',
+    desc: 'Design flats, front and back: a hooded long coat with toggles, a ribbed knit cardigan with an asymmetric button line, and a wrapped pleated skirt with a tie belt.' },
 ];
 
 window.FashionData = (() => {

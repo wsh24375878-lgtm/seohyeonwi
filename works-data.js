@@ -33,14 +33,14 @@ window.OTHER_WORKS = {
       desc: 'An exaggerated spine that wraps the headphones like a living creature, balancing function and form.',
       images: ['', ''] },
     // furniture — 3D files rebuilt from the product photos (bent black tube + black panels)
-    { title: 'Tube Chair', type: 'Furniture · Chair', year: '2025',
-      desc: 'One bent steel tube draws the whole chair — a stepped backrest, a curl at the arm and a triangle at the foot — around a glossy black seat.',
-      images: ['images/object/tube-chair/01.jpg'],
-      models: ['models/object/tube-chair.glb'] },
-    { title: 'Two-Tier Side Table', type: 'Furniture · Side Table', year: '2025',
-      desc: 'Two offset black tops held by a single bent tube — a leaning leg, a looping base and a short post stepping down between the tiers.',
-      images: [''],
-      models: ['models/object/side-table.glb'] },
+    { title: 'Curve Chair', type: 'Furniture · Chair', year: '2022',
+      desc: 'One bent iron tube draws the whole chair — a stepped backrest, a curl at the arm and a triangle at the foot — around a glossy black seat. Opaque acrylic and iron, 71 × 53 × 74 cm.',
+      images: ['images/object/tube-chair/01.jpg', 'images/object/tube-chair/02.jpg'],
+      models: ['models/object/tube-chair.glb', 'models/object/tube-chair.glb'] },
+    { title: 'Empty Container', type: 'Furniture · Side Table', year: '2022',
+      desc: 'Two offset black tops held by a single bent tube — a leaning leg, a looping base and a short post stepping down between the tiers. Opaque acrylic and iron, made with iron banding, 30 × 24 × 30 cm.',
+      images: ['01', '02', '03'].map(n => `images/object/side-table/${n}.jpg`),
+      models: ['models/object/side-table.glb', 'models/object/side-table.glb', 'models/object/side-table.glb'] },
     { title: 'Glass Paperweight', type: 'Glass · Paperweight', year: '2025',
       desc: 'A clear glass block holding a snowy forest — two thin grooves cross near one corner like a window frame, so the scene reads as a view through a window.',
       images: ['01', '02', '03'].map(n => `images/object/glass-paperweight/${n}.jpg`),
@@ -55,6 +55,21 @@ window.OTHER_WORKS = {
       // 01 = front shot (cover, and the cut-out in the middle of the Product page); then open → details → folded → set
       images: ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12', '13'].map(n => `images/product/basalt-umbrella/${n}.jpg`),
       cutouts: ['images/product/basalt-umbrella/01.jpg'] },
+    { title: 'Rose Garden Blanket', type: 'Blanket · Packaging', year: '2025',
+      desc: 'Pink roses blooming out of black, printed on a soft blanket and boxed in a white window case with a rose-printed sleeve.',
+      // 01 = blanket cut-out (cover); then the boxed set and the print artwork
+      images: ['01', '02', '03', '04', '05'].map(n => `images/product/rose-garden-blanket/${n}.jpg`),
+      cutouts: ['images/product/rose-garden-blanket/01.jpg'] },
+    { title: 'Pudding Bead Curtain — Yellow', type: 'Bead Curtain · FromW2', year: '2025',
+      desc: '푸딩 비즈발 — a hanging bead curtain of a cherry-topped pudding with プリン spelled underneath, strung bead by bead on a metal bar.',
+      // 01–02 = cut-outs (medium, mini); then styled shots
+      images: ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12', '13', '14'].map(n => `images/product/pudding-beads-yellow/${n}.jpg`),
+      cutouts: ['images/product/pudding-beads-yellow/01.jpg'] },
+    { title: 'Pudding Bead Curtain — Blue', type: 'Bead Curtain · DIY Kit', year: '2025',
+      desc: '푸딩 비즈발 — the blue pudding edition: a mint jelly bead curtain, its pixel bead pattern and a FromW2 make-it-yourself kit guide.',
+      // 01–02 = cut-outs; 03–09 = styled / making shots; 10–11 = kit guide and bead pattern
+      images: ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11'].map(n => `images/product/pudding-beads-blue/${n}.jpg`),
+      cutouts: ['images/product/pudding-beads-blue/01.jpg'] },
   ],
   graphic: [
     // FromW2 — goods & graphics
@@ -83,9 +98,13 @@ window.OTHER_WORKS = {
       images: [''] },
     { title: 'Piece of Cake', type: 'Exhibition Poster', year: '2025',
       desc: 'Graduation exhibition poster, feed and sticker design — 24 works gathering into one cake.',
-      // 01 = poster; 02–03 = the Instagram feed grids (cut from screenshots, white made transparent)
-      images: ['images/graphic/piece-of-cake/01.jpg', 'images/graphic/piece-of-cake/02.png', 'images/graphic/piece-of-cake/03.png'],
-      posters: ['images/graphic/piece-of-cake/01.jpg', 'images/graphic/piece-of-cake/02.png', 'images/graphic/piece-of-cake/03.png'] },
+      // 01 = poster (original file); 04–05 = feed graphics; 02–03 = the Instagram feed grids (cut from screenshots, white made transparent)
+      images: ['01.jpg', '04.jpg', '05.jpg', '02.png', '03.png'].map(f => `images/graphic/piece-of-cake/${f}`),
+      posters: ['01.jpg', '04.jpg', '05.jpg', '02.png', '03.png'].map(f => `images/graphic/piece-of-cake/${f}`) },
+    { title: 'Love Glass Bumper Case', type: 'Poster · Phone Case', year: '2025',
+      desc: 'FromW2 posters for the "Love" glass bumper cases — a betta, goldfish and a green tank sealed into a phone case, each with a short care tip.',
+      images: ['01', '02', '03'].map(n => `images/graphic/love-bumper/${n}.jpg`),
+      posters: ['01', '02', '03'].map(n => `images/graphic/love-bumper/${n}.jpg`) },
     { title: 'FromW2', type: 'Brand Identity', year: '',
       desc: 'Identity and visuals for FromW2, a techwear brand — logo, product imagery and a collaboration with It\'s Skin.',
       images: ['', ''] },
