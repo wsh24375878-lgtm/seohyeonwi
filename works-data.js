@@ -6,6 +6,7 @@
    - 3D(object 목록) / Product(product 목록) / Graphic 작업은 아래에서 수정하세요.
    - product: Product 화면 가운데에 뜨는 건 누끼 이미지예요. cutouts: ['images/product/...png'] 에 배경 없는 PNG 를 적어요.
      cutouts 가 없으면 images 의 사진을 대신 써요.
+   - product 의 kind 는 Product 화면 위쪽 분류 버튼이에요(Fabric · Bead Curtain · Paperweight · Stationery · Case). 새 이름을 적으면 버튼이 자동으로 생겨요.
    - type 은 작업 종류(예: 3D, Metal Craft, Product, Poster …)예요.
    - posters: Graphic 메인 화면에 뜨는 포스터(디자인 원본)만 적어요. 연출컷·상세컷은 images 에만 두세요.
      posters 가 비어 있는 작업은 Graphic 메인 화면에 나오지 않아요.
@@ -50,58 +51,58 @@ window.OTHER_WORKS = {
   // Product — 2D cut-out photos (no 3D). Empty for now; add works like:
   // { title: "…", type: "…", year: "2025", desc: "…", images: ["images/product/…/01.jpg"], cutouts: ["images/product/…/cutout.png"] },
   product: [
-    { title: 'Basalt Umbrella', type: 'Umbrella · Tote Bag', year: '2025',
+    { title: 'Basalt Umbrella', kind: 'Fabric', type: 'Umbrella · Tote Bag', year: '2025',
       desc: '현무암 우산 — waves crashing on black basalt rock, printed across an automatic folding umbrella, with a matching sleeve and a tote bag that carries it.',
       // 01 = front shot (cover, and the cut-out in the middle of the Product page); then open → details → folded → set
       images: ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12', '13'].map(n => `images/product/basalt-umbrella/${n}.jpg`),
-      cutouts: ['images/product/basalt-umbrella/01.jpg'] },
-    { title: 'Rose Garden Blanket', type: 'Blanket · Packaging', year: '2025',
+      cutouts: ['images/product/basalt-umbrella/cover.jpg'] },
+    { title: 'Rose Garden Blanket', kind: 'Fabric', type: 'Blanket · Packaging', year: '2025',
       desc: 'Pink roses blooming out of black, printed on a soft blanket and boxed in a white window case with a rose-printed sleeve.',
       // 01 = blanket cut-out (cover); then the boxed set and the print artwork
       images: ['01', '02', '03', '04', '05'].map(n => `images/product/rose-garden-blanket/${n}.jpg`),
-      cutouts: ['images/product/rose-garden-blanket/01.jpg'] },
-    { title: 'Pudding Bead Curtain — Yellow', type: 'Bead Curtain · FromW2', year: '2025',
+      cutouts: ['images/product/rose-garden-blanket/cover.jpg'] },
+    { title: 'Pudding Bead Curtain — Yellow', kind: 'Bead Curtain', type: 'Bead Curtain · FromW2', year: '2025',
       desc: '푸딩 비즈발 — a hanging bead curtain of a cherry-topped pudding with プリン spelled underneath, strung bead by bead on a metal bar.',
       // 01–02 = cut-outs (medium, mini); then styled shots
       images: ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12', '13', '14'].map(n => `images/product/pudding-beads-yellow/${n}.jpg`),
-      cutouts: ['images/product/pudding-beads-yellow/01.jpg'] },
-    { title: 'Pudding Bead Curtain — Blue', type: 'Bead Curtain · DIY Kit', year: '2025',
+      cutouts: ['images/product/pudding-beads-yellow/cover.jpg'] },
+    { title: 'Pudding Bead Curtain — Blue', kind: 'Bead Curtain', type: 'Bead Curtain · DIY Kit', year: '2025',
       desc: '푸딩 비즈발 — the blue pudding edition: a mint jelly bead curtain, its pixel bead pattern and a FromW2 make-it-yourself kit guide.',
       // 01–02 = cut-outs; 03–09 = styled / making shots; 10–11 = kit guide and bead pattern
       images: ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11'].map(n => `images/product/pudding-beads-blue/${n}.jpg`),
-      cutouts: ['images/product/pudding-beads-blue/01.jpg'] },
-    { title: 'Melon Soda Bead Curtain', type: 'Bead Curtain · FromW2', year: '2024',
+      cutouts: ['images/product/pudding-beads-blue/cover.jpg'] },
+    { title: 'Melon Soda Bead Curtain', kind: 'Bead Curtain', type: 'Bead Curtain · FromW2', year: '2024',
       desc: '메론소다 비즈발 — a green melon soda float with a cherry on top, beaded on sky blue and hung from a metal bar.',
       images: ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11'].map(n => `images/product/pudding-beads-melon/${n}.jpg`),
-      cutouts: ['images/product/pudding-beads-melon/01.jpg'] },
+      cutouts: ['images/product/pudding-beads-melon/cover.jpg'] },
     // paperweights
-    { title: 'Wave Paperweight', type: 'Acrylic Paperweight · FromW2', year: '2024',
+    { title: 'Wave Paperweight', kind: 'Paperweight', type: 'Acrylic Paperweight · FromW2', year: '2024',
       desc: '파도 문진 — a breaking wave sealed inside a clear acrylic block, set on books, magazines and desks.',
       images: Array.from({ length: 19 }, (_, i) => `images/product/wave-paperweight/${String(i + 1).padStart(2, '0')}.jpg`),
-      cutouts: ['images/product/wave-paperweight/01.jpg'] },
-    { title: 'Aquarium Paperweight', type: 'Epoxy Paperweight · FromW2', year: '2024',
+      cutouts: ['images/product/wave-paperweight/cover.jpg'] },
+    { title: 'Aquarium Paperweight', kind: 'Paperweight', type: 'Epoxy Paperweight · FromW2', year: '2024',
       desc: '어항 문진 — a dome paperweight holding a tiny aquarium of goldfish, rocks and water plants: "clean, clear".',
       images: ['01', '02', '03', '04', '05', '06', '07', '08'].map(n => `images/product/aquarium-paperweight/${n}.jpg`),
-      cutouts: ['images/product/aquarium-paperweight/01.jpg'] },
+      cutouts: ['images/product/aquarium-paperweight/cover.jpg'] },
     // masking tapes
-    { title: 'About Love, Happiness & Sadness', type: 'Masking Tape · FromW2', year: '2024',
+    { title: 'About Love, Happiness & Sadness', kind: 'Stationery', type: 'Masking Tape · FromW2', year: '2024',
       desc: '사랑에 관하여 · 행복에 관하여 · 슬픔에 관하여 — three masking tapes that spell out the words for one feeling each: red on white for love, red on black for happiness, white on blue for sadness.',
       // 01–16 love, 17–32 happiness, 33–46 sadness
       images: Array.from({ length: 46 }, (_, i) => `images/product/emotion-masking-tape/${String(i + 1).padStart(2, '0')}.jpg`),
-      cutouts: ['images/product/emotion-masking-tape/01.jpg'] },
-    { title: 'Jellyfish & Fish Masking Tape', type: 'Masking Tape · FromW2', year: '2024',
+      cutouts: ['images/product/emotion-masking-tape/cover.jpg'] },
+    { title: 'Jellyfish & Fish Masking Tape', kind: 'Stationery', type: 'Masking Tape · FromW2', year: '2024',
       desc: '해파리 마스킹 — glowing jellyfish drifting along a black tape, and a white tape of tropical fish and starfish.',
       images: Array.from({ length: 17 }, (_, i) => `images/product/sea-masking-tape/${String(i + 1).padStart(2, '0')}.jpg`),
-      cutouts: ['images/product/sea-masking-tape/01.jpg'] },
+      cutouts: ['images/product/sea-masking-tape/cover.jpg'] },
     // stickers & cases
-    { title: 'Betta Stickers', type: 'Sticker · FromW2', year: '2024',
+    { title: 'Betta Stickers', kind: 'Stationery', type: 'Sticker · FromW2', year: '2024',
       desc: '베타 스티커 — betta fish fins as translucent stickers in pastel, red, black and white, scattered over fridges, guitars and tables.',
       images: Array.from({ length: 15 }, (_, i) => `images/product/betta-stickers/${String(i + 1).padStart(2, '0')}.jpg`),
-      cutouts: ['images/product/betta-stickers/01.jpg'] },
-    { title: 'Ballet Shoe iPad Case', type: 'iPad Case · FromW2', year: '2024',
+      cutouts: ['images/product/betta-stickers/cover.jpg'] },
+    { title: 'Ballet Shoe iPad Case', kind: 'Case', type: 'iPad Case · FromW2', year: '2024',
       desc: '발레슈 아이패드 케이스 — satin pointe shoes and loose ribbons printed on a soft pink folio case tied with a real ribbon.',
       images: ['01', '02', '03', '04', '05'].map(n => `images/product/ballet-ipad-case/${n}.jpg`),
-      cutouts: ['images/product/ballet-ipad-case/01.jpg'] },
+      cutouts: ['images/product/ballet-ipad-case/cover.jpg'] },
   ],
   graphic: [
     // FromW2 — goods & graphics

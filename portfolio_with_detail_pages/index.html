@@ -29,7 +29,8 @@
 
   /* ---------- Product page (index.html?cat=product): a 2D cut-out photo in the middle instead of the 3D object ---------- */
   .product-stage { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; pointer-events: none; }
-  .product-stage img { position: absolute; max-width: min(52vw, 720px); max-height: 62vh; object-fit: contain;
+  /* fixed box (not max-*) so every photo fills the same area whatever its pixel size */
+  .product-stage img { position: absolute; width: min(52vw, 720px); height: 62vh; object-fit: contain;
     opacity: 0; transition: opacity .45s ease; animation: productFloat 6s ease-in-out infinite; -webkit-user-drag: none; }
   .product-stage img.on { opacity: 1; pointer-events: auto; cursor: pointer; }
   /* Product: previous / next buttons at the sides */
@@ -51,11 +52,26 @@
     .p-nav-prev { left: 0; }
     .p-nav-next { right: 0; }
   }
+  /* Product: kind filter, a quiet second row under the category links */
+  .p-kinds { position: fixed; z-index: 99; top: 46px; left: 50%; transform: translateX(-50%); display: flex; gap: 14px;
+    font: 400 13px/1 Arial, Helvetica, sans-serif; white-space: nowrap; }
+  .p-kinds a { color: #8c8c8c; text-decoration: none; transition: color .2s ease; }
+  .p-kinds a:hover, .p-kinds a.is-active { color: #050505; }
+  .p-kinds a.is-active { text-decoration: underline; text-underline-offset: 3px; text-decoration-thickness: 1px; }
+  @media (max-width: 700px) {
+    .p-kinds { top: 66px; left: 14px; right: 14px; transform: none; gap: 12px; font-size: 12px;
+      overflow-x: auto; scrollbar-width: none; padding-bottom: 4px; }
+    .p-kinds::-webkit-scrollbar { display: none; }
+  }
+  /* strip: faded like the phone strip; the product on show (or under the mouse) at full strength */
+  .carousel .thumb img { opacity: .45; transition: opacity .25s ease; }
+  .carousel .thumb.is-current img { opacity: 1; }
+  @media (hover: hover) { .carousel .thumb:hover img { opacity: 1; } }
   @keyframes productFloat { 50% { translate: 0 -10px; } }
   .product-empty { font-size: 15px; margin: 0; }
   @media (max-width: 700px) {
-    .product-stage { bottom: 150px; top: 60px; }       /* between the menu and the strip */
-    .product-stage img { max-width: 80vw; max-height: 100%; }
+    .product-stage { bottom: 150px; top: 92px; }       /* between the menu (+ kind row) and the strip */
+    .product-stage img { width: 80vw; height: 100%; }
   }
   .is-product .side-hint { display: none; }
   .is-product #app { filter: none; }
@@ -218,8 +234,16 @@ const IS_PRODUCT = PAGE_CAT === 'product';
 window.PAGE_CAT = PAGE_CAT;
 const CAT_LABEL = IS_PRODUCT ? 'Product' : '3D';
 // detail page link for a project (Product keeps its category in the address)
-const caseUrl = pi => `project-detail.html?project=${String(pi + 1).padStart(2, '0')}${IS_PRODUCT ? '&category=product' : ''}`;
-const PROJECTS = (window.OTHER_WORKS[PAGE_CAT] || []).map(w => ({
+// (pi = index in the list on screen; orig = index in works-data.js, which the detail page uses)
+const caseUrl = pi => `project-detail.html?project=${String((PROJECTS[pi] ? PROJECTS[pi].orig : pi) + 1).padStart(2, '0')}${IS_PRODUCT ? '&category=product' : ''}`;
+// Product: ?kind=paperweight shows only that kind (works-data.js 의 kind)
+const kindSlug = k => String(k || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+const ALL_WORKS = window.OTHER_WORKS[PAGE_CAT] || [];
+const KINDS = IS_PRODUCT ? [...new Set(ALL_WORKS.map(w => w.kind).filter(Boolean))] : [];
+let KIND = IS_PRODUCT ? kindSlug(new URLSearchParams(location.search).get('kind')) : '';
+if (!KINDS.some(k => kindSlug(k) === KIND)) KIND = '';
+const PROJECTS = ALL_WORKS.map((w, orig) => ({ w, orig })).filter(({ w }) => !KIND || kindSlug(w.kind) === KIND).map(({ w, orig }) => ({
+  orig,
   title: w.title,
   info: [w.type, w.year].filter(Boolean).join(', '),
   images: w.images.map(src => (src ? '../' + src : '')),
@@ -236,6 +260,19 @@ if (IS_PRODUCT) {
   const a = document.getElementById('nav3d'), b = document.getElementById('navProduct');
   a.classList.remove('is-active'); a.removeAttribute('aria-current');
   b.classList.add('is-active'); b.setAttribute('aria-current', 'page');
+  // kind filter under the top bar: All · Fabric · Bead Curtain · …
+  if (KINDS.length > 1) {
+    const bar = document.createElement('nav');
+    bar.className = 'p-kinds'; bar.setAttribute('aria-label', 'Product types');
+    [['All', ''], ...KINDS.map(k => [k, kindSlug(k)])].forEach(([name, slug]) => {
+      const a = document.createElement('a');
+      a.href = 'index.html?cat=product' + (slug ? '&kind=' + slug : '');
+      a.textContent = name;
+      if (slug === KIND) { a.className = 'is-active'; a.setAttribute('aria-current', 'true'); }
+      bar.appendChild(a);
+    });
+    document.querySelector('.site-top').after(bar);
+  }
 }
 // the 3D renderer (module script below) hands over its snapshot function here
 const objectSnap = new Promise(res => { window.setObjectSnap = res; });
@@ -906,7 +943,9 @@ if (IS_PRODUCT) (() => {
       letter: String.fromCharCode(65 + pi), num: String(s + 1).padStart(2, '0'), k: s,
     });
   }
-  const liveWork = it => dispatchEvent(new CustomEvent('objectwork', { detail: it ? { it, k: it.k } : null }));
+  // the strip thumb(s) of the work on show stay at full strength, the rest are faded
+  const markCurrent = k => document.querySelectorAll('.carousel .thumb').forEach(t => t.classList.toggle('is-current', k != null && +t.dataset.i === k));
+  const liveWork = it => { markCurrent(it ? it.k : null); dispatchEvent(new CustomEvent('objectwork', { detail: it ? { it, k: it.k } : null })); };
   const label = it => `${it.title} ${it.idx}/${it.total}`;
   const workCase = document.getElementById('workCase');
   const workInfo = document.getElementById('workInfo');
@@ -1291,6 +1330,7 @@ if (IS_PRODUCT) (() => {
   Promise.all(ITEMS.map(load)).then(res => {
     res.forEach((r, k) => { ITEMS[k].url = r.url; ITEMS[k].ar = r.ar; });
     ITEMS.forEach((it, i) => { const t = makeThumb(it, i, i === 0); carousel.appendChild(t); thumbs.push(t); });
+    if (IS_PRODUCT && !document.querySelector('.carousel .thumb.is-current')) markCurrent(0);   // the first product is on show
     buildMobile();
     layoutBrowse();
     let started = false;
