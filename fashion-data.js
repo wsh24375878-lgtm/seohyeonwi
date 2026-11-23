@@ -8,18 +8,26 @@
    ========================================================= */
 window.FASHION_WORKS = [
   // 졸업 컬렉션 — 혼란 (Confusion)
-  { project: '01', group: 'Confusion', title: 'Confusion — Final Look', src: '', info: 'Graduation Collection',
+  { project: '01', group: 'Confusion', title: 'Confusion — Final Look', src: 'images/fashion/confusion/01.jpg', info: 'Graduation Collection',
     desc: 'Inflated volumes and trailing threads — the fear of the unknown, turned into a body you can wear.' },
-  { project: '02', group: 'Confusion', title: 'Confusion — Final Work', src: '', info: 'Graduation Collection',
+  { project: '02', group: 'Confusion', title: 'Confusion — Final Work', src: 'images/fashion/confusion/02.jpg', info: 'Graduation Collection',
     desc: 'Starting from the film "Alien", the unknown is broken down and rebuilt as clothing instead of being avoided.' },
-  { project: '03', group: 'Confusion', title: 'Confusion — Mood Board', src: '', info: 'Research',
+  { project: '03', group: 'Confusion', title: 'Confusion — Mood Board', src: 'images/fashion/confusion/03.jpg', info: 'Research',
     desc: 'Organic, parasitic forms and a cold palette of shadow mint, lucent white and midnight denim.' },
-  { project: '04', group: 'Confusion', title: 'Confusion — Concept & Material', src: '', info: 'Concept',
+  { project: '03-2', group: 'Confusion', title: 'Confusion — Mood Board, Remake', src: 'images/fashion/confusion/03-2.jpg', info: 'Research',
+    desc: 'A reworked mood board: the same padded white look, now set against tattered fur, lace and organic textures in the shadow-mint and midnight-denim palette.' },
+  { project: '04', group: 'Confusion', title: 'Confusion — Concept & Material', src: 'images/fashion/material-board/01.jpg', info: 'Concept',
     desc: 'The concept of confusion, and a material board of belts, buckles, padding and worn denim.' },
-  { project: '05', group: 'Confusion', title: 'Confusion — Design Sketch', src: '', info: 'Sketch',
+  { project: '05', group: 'Confusion', title: 'Confusion — Design Sketch', src: 'images/fashion/confusion/05.jpg', info: 'Sketch',
     desc: 'Idea sketches exploring padded volume, straps and layered drapery across the line-up.' },
-  { project: '06', group: 'Confusion', title: 'Confusion — Textile Design', src: '', info: 'Textile',
+  { project: '06', group: 'Confusion', title: 'Confusion — Textile Design', src: 'images/fashion/confusion/06.jpg', info: 'Textile',
     desc: 'Original textile prints developed for the collection, with mock-up layouts on garments.' },
+  { project: '06-2', group: 'Confusion', title: 'Confusion — Textile Design 02', src: 'images/fashion/confusion/06-2.jpg', info: 'Textile',
+    desc: 'A scribbled, hair-like print in ink grey on white — tangled lines drifting across the cloth.' },
+  { project: '06-3', group: 'Confusion', title: 'Confusion — Textile Design 03', src: 'images/fashion/confusion/06-3.jpg', info: 'Textile',
+    desc: 'An organic lace print — cell-like growths and starburst forms in grey and pale blue.' },
+  { project: '06-4', group: 'Confusion', title: 'Confusion — Textile Design 04', src: 'images/fashion/confusion/06-4.jpg', info: 'Textile',
+    desc: 'A repeat of glowing blue wireframe busts on black, like scans of an unknown body.' },
   { project: '07', group: 'Confusion', title: 'Confusion — Final Sketch', src: '', info: 'Sketch',
     desc: 'The final look: exaggerated padded volume carried by straps and denim, finished with print.' },
   { project: '08', group: 'Confusion', title: 'Confusion — Making Process', src: '', info: 'Process',
@@ -46,9 +54,6 @@ window.FASHION_WORKS = [
     desc: 'The mood board laid out as a printed book spread opposite the Miseki seoul wordmark.' },
   { project: '18', group: 'Miseki seoul 26FW', title: 'Miseki seoul 26FW — Flats', src: 'images/fashion/miseki-seoul/03.jpg', info: 'Technical Flats', year: '2025',
     desc: 'Design flats, front and back: a hooded long coat with toggles, a ribbed knit cardigan with an asymmetric button line, and a wrapped pleated skirt with a tie belt.' },
-  // Material board
-  { project: '19', group: 'Material Board', title: 'Material Board', src: 'images/fashion/material-board/01.jpg', info: 'Material', year: '',
-    desc: 'A material board in white, grey and black — worn leather belts and steel buckles, frayed denim, torn ribbons, knit and crushed leather, buttons, eyelets and an oversized zip, pinned and layered as a collage.' },
 ];
 
 window.FashionData = (() => {
