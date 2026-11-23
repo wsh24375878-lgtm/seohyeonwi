@@ -90,8 +90,8 @@ window.OTHER_WORKS = {
     // masking tapes
     { title: 'About Love, Happiness & Sadness', kind: 'Stationery', type: 'Masking Tape · FromW2', year: '2024',
       desc: '사랑에 관하여 · 행복에 관하여 · 슬픔에 관하여 — three masking tapes that spell out the words for one feeling each: red on white for love, red on black for happiness, white on blue for sadness.',
-      // 01–16 love, 17–32 happiness, 33–46 sadness
-      images: Array.from({ length: 46 }, (_, i) => `images/product/emotion-masking-tape/${String(i + 1).padStart(2, '0')}.jpg`),
+      // 01–16 love, 17–32 happiness, 33–46 sadness; 04 (the unrolled love tape) goes first as the cover shot
+      images: ['04', ...Array.from({ length: 46 }, (_, i) => String(i + 1).padStart(2, '0')).filter(n => n !== '04')].map(n => `images/product/emotion-masking-tape/${n}.jpg`),
       cutouts: ['images/product/emotion-masking-tape/cover.jpg'] },
     { title: 'Jellyfish & Fish Masking Tape', kind: 'Stationery', type: 'Masking Tape · FromW2', year: '2024',
       desc: '해파리 마스킹 — glowing jellyfish drifting along a black tape, and a white tape of tropical fish and starfish.',
