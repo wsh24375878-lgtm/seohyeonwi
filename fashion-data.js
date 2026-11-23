@@ -14,8 +14,6 @@ window.FASHION_WORKS = [
     desc: 'Starting from the film "Alien", the unknown is broken down and rebuilt as clothing instead of being avoided.' },
   { project: '03', group: 'Confusion', title: 'Confusion — Mood Board', src: 'images/fashion/confusion/03.jpg', info: 'Research',
     desc: 'Organic, parasitic forms and a cold palette of shadow mint, lucent white and midnight denim.' },
-  { project: '03-2', group: 'Confusion', title: 'Confusion — Mood Board, Remake', src: 'images/fashion/confusion/03-2.jpg', info: 'Research',
-    desc: 'A reworked mood board: the same padded white look, now set against tattered fur, lace and organic textures in the shadow-mint and midnight-denim palette.' },
   { project: '04', group: 'Confusion', title: 'Confusion — Concept & Material', src: 'images/fashion/material-board/01.jpg', info: 'Concept',
     desc: 'The concept of confusion, and a material board of belts, buckles, padding and worn denim.' },
   { project: '05', group: 'Confusion', title: 'Confusion — Design Sketch', src: 'images/fashion/confusion/05.jpg', info: 'Sketch',
