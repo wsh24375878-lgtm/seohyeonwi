@@ -345,12 +345,15 @@ body.mode-space .cursor{display:none}
        both × 0.8 on screens 1025–1440px wide
      - perspective camera: fov 60°, so the camera sits 0.866 × screen height away */
   const MIN_PLANES = 18, PLANE_AR = .75;
+  // the sphere shows only every second work (half of each category) — the grid behind it has everything
+  const SPHERE_EVERY = 2;
   function buildSphere() {
     if (!works.length) return;
-    const N = Math.max(works.length, MIN_PLANES);
+    const pick = works.filter((w, i) => i % SPHERE_EVERY === 0);
+    const N = Math.max(pick.length, MIN_PLANES);
     const golden = Math.PI * (3 - Math.sqrt(5));
     for (let i = 0; i < N; i++) {
-      const w = works[i % works.length];
+      const w = pick[i % pick.length];
       const yy = i * (2 / N) - 1 + 1 / N, rr = Math.sqrt(1 - yy * yy), th = golden * i;   // even spread (golden spiral)
       const el = document.createElement('div');
       el.className = 'plane';
@@ -414,7 +417,7 @@ body.mode-space .cursor{display:none}
     if (open) {
       if (p === open) enterGrid(open.work);            // second click on the open image → the grid at that work
       else closeOpen();                                // click anywhere else → close it
-    } else if (p) openPlane(p);                        // first click → the image opens large in the middle
+    } else if (p) enterGrid(p.work, true, 'all');      // click an image → the whole archive grid, at that work
   };
   space.addEventListener('pointerup', endDrag);
   space.addEventListener('pointercancel', endDrag);
