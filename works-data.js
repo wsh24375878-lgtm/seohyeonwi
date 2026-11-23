@@ -6,6 +6,7 @@
    - 3D(object 목록) / Product(product 목록) / Graphic 작업은 아래에서 수정하세요.
    - product: Product 화면 가운데에 뜨는 건 누끼 이미지예요. cutouts: ['images/product/...png'] 에 배경 없는 PNG 를 적어요.
      cutouts 가 없으면 images 의 사진을 대신 써요.
+   - hidden: true 를 적으면 그 작품은 사이트 어디에도 안 보여요(지우면 다시 보여요).
    - product 의 size: .7 처럼 적으면 Product 화면 가운데 사진이 그만큼 작게 떠요(1 = 기본).
    - product 의 kind 는 Product 화면 위쪽 분류 버튼이에요(Living · Stationery · Accessories). 새 이름을 적으면 버튼이 자동으로 생겨요.
    - type 은 작업 종류(예: 3D, Metal Craft, Product, Poster …)예요.
@@ -155,7 +156,8 @@ window.OTHER_WORKS = {
       desc: '화이트·블랙 피시 스티커 — fancy goldfish in pure white and deep black, as clear sticker strips scattered over laptops and phone cases.',
       images: Array.from({ length: 33 }, (_, i) => `images/product/goldfish-stickers/${String(i + 1).padStart(2, '0')}.jpg`),
       cutouts: ['images/product/goldfish-stickers/cover.jpg'] },
-    { title: 'Rose Stickers', kind: 'Stationery', type: 'Sticker · FromW2', year: '2024',
+    { title: 'Rose Stickers', kind: 'Stationery', hidden: true,   // no white-background cut-out yet
+      type: 'Sticker · FromW2', year: '2024',
       desc: '장미 스티커 — monochrome roses and bows, stuck on a white iPhone and a grey iPad.',
       images: Array.from({ length: 4 }, (_, i) => `images/product/rose-stickers/${String(i + 1).padStart(2, '0')}.jpg`),
       cutouts: ['images/product/rose-stickers/cover.jpg'] },
@@ -168,7 +170,8 @@ window.OTHER_WORKS = {
       desc: '피어남 라이터 — blooming flowers in white on pastel lighters: grey, lilac, mint, lemon and peach.',
       images: Array.from({ length: 6 }, (_, i) => `images/product/pieonam-lighter/${String(i + 1).padStart(2, '0')}.jpg`),
       cutouts: ['images/product/pieonam-lighter/cover.jpg'] },
-    { title: 'About Love Lighter', kind: 'Accessories', size: .7, type: 'Lighter · FromW2', year: '2024',
+    { title: 'About Love Lighter', kind: 'Accessories', hidden: true,   // no white-background cut-out yet
+      size: .7, type: 'Lighter · FromW2', year: '2024',
       desc: '사랑에 관하여 라이터 — the words of the About Love tape, printed on soft pink lighters.',
       images: Array.from({ length: 1 }, (_, i) => `images/product/about-love-lighter/${String(i + 1).padStart(2, '0')}.jpg`),
       cutouts: ['images/product/about-love-lighter/cover.jpg'] },
@@ -176,7 +179,8 @@ window.OTHER_WORKS = {
       desc: '발레슈 케이스 — satin pointe shoes and loose ribbons printed on a soft pink iPad folio tied with a real ribbon, and on clear phone cases in pink, black and silver.',
       images: Array.from({ length: 9 }, (_, i) => `images/product/ballet-ipad-case/${String(i + 1).padStart(2, '0')}.jpg`),
       cutouts: ['images/product/ballet-ipad-case/cover.jpg'] },
-    { title: 'Rose iPad Case', kind: 'Accessories', type: 'iPad Case · FromW2', year: '2024',
+    { title: 'Rose iPad Case', kind: 'Accessories', hidden: true,   // no white-background cut-out yet
+      type: 'iPad Case · FromW2', year: '2024',
       desc: 'Rose Juicy and Pale Rose prints carried onto iPad cases, used at the desk and on the go.',
       images: Array.from({ length: 8 }, (_, i) => `images/product/rose-ipad-case/${String(i + 1).padStart(2, '0')}.jpg`),
       cutouts: ['images/product/rose-ipad-case/cover.jpg'] },
@@ -280,6 +284,8 @@ window.OTHER_WORKS = {
       images: ['', ''] },
   ],
 };
+// works marked hidden: true are left out everywhere (Product page, detail pages, Archive) until the mark is removed
+for (const k of Object.keys(window.OTHER_WORKS)) window.OTHER_WORKS[k] = window.OTHER_WORKS[k].filter(w => !w.hidden);
 
 window.WorksData = (() => {
   const CATEGORY_NAMES = { fashion: 'Fashion', object: '3D', product: 'Product', graphic: 'Graphic' };
