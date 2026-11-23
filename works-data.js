@@ -32,7 +32,7 @@ window.OTHER_WORKS = {
       images: [''] },
     { title: 'Alien Case — AirPods Max', type: '3D · Headphone Case', year: '2025',
       desc: 'An exaggerated spine that wraps the headphones like a living creature, balancing function and form.',
-      images: ['', ''] },
+      images: ['images/object/alien-airpods-max/01.jpg'] },
     // furniture — 3D files rebuilt from the product photos (bent black tube + black panels)
     { title: 'Curve Chair', type: 'Furniture · Chair', year: '2022',
       desc: 'One bent iron tube draws the whole chair — a stepped backrest, a curl at the arm and a triangle at the foot — around a glossy black seat. Opaque acrylic and iron, 71 × 53 × 74 cm.',
@@ -103,6 +103,16 @@ window.OTHER_WORKS = {
       desc: '발레슈 아이패드 케이스 — satin pointe shoes and loose ribbons printed on a soft pink folio case tied with a real ribbon.',
       images: ['01', '02', '03', '04', '05'].map(n => `images/product/ballet-ipad-case/${n}.jpg`),
       cutouts: ['images/product/ballet-ipad-case/cover.jpg'] },
+    // ornaments & jewellery
+    { title: 'Ornament Tree', kind: 'Objet', type: 'Display · Ornaments', year: '2025',
+      desc: 'A flat-pack Christmas tree in deep red, slotted together from wavy panels on a black flower-shaped base — hung with hand-beaded hearts, crosses and baubles in crystal, pearl and gold.',
+      // 01 = the whole tree (cover); 02 = close-up of the ornaments
+      images: ['01', '02'].map(n => `images/product/ornament-tree/${n}.jpg`),
+      cutouts: ['images/product/ornament-tree/cover.jpg'] },
+    { title: 'Spine Bracelet', kind: 'Jewelry', type: 'Metal · Bracelet', year: '2025',
+      desc: 'A gold bracelet cast as a coiled spine — the same bone language as the Alien cases, closed into a ring around the wrist.',
+      images: ['images/product/spine-bracelet/01.jpg'],
+      cutouts: ['images/product/spine-bracelet/cover.jpg'] },
   ],
   graphic: [
     // FromW2 — goods & graphics
