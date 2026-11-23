@@ -47,6 +47,9 @@ window.OTHER_WORKS = {
       images: ['01', '02', '03'].map(n => `images/object/glass-paperweight/${n}.jpg`),
       // every photo slot in the strip shows the same 3D block
       models: ['models/object/glass-paperweight.glb', 'models/object/glass-paperweight.glb', 'models/object/glass-paperweight.glb'] },
+    { title: 'Fw2 Logo', type: '3D · Logo', year: '2024',
+      desc: 'The FromW2 blackletter monogram — F, w and 2 stacked into one mark — rendered as a cut metal sign: dark brushed faces on polished silver edges.',
+      images: ['images/object/fw2-logo/01.jpg'] },
   ],
   // Product — 2D cut-out photos (no 3D). Empty for now; add works like:
   // { title: "…", type: "…", year: "2025", desc: "…", images: ["images/product/…/01.jpg"], cutouts: ["images/product/…/cutout.png"] },
@@ -170,6 +173,10 @@ window.OTHER_WORKS = {
       desc: '10월 배경화면 — jellies, pudding and soda floats on soft pastel backgrounds, made as free phone wallpapers.',
       images: ['01', '02', '03', '04', '05'].map(n => `images/graphic/wallpaper-dessert/${n}.jpg`),
       posters: ['01', '02', '03'].map(n => `images/graphic/wallpaper-dessert/${n}.jpg`) },
+    { title: 'Mutant Collection', type: 'Poster · FromW2', year: '2021',
+      desc: '突然變異 — a FromW2 poster for the Mutant Collection, January 2021: an inverted blue rose and pale butterflies with a short manifesto — "Don\'t be afraid to be different from others."',
+      images: ['images/graphic/mutant-collection/01.jpg'],
+      posters: ['images/graphic/mutant-collection/01.jpg'] },
     { title: 'FromW2', type: 'Brand Identity', year: '',
       desc: 'Identity and visuals for FromW2, a techwear brand — logo, product imagery and a collaboration with It\'s Skin.',
       images: ['', ''] },
