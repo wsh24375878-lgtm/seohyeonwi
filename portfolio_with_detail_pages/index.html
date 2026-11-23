@@ -239,7 +239,9 @@ const caseUrl = pi => `project-detail.html?project=${String((PROJECTS[pi] ? PROJ
 // Product: ?kind=paperweight shows only that kind (works-data.js 의 kind)
 const kindSlug = k => String(k || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
 const ALL_WORKS = window.OTHER_WORKS[PAGE_CAT] || [];
-const KINDS = IS_PRODUCT ? [...new Set(ALL_WORKS.map(w => w.kind).filter(Boolean))] : [];
+const KIND_ORDER = ['Living', 'Stationery', 'Accessories'];   // button order; any other kind goes after
+const KINDS = IS_PRODUCT ? [...new Set(ALL_WORKS.map(w => w.kind).filter(Boolean))]
+  .sort((a, b) => ((KIND_ORDER.indexOf(a) + 1) || 99) - ((KIND_ORDER.indexOf(b) + 1) || 99)) : [];
 let KIND = IS_PRODUCT ? kindSlug(new URLSearchParams(location.search).get('kind')) : '';
 if (!KINDS.some(k => kindSlug(k) === KIND)) KIND = '';
 const PROJECTS = ALL_WORKS.map((w, orig) => ({ w, orig })).filter(({ w }) => !KIND || kindSlug(w.kind) === KIND).map(({ w, orig }) => ({
