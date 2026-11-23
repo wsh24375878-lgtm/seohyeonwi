@@ -56,12 +56,7 @@ window.OTHER_WORKS = {
   // Product — 2D cut-out photos (no 3D). Empty for now; add works like:
   // { title: "…", type: "…", year: "2025", desc: "…", images: ["images/product/…/01.jpg"], cutouts: ["images/product/…/cutout.png"] },
   product: [
-    // Living — fabrics, bead curtains and paperweights, in colour order
-    { title: 'Rose Garden Blanket', kind: 'Living', type: 'Blanket · Packaging', year: '2025',
-      desc: 'Pink roses blooming out of black, printed on a soft blanket and boxed in a white window case with a rose-printed sleeve.',
-      // 01 = blanket cut-out (cover); then the boxed set and the print artwork
-      images: ['01', '02', '03', '04', '05'].map(n => `images/product/rose-garden-blanket/${n}.jpg`),
-      cutouts: ['images/product/rose-garden-blanket/cover.jpg'] },
+    // Living — fabric posters first, then the blanket, paperweights and bead curtains, in colour order
     { title: 'Rose Juicy Fabric', kind: 'Living', type: 'Fabric · FromW2', year: '2024',
       desc: 'Big blush-pink roses on deep navy, printed on a large fabric and used as a tablecloth, throw and wall hanging.',
       images: ['images/product/rose-juicy-fabric/main.jpg', ...Array.from({ length: 5 }, (_, i) => `images/product/rose-juicy-fabric/${String(i + 1).padStart(2, '0')}.jpg`)],
@@ -86,6 +81,11 @@ window.OTHER_WORKS = {
       desc: 'Moon jellyfish glowing white and lilac in dark water, printed on a hanging fabric poster.',
       images: ['images/product/jellyfish-fabric/main.jpg'],
       cutouts: ['images/product/jellyfish-fabric/cover.jpg'] },
+    { title: 'Rose Garden Blanket', kind: 'Living', type: 'Blanket · Packaging', year: '2025',
+      desc: 'Pink roses blooming out of black, printed on a soft blanket and boxed in a white window case with a rose-printed sleeve.',
+      // 01 = blanket cut-out (cover); then the boxed set and the print artwork
+      images: ['01', '02', '03', '04', '05'].map(n => `images/product/rose-garden-blanket/${n}.jpg`),
+      cutouts: ['images/product/rose-garden-blanket/cover.jpg'] },
     { title: 'Aquarium Paperweight', kind: 'Living', size: .5, type: 'Epoxy Paperweight · FromW2', year: '2024',
       desc: '어항 문진 — a dome paperweight holding a tiny aquarium of goldfish, rocks and water plants: "clean, clear".',
       images: ['01', '02', '03', '04', '05', '06', '07', '08'].map(n => `images/product/aquarium-paperweight/${n}.jpg`),
