@@ -31,7 +31,9 @@
   .product-stage { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; pointer-events: none; }
   /* fixed box (not max-*) so every photo fills the same area whatever its pixel size */
   .product-stage img { position: absolute; width: min(52vw, 720px); height: 62vh; object-fit: contain;
-    opacity: 0; transition: opacity .45s ease; animation: productFloat 6s ease-in-out infinite; -webkit-user-drag: none; }
+    opacity: 0; transform: translateX(var(--shift, 0px));
+    transition: opacity .5s ease, transform .6s cubic-bezier(.2, .7, .2, 1);
+    animation: productFloat 6s ease-in-out infinite; -webkit-user-drag: none; }
   .product-stage img.on { opacity: 1; pointer-events: auto; cursor: pointer; }
   /* Product: previous / next buttons at the sides */
   /* plain arrows in the page's own type — no box, just a wide invisible hit area */
@@ -874,11 +876,20 @@ if (IS_PRODUCT) (() => {
   document.getElementById('app').appendChild(wrap);
   const imgs = [...wrap.querySelectorAll('img')];
   let front = 0, shownSrc = '';
-  function show(src) {
+  // dir: +1 = moving to the next work (new photo slides in from the right), -1 = previous, 0 = just fade
+  function show(src, dir = 0) {
     if (!src || src === shownSrc) return;
     shownSrc = src;
-    const next = imgs[1 - front];
-    next.onload = () => { next.classList.add('on'); imgs[front].classList.remove('on'); front = 1 - front; };
+    const next = imgs[1 - front], prev = imgs[front];
+    next.style.transition = 'none';
+    next.style.setProperty('--shift', `${dir * 70}px`);
+    void next.offsetWidth;
+    next.style.transition = '';
+    next.onload = () => {
+      next.classList.add('on'); next.style.setProperty('--shift', '0px');
+      prev.classList.remove('on'); prev.style.setProperty('--shift', `${-dir * 70}px`);
+      front = 1 - front;
+    };
     next.src = src;
   }
   // the first product's cut-out is shown until a work is picked
@@ -887,9 +898,17 @@ if (IS_PRODUCT) (() => {
   show(home);
   // which product is on show → clicking the photo opens its detail page
   let curProject = first ? PROJECTS.indexOf(first) : 0;
+  let lastK = null;
   addEventListener('objectwork', e => {
     const d = e.detail;
-    show(d ? d.it.cutout : home);
+    // direction of travel along the strip (shortest way round)
+    let dir = 0;
+    if (d && lastK !== null && d.k !== lastK) {
+      const n = Math.max(1, PROJECTS.length), diff = ((d.k - lastK) % n + n) % n;
+      dir = diff <= n / 2 ? 1 : -1;
+    }
+    if (d) lastK = d.k;
+    show(d ? d.it.cutout : home, dir);
     curProject = d ? d.it.project : (first ? PROJECTS.indexOf(first) : 0);
   });
   imgs.forEach(im => im.addEventListener('click', () => { if (PROJECTS.length) location.href = caseUrl(curProject); }));
@@ -1073,6 +1092,7 @@ if (IS_PRODUCT) (() => {
   /* ---------- play mode (endless strip under the red playhead) ---------- */
   let thumbs = [], playing = false, B = 0, cut = null, current = -1, hovered = null;
   let dragging = false, dragX = 0, dragB = 0, sy = 1, syTarget = 1, raf = 0, lastT = 0, morphing = false;
+  let glideTo = null, downX = 0, downEl = null;   // click on a strip thumb → glide there
   let copies = 1, offset = 0, cloned = false;
   const mod = (a, n) => ((a % n) + n) % n;
   let centre = innerWidth / 2;
@@ -1115,11 +1135,11 @@ if (IS_PRODUCT) (() => {
     // the strip stays still on the open work; it only moves when the viewer drags it or uses the arrow keys.
     // After a drag it settles gently on the nearest work.
     if (!dragging && !morphing) {
-      const snap = Math.round(B / QT) * QT;
-      B += (snap - B) * (reduceMotion ? 1 : 1 - Math.exp(-dt * 10));
-      if (Math.abs(snap - B) < .05) B = snap;
+      const snap = glideTo !== null ? glideTo : Math.round(B / QT) * QT;
+      B += (snap - B) * (reduceMotion ? 1 : 1 - Math.exp(-dt * (glideTo !== null ? 7 : 10)));
+      if (Math.abs(snap - B) < .05) { B = snap; glideTo = null; }
     }
-    if (!morphing) checkCurrent();
+    if (!morphing && glideTo === null) checkCurrent();
     layoutPlay();
     raf = requestAnimationFrame(loop);
   }
@@ -1162,7 +1182,7 @@ if (IS_PRODUCT) (() => {
   }
   function stopPlay() {
     if (!playing) return;
-    playing = false; dragging = false; morphing = false; cut = null;
+    playing = false; dragging = false; morphing = false; cut = null; glideTo = null;
     cancelAnimationFrame(raf); raf = 0;
     clearTimeout(idleTimer);
     document.body.classList.remove('playing', 'idle', 'dragging', 'morphing', 'work-open');
@@ -1180,8 +1200,8 @@ if (IS_PRODUCT) (() => {
   addEventListener('keydown', e => {
     if (!playing) return;
     if (e.key === 'Escape') stopPlay();
-    if (e.key === 'ArrowRight') { B = (Math.round(B / QT) + 1) * QT; wake(); }
-    if (e.key === 'ArrowLeft') { B = (Math.round(B / QT) - 1) * QT; wake(); }
+    if (e.key === 'ArrowRight') { glideTo = null; B = (Math.round(B / QT) + 1) * QT; wake(); }
+    if (e.key === 'ArrowLeft') { glideTo = null; B = (Math.round(B / QT) - 1) * QT; wake(); }
   });
 
   // Product: ‹ › buttons at both sides step to the previous / next product
@@ -1197,8 +1217,11 @@ if (IS_PRODUCT) (() => {
         return;
       }
       if (morphing) return;
-      B = (Math.round(B / QT) + dir) * QT;
-      checkCurrent(); layoutPlay(); wake();
+      // glide (not jump) one work along; repeated steps add up from where the glide is heading
+      const base = glideTo !== null ? glideTo : Math.round(B / QT) * QT;
+      glideTo = base + dir * QT;
+      show(mod(Math.round(glideTo / QT), N));
+      lastT = 0; wake();
     };
     [['prev', -1, '←', 'Previous product'], ['next', 1, '→', 'Next product']].forEach(([cls, dir, txt, lbl]) => {
       const b = document.createElement('button');
@@ -1207,18 +1230,31 @@ if (IS_PRODUCT) (() => {
       b.addEventListener('click', e => { e.stopPropagation(); step(dir); });
       document.body.appendChild(b);
     });
-    // mouse wheel / trackpad: scroll down → next product, up → previous (one step per gesture)
-    let wheelSum = 0, wheelLock = 0, wheelIdle = 0;
+    // mouse wheel / trackpad: the strip follows the scroll — a slow notch moves one product,
+    // a fast flick runs through several — then it glides and settles on the nearest product.
+    const WHEEL_PX_PER_ITEM = 100;                                   // ≈ one mouse-wheel notch per product
+    let wheelPos = null, wheelIdle = 0, openLock = 0;
     addEventListener('wheel', e => {
       if (e.ctrlKey) return;                                         // pinch-zoom
-      const d = Math.abs(e.deltaY) >= Math.abs(e.deltaX) ? e.deltaY : e.deltaX;
+      let d = Math.abs(e.deltaY) >= Math.abs(e.deltaX) ? e.deltaY : e.deltaX;
+      if (e.deltaMode === 1) d *= 33; else if (e.deltaMode === 2) d *= innerHeight;   // lines / pages → pixels
+      if (!d) return;
       const now = performance.now();
-      clearTimeout(wheelIdle); wheelIdle = setTimeout(() => { wheelSum = 0; }, 180);
-      if (now < wheelLock) { wheelLock = Math.max(wheelLock, now + 160); return; }   // trackpad inertia: wait it out
-      wheelSum += e.deltaMode === 1 ? d * 30 : d;                    // lines → pixels (Firefox)
-      if (Math.abs(wheelSum) < 50) return;
-      step(wheelSum > 0 ? 1 : -1);
-      wheelSum = 0; wheelLock = now + 550;
+      if (!playing || getComputedStyle(carousel).display === 'none') {   // first scroll opens the strip (or phones: swipe)
+        if (now < openLock) return;
+        step(d > 0 ? 1 : -1); openLock = now + 900;
+        return;
+      }
+      if (morphing) return;
+      clearTimeout(wheelIdle); wheelIdle = setTimeout(() => { wheelPos = null; }, 220);
+      if (wheelPos === null) wheelPos = glideTo !== null ? glideTo : Math.round(B / QT) * QT;
+      wheelPos += d / WHEEL_PX_PER_ITEM * QT;
+      const target = Math.round(wheelPos / QT) * QT;
+      if (target !== glideTo) {
+        glideTo = target;
+        show(mod(Math.round(target / QT), N));
+      }
+      lastT = 0; wake();
     }, { passive: true });
   }
 
@@ -1236,8 +1272,23 @@ if (IS_PRODUCT) (() => {
   document.addEventListener('pointerdown', e => {
     if (!playing || !(e.target instanceof Element) || !e.target.closest('#playCarousel')) return;
     e.preventDefault();
+    glideTo = null;
     dragging = true; document.body.classList.add('dragging');
     syTarget = .8; dragX = e.clientX; dragB = B;
+    downX = e.clientX; downEl = e.target.closest('.thumb');
+  });
+  // a click (no real drag) on a thumb in the open strip → glide straight to that work
+  addEventListener('pointerup', e => {
+    if (!playing || !downEl || Math.abs(e.clientX - downX) > 5) { downEl = null; return; }
+    const s = [...playCarousel.children].indexOf(downEl); downEl = null;
+    if (s < 0) return;
+    const x0 = centre - offset - mod(B, STRIP);                     // same maths as layoutPlay
+    const steps = Math.round((x0 + s * QT - centre) / QT);
+    if (!steps) return;
+    B = dragB;                                                       // undo the tiny drag
+    glideTo = (Math.round(B / QT) + steps) * QT;
+    show(mod(Math.round(glideTo / QT), N));                          // open the target right away (no flicker through the ones between)
+    lastT = 0; wake();
   });
   addEventListener('pointermove', e => {
     if (playing) wake();
