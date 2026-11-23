@@ -127,8 +127,10 @@ window.OTHER_WORKS = {
       images: ['images/graphic/annual-planner/01.jpg'],
       posters: ['images/graphic/annual-planner/01.jpg'] },
     { title: 'CIRCULATION', type: 'Exhibition Poster', year: '2022',
-      desc: 'Poster for the 2022 SSWU Fashion Industry graduation exhibition — light and reflection as a loop that keeps returning.',
-      images: [''] },
+      desc: 'Poster and catalogue cover for CIRCULATION (순환), the 30th graduation exhibition of SSWU Fashion Industry — light refracting over fabric, with the title rolling across the sheet like a loop that keeps returning. Gaon Gallery, June 16–19, 2022.',
+      // 01 = exhibition poster (cover); 02 = the catalogue cover
+      images: ['images/graphic/circulation/01.jpg', 'images/graphic/circulation/02.jpg'],
+      posters: ['images/graphic/circulation/01.jpg'] },
     { title: 'Piece of Cake', type: 'Exhibition Poster', year: '2025',
       desc: 'Graduation exhibition poster, feed and sticker design — 24 works gathering into one cake.',
       // 01 = poster (original file); 04–05 = feed graphics; 02–03 = the Instagram feed grids (cut from screenshots, white made transparent)
