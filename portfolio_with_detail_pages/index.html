@@ -31,8 +31,8 @@
   .product-stage { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; pointer-events: none; }
   /* fixed box (not max-*) so every photo fills the same area whatever its pixel size */
   .product-stage img { position: absolute; width: min(52vw, 720px); height: 62vh; object-fit: contain;
-    opacity: 0; transform: translateX(var(--shift, 0px)) scale(calc(var(--sc, 1) * var(--size, 1)));
-    transition: opacity .45s ease, transform .65s cubic-bezier(.22, .8, .24, 1);
+    opacity: 0; transform: scale(var(--size, 1));
+    transition: opacity .45s ease;
     animation: productFloat 6s ease-in-out infinite; -webkit-user-drag: none; }
   .product-stage img.on { opacity: 1; pointer-events: auto; cursor: pointer; }
   /* Product: previous / next buttons at the sides */
@@ -913,24 +913,16 @@ if (IS_PRODUCT) (() => {
   const imgs = [...wrap.querySelectorAll('img')];
   let front = 0, shownSrc = '';
   // dir: +1 = moving to the next work (new photo slides in from the right), -1 = previous, 0 = just fade
-  // carousel feel: the next photo comes in from the side (small, further back) and moves to the front,
-  // while the current one slides away to the other side
-  const SIDE = () => Math.min(innerWidth * .42, 520);
+  // Product keeps a plain cross-fade in place (the sliding carousel felt too busy here); size = per-product scale
   function show(src, dir = 0, size = 1) {
     if (!src || src === shownSrc) return;
     shownSrc = src;
     const next = imgs[1 - front], prev = imgs[front];
     next.style.transition = 'none';
-    next.style.setProperty('--shift', `${dir * SIDE()}px`);
-    next.style.setProperty('--sc', dir ? .72 : 1);
     next.style.setProperty('--size', size);
     void next.offsetWidth;
     next.style.transition = '';
-    next.onload = () => {
-      next.classList.add('on'); next.style.setProperty('--shift', '0px'); next.style.setProperty('--sc', 1);
-      prev.classList.remove('on'); prev.style.setProperty('--shift', `${-dir * SIDE()}px`); prev.style.setProperty('--sc', dir ? .72 : 1);
-      front = 1 - front;
-    };
+    next.onload = () => { next.classList.add('on'); prev.classList.remove('on'); front = 1 - front; };
     next.src = src;
   }
   // the first product's cut-out is shown until a work is picked
