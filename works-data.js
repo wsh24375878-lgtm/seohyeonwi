@@ -86,7 +86,7 @@ window.OTHER_WORKS = {
       desc: 'Moon jellyfish glowing white and lilac in dark water, printed on a hanging fabric poster.',
       images: ['images/product/jellyfish-fabric/main.jpg'],
       cutouts: ['images/product/jellyfish-fabric/cover.jpg'] },
-    { title: 'Aquarium Paperweight', kind: 'Living', size: .72, type: 'Epoxy Paperweight · FromW2', year: '2024',
+    { title: 'Aquarium Paperweight', kind: 'Living', size: .5, type: 'Epoxy Paperweight · FromW2', year: '2024',
       desc: '어항 문진 — a dome paperweight holding a tiny aquarium of goldfish, rocks and water plants: "clean, clear".',
       images: ['01', '02', '03', '04', '05', '06', '07', '08'].map(n => `images/product/aquarium-paperweight/${n}.jpg`),
       cutouts: ['images/product/aquarium-paperweight/cover.jpg'] },
