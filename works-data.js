@@ -107,6 +107,11 @@ window.OTHER_WORKS = {
       // 01 = on the phone booth background (cover); 02 = the sheet on its own
       images: ['01', '02'].map(n => `images/product/koi-stickers/${n}.jpg`),
       cutouts: ['images/product/koi-stickers/cover.jpg'] },
+    { title: 'Cyberpunk Stickers', kind: 'Stationery', type: 'Sticker · FromW2', year: '2025',
+      desc: '사이버 펑크 스티커 — chrome chains, a liquid-metal android, a chained head, a glass orb and a CD, made as glossy clear stickers and stuck on phone cases and an old payphone.',
+      // 01 = sheet with backdrop (cover); 02 = clear sheet; 03 = on a phone case; 04–06 = on the payphone
+      images: ['01', '02', '03', '04', '05', '06'].map(n => `images/product/cyberpunk-stickers/${n}.jpg`),
+      cutouts: ['images/product/cyberpunk-stickers/cover.jpg'] },
     { title: 'Ballet Shoe iPad Case', kind: 'Case', type: 'iPad Case · FromW2', year: '2024',
       desc: '발레슈 아이패드 케이스 — satin pointe shoes and loose ribbons printed on a soft pink folio case tied with a real ribbon.',
       images: ['01', '02', '03', '04', '05'].map(n => `images/product/ballet-ipad-case/${n}.jpg`),
