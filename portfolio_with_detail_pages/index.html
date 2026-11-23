@@ -43,6 +43,8 @@
     font: 400 22px/1 Arial, Helvetica, sans-serif; cursor: pointer;
     transition: opacity .2s, transform .25s; }
   .p-nav:hover { opacity: 1; }
+  .p-nav svg { display: block; overflow: visible; }
+  @media (max-width: 700px) { .p-nav svg { width: 11px; height: 26px; } }
   .p-nav-prev:hover { transform: translateX(-4px); }
   .p-nav-next:hover { transform: translateX(4px); }
   .p-nav:focus-visible { outline: 1px solid #111; outline-offset: -8px; opacity: 1; }
@@ -1298,9 +1300,11 @@ if (IS_PRODUCT) (() => {
       show(mod(Math.round(glideTo / QT), N));
       lastT = 0; wake();
     };
-    [['prev', -1, '←', 'Previous product'], ['next', 1, '→', 'Next product']].forEach(([cls, dir, txt, lbl]) => {
+    // thin 1px chevrons (long and narrow), drawn as SVG so they stay crisp
+    [['prev', -1, '13,1 1,16 13,31', 'Previous product'], ['next', 1, '1,1 13,16 1,31', 'Next product']].forEach(([cls, dir, txt, lbl]) => {
       const b = document.createElement('button');
-      b.type = 'button'; b.className = `p-nav p-nav-${cls}`; b.textContent = txt;
+      b.type = 'button'; b.className = `p-nav p-nav-${cls}`;
+      b.innerHTML = `<svg width="14" height="32" viewBox="0 0 14 32" aria-hidden="true"><polyline points="${txt}" fill="none" stroke="currentColor" stroke-width="1" vector-effect="non-scaling-stroke"/></svg>`;
       b.setAttribute('aria-label', lbl);
       b.addEventListener('click', e => { e.stopPropagation(); step(dir); });
       document.body.appendChild(b);
