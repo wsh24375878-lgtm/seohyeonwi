@@ -16,27 +16,24 @@ a{color:inherit;text-decoration:none}
 .word{display:inline-block;white-space:nowrap}
 
 /* ---------- gallery ---------- */
-.gallery{position:absolute;left:0;right:0;top:calc(50% - 170px);height:360px;overflow:hidden;z-index:4}
-.track{position:absolute;left:-90px;top:0;height:330px;display:flex;align-items:flex-start;gap:28px;width:max-content;will-change:transform}
-.card{flex:0 0 auto;position:relative;overflow:hidden;background:#ebebeb}
+/* card sizes after hirotos.com/projects: a strip of cropped cards in three shapes repeating every 8 —
+   landscape (1,3,7), portrait (2,4,6,8) and wide (5), centred on one line. Sizes scale with the screen
+   and stop at a minimum on phones. */
+.page{--card-tall:max(196px,min(18.2vw,calc(205.4px + 6.37vw)))}
+.gallery{position:absolute;left:0;right:0;top:calc(50% - var(--card-tall) / 2 - 20px);height:calc(var(--card-tall) + 40px);overflow:hidden;z-index:4}
+.track{position:absolute;left:-90px;top:20px;height:var(--card-tall);display:flex;align-items:center;gap:clamp(14px,2.1vw,32px);width:max-content;will-change:transform}
+.card{flex:0 0 auto;position:relative;overflow:hidden;background:#ebebeb;
+  width:max(220px,min(21vw,calc(239.2px + 7.35vw)));height:max(154px,min(14.9vw,calc(167.7px + 5.215vw)))}
 .card:nth-child(3n+2) .art{background:#e4e4e4}
 .card:nth-child(3n) .art{background:#f0f0f0}
 .card-label{position:absolute;left:14px;bottom:12px;font-size:15px;line-height:1;color:#8c8c8c;opacity:0;transform:translateY(4px);transition:opacity .3s ease,transform .3s ease}
 .card:hover .card-label{opacity:1;transform:none}
-.card:nth-child(8n+1){width:405px;height:247px;margin-top:67px}
-.card:nth-child(8n+2){width:255px;height:295px;margin-top:0}
-.card:nth-child(8n+3){width:433px;height:228px;margin-top:33px}
-.card:nth-child(8n+4){width:255px;height:295px;margin-top:0}
-.card:nth-child(8n+5){width:383px;height:235px;margin-top:38px}
-.card:nth-child(8n+6){width:300px;height:270px;margin-top:12px}
-.card:nth-child(8n+7){width:420px;height:245px;margin-top:30px}
-.card:nth-child(8n+8){width:255px;height:295px;margin-top:0}
+.card:nth-child(8n+2),.card:nth-child(8n+4),.card:nth-child(8n+6),.card:nth-child(8n+8){width:max(154px,min(13.8vw,calc(158.6px + 4.83vw)));height:var(--card-tall)}
+.card:nth-child(8n+5){width:max(254px,min(24vw,calc(271.7px + 8.4vw)));height:max(150px,min(14vw,calc(159.9px + 4.9vw)))}
 .art{width:100%;height:100%;background:#ebebeb;transition:transform .5s cubic-bezier(.16,1,.3,1)}
 .card:hover .art{transform:scale(1.055)}
-.art img{display:block;width:100%;height:100%;object-fit:cover;object-position:22% center;-webkit-user-drag:none}
+.art img{display:block;width:100%;height:100%;object-fit:cover;object-position:center;-webkit-user-drag:none}
 .card-label{z-index:1;background:#fff;padding:3px 5px}
-/* posters: each card keeps its slot height; the width follows the poster's own ratio so nothing is cropped */
-.track .card{width:auto!important;aspect-ratio:var(--ar,.85)}
 .card:nth-child(8n+1){animation:floatA 6.6s ease-in-out infinite}
 .card:nth-child(8n+2){animation:floatB 7.4s ease-in-out infinite}
 .card:nth-child(8n+3){animation:floatC 6.9s ease-in-out infinite}
@@ -48,7 +45,7 @@ a{color:inherit;text-decoration:none}
 @keyframes floatA{50%{translate:0 7px}}@keyframes floatB{50%{translate:0 -8px}}@keyframes floatC{50%{translate:0 6px}}@keyframes floatD{50%{translate:0 -7px}}@keyframes floatE{50%{translate:0 8px}}@keyframes floatF{50%{translate:0 -6px}}@keyframes floatG{50%{translate:0 7px}}@keyframes floatH{50%{translate:0 -8px}}
 
 /* ---------- speed zones ---------- */
-.speed-zone{position:absolute;z-index:30;top:calc(50% - 170px);right:0;width:140px;height:360px;cursor:e-resize}
+.speed-zone{position:absolute;z-index:30;top:calc(50% - var(--card-tall) / 2 - 20px);right:0;width:140px;height:calc(var(--card-tall) + 40px);cursor:e-resize}
 .speed-zone.left{right:auto;left:0;cursor:w-resize;z-index:15}
 .speed-hint{position:absolute;top:50%;right:23px;font-size:15px;color:#8c8c8c;opacity:0;transform:translateX(5px);transition:opacity .25s ease,transform .25s ease}
 .speed-hint.left-hint{right:auto;left:23px;transform:translateX(-5px)}
@@ -57,17 +54,9 @@ a{color:inherit;text-decoration:none}
 @media (max-width:900px){.speed-zone{width:90px}}
 @media (max-width:700px){
 .text{left:14px;top:64px;width:88vw;font-size:clamp(20px,5vw,34px)}
-/* phones: smaller cards so 2–3 fit across a narrow screen */
-.gallery{top:calc(50% - 90px);height:190px;touch-action:none}
-.track{left:-60px;gap:10px;height:170px}
-.card:nth-child(8n+1){width:170px;height:124px;margin-top:30px}
-.card:nth-child(8n+2){width:106px;height:124px;margin-top:0}
-.card:nth-child(8n+3){width:176px;height:115px;margin-top:12px}
-.card:nth-child(8n+4){width:106px;height:124px;margin-top:0}
-.card:nth-child(8n+5){width:158px;height:106px;margin-top:15px}
-.card:nth-child(8n+6){width:127px;height:115px;margin-top:6px}
-.card:nth-child(8n+7){width:170px;height:121px;margin-top:13px}
-.card:nth-child(8n+8){width:106px;height:124px;margin-top:0}
+/* phones: the cards keep their minimum sizes (220×154 / 154×196 / 254×150) with a 14px gap */
+.gallery{touch-action:none}
+.track{left:-60px}
 .card-label{font-size:11px;left:8px;bottom:8px}
 /* the finger drags the strip directly, so the edge speed zones are turned off */
 .speed-zone{display:none}
