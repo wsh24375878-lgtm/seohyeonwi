@@ -53,6 +53,8 @@ window.FASHION_WORKS = [
   { project: '18', group: 'Miseki seoul 26FW', title: 'Miseki seoul 26FW — Flats', src: 'images/fashion/miseki-seoul/03.jpg', info: 'Technical Flats', year: '2025',
     desc: 'Design flats, front and back: a hooded long coat with toggles, a ribbed knit cardigan with an asymmetric button line, and a wrapped pleated skirt with a tie belt.' },
 ];
+// slots that have no image yet (src: '') are kept above for later but not shown anywhere
+window.FASHION_WORKS = window.FASHION_WORKS.filter(w => w.src);
 
 window.FashionData = (() => {
   // Shared scene size so the image keeps exactly the same size between pages.

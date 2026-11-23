@@ -211,8 +211,11 @@ const detailUrl = FashionData.detailUrl;
   function layout() {
     unit = window.innerHeight / VIEW_UNITS;
     radius = window.innerWidth <= 768 ? 1.8 : 3;
+    // cards shrink when the ring is crowded, so neighbours never touch (gap ≥ 30% of a card)
+    const cardH = Math.min(ITEM_H, 2 * Math.PI * radius / Math.max(1, count) / 1.3 / RING_AR);
     stage.style.perspective = `${CAMERA_Z * unit}px`;
     items.forEach(item => {
+      item.h = cardH; item.w = cardH * RING_AR;
       item.el.style.width = `${item.w * unit}px`;
       item.el.style.height = `${item.h * unit}px`;
       item.el.style.marginLeft = `${-item.w * unit / 2}px`;
