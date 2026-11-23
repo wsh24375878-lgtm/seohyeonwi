@@ -31,8 +31,8 @@
   .product-stage { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; pointer-events: none; }
   /* fixed box (not max-*) so every photo fills the same area whatever its pixel size */
   .product-stage img { position: absolute; width: min(52vw, 720px); height: 62vh; object-fit: contain;
-    opacity: 0; transform: translateX(var(--shift, 0px));
-    transition: opacity .5s ease, transform .6s cubic-bezier(.2, .7, .2, 1);
+    opacity: 0; transform: translateX(var(--shift, 0px)) scale(calc(var(--sc, 1) * var(--size, 1)));
+    transition: opacity .45s ease, transform .65s cubic-bezier(.22, .8, .24, 1);
     animation: productFloat 6s ease-in-out infinite; -webkit-user-drag: none; }
   .product-stage img.on { opacity: 1; pointer-events: auto; cursor: pointer; }
   /* Product: previous / next buttons at the sides */
@@ -248,6 +248,7 @@ let KIND = IS_PRODUCT ? kindSlug(new URLSearchParams(location.search).get('kind'
 if (!KINDS.some(k => kindSlug(k) === KIND)) KIND = '';
 const PROJECTS = ALL_WORKS.map((w, orig) => ({ w, orig })).filter(({ w }) => !KIND || kindSlug(w.kind) === KIND).map(({ w, orig }) => ({
   orig,
+  size: w.size || 1,                     // Product: display size of the centre photo (1 = normal)
   title: w.title,
   info: [w.type, w.year].filter(Boolean).join(', '),
   images: w.images.map(src => (src ? '../' + src : '')),
@@ -452,6 +453,11 @@ const pressIn = (RIP_TOTAL - .05) / 2, pressOut = pressIn + .05, pressEnd = pres
 let ripT = -1, spinT = -1, spinDir = 1, introDone = false;
 const easeInOutCubic = t => t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
 const easeOutCubic = t => 1 - Math.pow(1 - t, 3);
+// carousel-style change between works (see tick)
+const SLIDE_DUR = .7;                                            // seconds for out + in
+const reduceMotion3D = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const PROJECT_COUNT = () => window.__stripN || PROJECTS.length;  // number of slots in the strip
+let slide = null;                                                // { t, dir, obj, swapped }
 const easeSine = t => -(Math.cos(Math.PI * t) - 1) / 2;
 
 function clickEffect(hit) {
@@ -659,6 +665,26 @@ function tick() {
   holder.rotation.x = ry - (1 - easeOutCubic(ik)) * INTRO_TILT + viewX;
   holder.position.y = Math.sin(time * BOB_FREQ) * BOB_AMP + driftY + (subject === mesh ? 0 : SUBJECT_LIFT);
 
+  // switching works: the current one slides off to the side and sinks back,
+  // then the next one comes in from the other side and forward to the centre (like a carousel)
+  let slideS = 1;
+  holder.position.x = 0; holder.position.z = 0;
+  if (slide) {
+    slide.t += dt;
+    const k = Math.min(slide.t / SLIDE_DUR, 1);
+    const halfW = Math.tan(THREE.MathUtils.degToRad(camera.fov / 2)) * camera.position.z * camera.aspect;
+    const off = halfW + 1.6;                                       // just past the screen edge
+    let u;
+    if (k < .5) { u = Math.pow(k / .5, 2.2); holder.position.x = -slide.dir * off * u; }
+    else {
+      if (!slide.swapped) { setSubject(slide.obj); slide.swapped = true; }
+      u = 1 - easeOutCubic((k - .5) / .5); holder.position.x = slide.dir * off * u;
+    }
+    holder.position.z = -2.4 * u;                                  // sinks back while it is off-centre
+    slideS = 1 - .2 * u;
+    if (k >= 1) slide = null;
+  }
+
   let press = 0;
   if (ripT >= 0) {
     if (ripT < pressIn) press = easeSine(ripT / pressIn);
@@ -667,7 +693,7 @@ function tick() {
     if (ripT > RIP_TOTAL) ripT = -1;
   }
   for (let i = 0; i < DROPS; i++) if (dropT[i] >= 0) { dropT[i] += dt; if (dropT[i] > RIP_TOTAL) dropT[i] = -1; }
-  applyScale((1 - .012 * press) * sc);
+  applyScale((1 - .012 * press) * sc * slideS);
 
   scene.environmentRotation.y += ENV_SPIN * dt;
   if (visible || !introDone) renderer.render(scene, camera);
@@ -844,13 +870,23 @@ function setSubject(obj) {
   dropT.fill(-1);
   scV -= .06;                                  // a small springy pop as the new object arrives
 }
-let subjectToken = 0;
+let subjectToken = 0, lastWorkK = null;
 addEventListener('objectwork', async e => {
   const d = e.detail;
   const my = ++subjectToken;
-  if (!d) { setSubject(mesh); return; }
+  if (!d) { slide = null; lastWorkK = null; setSubject(mesh); return; }
+  // which way along the strip (shortest way round): +1 next, -1 previous
+  let dir = 0;
+  if (lastWorkK !== null && d.k !== lastWorkK) {
+    const n = Math.max(1, PROJECT_COUNT()), diff = ((d.k - lastWorkK) % n + n) % n;
+    dir = diff <= n / 2 ? 1 : -1;
+  }
+  lastWorkK = d.k;
   const obj = await subjectFor(d.it, d.k);
-  if (my === subjectToken) setSubject(obj);
+  if (my !== subjectToken) return;
+  if (!dir || reduceMotion3D || subject === mesh) { slide = null; setSubject(obj); return; }
+  if (slide && !slide.swapped) { slide.obj = obj; slide.dir = dir; }   // still leaving: just change where it goes
+  else slide = { t: 0, dir, obj, swapped: false };
 });
 
 window.setObjectSnap && window.setObjectSnap(async (it, k) => snapshot(await slotObject(it, k), k));
@@ -877,17 +913,22 @@ if (IS_PRODUCT) (() => {
   const imgs = [...wrap.querySelectorAll('img')];
   let front = 0, shownSrc = '';
   // dir: +1 = moving to the next work (new photo slides in from the right), -1 = previous, 0 = just fade
-  function show(src, dir = 0) {
+  // carousel feel: the next photo comes in from the side (small, further back) and moves to the front,
+  // while the current one slides away to the other side
+  const SIDE = () => Math.min(innerWidth * .42, 520);
+  function show(src, dir = 0, size = 1) {
     if (!src || src === shownSrc) return;
     shownSrc = src;
     const next = imgs[1 - front], prev = imgs[front];
     next.style.transition = 'none';
-    next.style.setProperty('--shift', `${dir * 70}px`);
+    next.style.setProperty('--shift', `${dir * SIDE()}px`);
+    next.style.setProperty('--sc', dir ? .72 : 1);
+    next.style.setProperty('--size', size);
     void next.offsetWidth;
     next.style.transition = '';
     next.onload = () => {
-      next.classList.add('on'); next.style.setProperty('--shift', '0px');
-      prev.classList.remove('on'); prev.style.setProperty('--shift', `${-dir * 70}px`);
+      next.classList.add('on'); next.style.setProperty('--shift', '0px'); next.style.setProperty('--sc', 1);
+      prev.classList.remove('on'); prev.style.setProperty('--shift', `${-dir * SIDE()}px`); prev.style.setProperty('--sc', dir ? .72 : 1);
       front = 1 - front;
     };
     next.src = src;
@@ -895,7 +936,7 @@ if (IS_PRODUCT) (() => {
   // the first product's cut-out is shown until a work is picked
   const first = PROJECTS.find(p => p.cutouts.length);
   const home = first ? first.cutouts[0] : '';
-  show(home);
+  show(home, 0, first ? first.size : 1);
   // which product is on show → clicking the photo opens its detail page
   let curProject = first ? PROJECTS.indexOf(first) : 0;
   let lastK = null;
@@ -908,7 +949,7 @@ if (IS_PRODUCT) (() => {
       dir = diff <= n / 2 ? 1 : -1;
     }
     if (d) lastK = d.k;
-    show(d ? d.it.cutout : home, dir);
+    show(d ? d.it.cutout : home, dir, d ? d.it.size : (first ? first.size : 1));
     curProject = d ? d.it.project : (first ? PROJECTS.indexOf(first) : 0);
   });
   imgs.forEach(im => im.addEventListener('click', () => { if (PROJECTS.length) location.href = caseUrl(curProject); }));
@@ -960,7 +1001,7 @@ if (IS_PRODUCT) (() => {
     const pi = s % PROJECTS.length, p = PROJECTS[pi], ii = Math.floor(s / PROJECTS.length);
     ITEMS.push({
       title: p.title, info: p.info, project: pi, idx: ii + 1, total: perProject[pi], src: '', model: p.models[ii] || '',
-      cutout: p.cutouts.length ? p.cutouts[ii % p.cutouts.length] : '',
+      cutout: p.cutouts.length ? p.cutouts[ii % p.cutouts.length] : '', size: p.size,
       letter: String.fromCharCode(65 + pi), num: String(s + 1).padStart(2, '0'), k: s,
     });
   }
@@ -1014,6 +1055,7 @@ if (IS_PRODUCT) (() => {
   const playCarousel = document.getElementById('playCarousel');
   const workName = document.getElementById('workName');
   const QT = 40, SPEED_S = 1.5, N = ITEMS.length, STRIP = N * QT, SPEED = QT / SPEED_S, EDGE = 24;
+  window.__stripN = N;
 
   function makeThumb(it, i, first) {
     const t = document.createElement('div');

@@ -6,6 +6,7 @@
    - 3D(object 목록) / Product(product 목록) / Graphic 작업은 아래에서 수정하세요.
    - product: Product 화면 가운데에 뜨는 건 누끼 이미지예요. cutouts: ['images/product/...png'] 에 배경 없는 PNG 를 적어요.
      cutouts 가 없으면 images 의 사진을 대신 써요.
+   - product 의 size: .7 처럼 적으면 Product 화면 가운데 사진이 그만큼 작게 떠요(1 = 기본).
    - product 의 kind 는 Product 화면 위쪽 분류 버튼이에요(Living · Stationery · Accessories). 새 이름을 적으면 버튼이 자동으로 생겨요.
    - type 은 작업 종류(예: 3D, Metal Craft, Product, Poster …)예요.
    - posters: Graphic 메인 화면에 뜨는 포스터(디자인 원본)만 적어요. 연출컷·상세컷은 images 에만 두세요.
@@ -96,11 +97,11 @@ window.OTHER_WORKS = {
       images: ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11'].map(n => `images/product/pudding-beads-melon/${n}.jpg`),
       cutouts: ['images/product/pudding-beads-melon/cover.jpg'] },
     // paperweights
-    { title: 'Wave Paperweight', kind: 'Living', type: 'Acrylic Paperweight · FromW2', year: '2024',
+    { title: 'Wave Paperweight', kind: 'Living', size: .62, type: 'Acrylic Paperweight · FromW2', year: '2024',
       desc: '파도 문진 — a breaking wave sealed inside a clear acrylic block, set on books, magazines and desks.',
       images: Array.from({ length: 19 }, (_, i) => `images/product/wave-paperweight/${String(i + 1).padStart(2, '0')}.jpg`),
       cutouts: ['images/product/wave-paperweight/cover.jpg'] },
-    { title: 'Aquarium Paperweight', kind: 'Living', type: 'Epoxy Paperweight · FromW2', year: '2024',
+    { title: 'Aquarium Paperweight', kind: 'Living', size: .72, type: 'Epoxy Paperweight · FromW2', year: '2024',
       desc: '어항 문진 — a dome paperweight holding a tiny aquarium of goldfish, rocks and water plants: "clean, clear".',
       images: ['01', '02', '03', '04', '05', '06', '07', '08'].map(n => `images/product/aquarium-paperweight/${n}.jpg`),
       cutouts: ['images/product/aquarium-paperweight/cover.jpg'] },
