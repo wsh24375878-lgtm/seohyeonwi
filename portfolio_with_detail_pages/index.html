@@ -528,8 +528,11 @@ const fingerGap = () => { const [a, b] = [...touches.values()]; return Math.hypo
 addEventListener('gesturestart', e => e.preventDefault());   // iOS Safari: no page zoom on the object
 /* phones: a sideways swipe on the empty screen (not on the object) goes to the next / previous object,
    like flipping through photos; a finger on the object itself still turns it */
-const SWIPE_MIN = 45;              // px sideways before a swipe counts
+const SWIPE_MIN = 60;              // px sideways before a swipe counts
 let swipe = null;
+// the object follows the finger while it swipes (swipeDX, px); on release it either carries on out
+// to the side (then the next work comes in — see the slide in tick) or springs back
+let swipeDX = 0, swipeLive = false, swipeHold = 0;
 renderer.domElement.addEventListener('pointerdown', e => {
   if (e.pointerType !== 'touch' || !introDone || innerWidth > 700) return;
   swipe = null;
@@ -537,17 +540,28 @@ renderer.domElement.addEventListener('pointerdown', e => {
   const r = renderer.domElement.getBoundingClientRect();
   ndc.set((e.clientX - r.left) / r.width * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1);
   ray.setFromCamera(ndc, camera);
-  if (!ray.intersectObject(subject, true)[0]) swipe = { id: e.pointerId, x: e.clientX, y: e.clientY };
+  if (!ray.intersectObject(subject, true)[0]) swipe = { id: e.pointerId, x: e.clientX, y: e.clientY, horiz: null };
+});
+renderer.domElement.addEventListener('pointermove', e => {
+  if (!swipe || e.pointerId !== swipe.id || slide) return;
+  const dx = e.clientX - swipe.x, dy = e.clientY - swipe.y;
+  if (swipe.horiz === null && Math.hypot(dx, dy) > 8) swipe.horiz = Math.abs(dx) > Math.abs(dy);   // decide once
+  if (!swipe.horiz) return;
+  swipeLive = true; swipeHold = 0;
+  swipeDX = dx;
 });
 const endSwipe = e => {
   if (!swipe || e.pointerId !== swipe.id) return;
   const dx = e.clientX - swipe.x, dy = e.clientY - swipe.y;
-  swipe = null;
-  if (Math.abs(dx) > SWIPE_MIN && Math.abs(dx) > Math.abs(dy) * 1.3)
+  const horiz = swipe.horiz;
+  swipe = null; swipeLive = false;
+  if (horiz !== false && Math.abs(dx) > SWIPE_MIN && Math.abs(dx) > Math.abs(dy) * 1.3) {
+    swipeHold = performance.now() + 1200;      // stay where the finger left it until the next work arrives
     dispatchEvent(new CustomEvent('objectswipe', { detail: dx < 0 ? 1 : -1 }));   // swipe left → next
+  }
 };
 renderer.domElement.addEventListener('pointerup', endSwipe);
-renderer.domElement.addEventListener('pointercancel', () => { swipe = null; });
+renderer.domElement.addEventListener('pointercancel', () => { swipe = null; swipeLive = false; });
 
 renderer.domElement.addEventListener('pointerdown', e => {
   if (e.pointerType !== 'touch' || !introDone) return;
@@ -676,11 +690,24 @@ function tick() {
   // then the next one comes in from the other side and forward to the centre (like a carousel)
   let slideS = 1;
   holder.position.x = 0; holder.position.z = 0;
+  const halfW = Math.tan(THREE.MathUtils.degToRad(camera.fov / 2)) * camera.position.z * camera.aspect;
+  const off = halfW + 1.6;                                         // just past the screen edge
+  if (!slide && (swipeLive || swipeDX)) {
+    // phones: the object follows the finger; let go short of a swipe → it springs back
+    if (!swipeLive && performance.now() > swipeHold) { swipeDX *= Math.exp(-dt * 12); if (Math.abs(swipeDX) < .5) swipeDX = 0; }
+    const wpp = 2 * Math.tan(THREE.MathUtils.degToRad(camera.fov / 2)) * camera.position.z / innerHeight;   // world units per px
+    holder.position.x = swipeDX * wpp;
+    const u = Math.min(1, Math.abs(holder.position.x) / off);
+    holder.position.z = -2.4 * u; slideS = 1 - .2 * u;
+  }
   if (slide) {
+    if (slide.fromX !== undefined) {                               // a swipe hands over: carry on from where the finger left it
+      const u0 = Math.min(1, Math.abs(slide.fromX) / off);
+      slide.t = .5 * Math.pow(u0, 1 / 2.2) * SLIDE_DUR;
+      delete slide.fromX; swipeDX = 0; swipeHold = 0;
+    }
     slide.t += dt;
     const k = Math.min(slide.t / SLIDE_DUR, 1);
-    const halfW = Math.tan(THREE.MathUtils.degToRad(camera.fov / 2)) * camera.position.z * camera.aspect;
-    const off = halfW + 1.6;                                       // just past the screen edge
     let u;
     if (k < .5) { u = Math.pow(k / .5, 2.2); holder.position.x = -slide.dir * off * u; }
     else {
@@ -893,7 +920,14 @@ addEventListener('objectwork', async e => {
   if (my !== subjectToken) return;
   if (!dir || reduceMotion3D || subject === mesh) { slide = null; setSubject(obj); return; }
   if (slide && !slide.swapped) { slide.obj = obj; slide.dir = dir; }   // still leaving: just change where it goes
-  else slide = { t: 0, dir, obj, swapped: false };
+  else {
+    slide = { t: 0, dir, obj, swapped: false };
+    // continuing a swipe that already moved the object the right way → start the slide from there
+    if (swipeDX && Math.sign(swipeDX) === -dir) {
+      const wpp = 2 * Math.tan(THREE.MathUtils.degToRad(camera.fov / 2)) * camera.position.z / innerHeight;
+      slide.fromX = swipeDX * wpp;
+    } else { swipeDX = 0; swipeHold = 0; }
+  }
 });
 
 window.setObjectSnap && window.setObjectSnap(async (it, k) => snapshot(await slotObject(it, k), k));
