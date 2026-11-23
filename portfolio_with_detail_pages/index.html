@@ -66,9 +66,15 @@
     .p-kinds::-webkit-scrollbar { display: none; }
   }
   /* strip: faded like the phone strip; the product on show (or under the mouse) at full strength */
-  .carousel .thumb img { opacity: .45; transition: opacity .25s ease; }
+  .carousel .thumb img { opacity: .45; transition: opacity .25s ease, filter .3s ease; }
   .carousel .thumb.is-current img { opacity: 1; }
   @media (hover: hover) { .carousel .thumb:hover img { opacity: 1; } }
+  /* Product: the strip is black & white like the 3D page — only the product on show (or under the mouse) is in colour */
+  .is-product .carousel .thumb img { filter: grayscale(1); }
+  .is-product .carousel .thumb.is-current img { filter: none; }
+  @media (hover: hover) { .is-product .carousel .thumb:hover img { filter: none; } }
+  .is-product .m-cell { filter: grayscale(1); transition: opacity .25s ease, transform .25s ease, filter .3s ease; }
+  .is-product .m-cell.is-current { filter: none; }
   @keyframes productFloat { 50% { translate: 0 -10px; } }
   .product-empty { font-size: 15px; margin: 0; }
   @media (max-width: 700px) {

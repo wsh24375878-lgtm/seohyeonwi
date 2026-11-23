@@ -209,7 +209,7 @@ window.OTHER_WORKS = {
       desc: '사랑에 관하여 라이터 — the words of the About Love tape, printed on soft pink lighters.',
       images: Array.from({ length: 1 }, (_, i) => `images/product/about-love-lighter/${String(i + 1).padStart(2, '0')}.jpg`),
       cutouts: ['images/product/about-love-lighter/cover.jpg'] },
-    // ornaments & jewellery
+    /* ornaments & jewellery — hidden for now
     { title: 'Ornament Tree', kind: 'Living', type: 'Display · Ornaments', year: '2025',
       desc: 'A flat-pack Christmas tree in deep red, slotted together from wavy panels on a black flower-shaped base — hung with hand-beaded hearts, crosses and baubles in crystal, pearl and gold.',
       // 01 = the whole tree (cover); 02 = close-up of the ornaments
@@ -219,6 +219,7 @@ window.OTHER_WORKS = {
       desc: 'A gold bracelet cast as a coiled spine — the same bone language as the Alien cases, closed into a ring around the wrist.',
       images: ['images/product/spine-bracelet/01.jpg'],
       cutouts: ['images/product/spine-bracelet/cover.jpg'] },
+    (hidden for now — remove the comment marks to show them again) */
   ],
   graphic: [
     // FromW2 — goods & graphics
