@@ -102,6 +102,11 @@ window.OTHER_WORKS = {
       desc: '베타 스티커 — betta fish fins as translucent stickers in pastel, red, black and white, scattered over fridges, guitars and tables.',
       images: Array.from({ length: 15 }, (_, i) => `images/product/betta-stickers/${String(i + 1).padStart(2, '0')}.jpg`),
       cutouts: ['images/product/betta-stickers/cover.jpg'] },
+    { title: 'Red Koi Stickers', kind: 'Stationery', type: 'Sticker · FromW2', year: '2025',
+      desc: '레드 잉어 스티커 — red-and-white koi with sheer, flowing fins, cut as clear stickers that swim over whatever they are stuck on, shown here over the phone booth aquarium.',
+      // 01 = on the phone booth background (cover); 02 = the sheet on its own
+      images: ['01', '02'].map(n => `images/product/koi-stickers/${n}.jpg`),
+      cutouts: ['images/product/koi-stickers/cover.jpg'] },
     { title: 'Ballet Shoe iPad Case', kind: 'Case', type: 'iPad Case · FromW2', year: '2024',
       desc: '발레슈 아이패드 케이스 — satin pointe shoes and loose ribbons printed on a soft pink folio case tied with a real ribbon.',
       images: ['01', '02', '03', '04', '05'].map(n => `images/product/ballet-ipad-case/${n}.jpg`),
