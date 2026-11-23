@@ -686,8 +686,8 @@ function tick() {
   holder.rotation.x = ry - (1 - easeOutCubic(ik)) * INTRO_TILT + viewX;
   holder.position.y = Math.sin(time * BOB_FREQ) * BOB_AMP + driftY + (subject === mesh ? 0 : SUBJECT_LIFT);
 
-  // switching works: the current one slides off to the side and sinks back,
-  // then the next one comes in from the other side and forward to the centre (like a carousel)
+  // switching works: the current one slides off to the side at full size,
+  // then the next one slides in from the other side to the centre (like flipping through a carousel)
   let slideS = 1;
   holder.position.x = 0; holder.position.z = 0;
   const halfW = Math.tan(THREE.MathUtils.degToRad(camera.fov / 2)) * camera.position.z * camera.aspect;
@@ -697,8 +697,7 @@ function tick() {
     if (!swipeLive && performance.now() > swipeHold) { swipeDX *= Math.exp(-dt * 12); if (Math.abs(swipeDX) < .5) swipeDX = 0; }
     const wpp = 2 * Math.tan(THREE.MathUtils.degToRad(camera.fov / 2)) * camera.position.z / innerHeight;   // world units per px
     holder.position.x = swipeDX * wpp;
-    const u = Math.min(1, Math.abs(holder.position.x) / off);
-    holder.position.z = -2.4 * u; slideS = 1 - .2 * u;
+    // same size throughout: only sideways (no shrinking / sinking back)
   }
   if (slide) {
     if (slide.fromX !== undefined) {                               // a swipe hands over: carry on from where the finger left it
@@ -714,8 +713,8 @@ function tick() {
       if (!slide.swapped) { setSubject(slide.obj); slide.swapped = true; }
       u = 1 - easeOutCubic((k - .5) / .5); holder.position.x = slide.dir * off * u;
     }
-    holder.position.z = -2.4 * u;                                  // sinks back while it is off-centre
-    slideS = 1 - .2 * u;
+    // same size throughout: the work just slides sideways
+
     if (k >= 1) slide = null;
   }
 
@@ -902,7 +901,7 @@ function setSubject(obj) {
   holder.add(obj);
   ripT = -1;
   dropT.fill(-1);
-  scV -= .06;                                  // a small springy pop as the new object arrives
+  // (no size pop on arrival — works keep the same size while switching)
 }
 let subjectToken = 0, lastWorkK = null;
 addEventListener('objectwork', async e => {
