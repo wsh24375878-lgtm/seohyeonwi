@@ -46,6 +46,9 @@ window.FASHION_WORKS = [
     desc: 'The mood board laid out as a printed book spread opposite the Miseki seoul wordmark.' },
   { project: '18', group: 'Miseki seoul 26FW', title: 'Miseki seoul 26FW — Flats', src: 'images/fashion/miseki-seoul/03.jpg', info: 'Technical Flats', year: '2025',
     desc: 'Design flats, front and back: a hooded long coat with toggles, a ribbed knit cardigan with an asymmetric button line, and a wrapped pleated skirt with a tie belt.' },
+  // Material board
+  { project: '19', group: 'Material Board', title: 'Material Board', src: 'images/fashion/material-board/01.jpg', info: 'Material', year: '',
+    desc: 'A material board in white, grey and black — worn leather belts and steel buckles, frayed denim, torn ribbons, knit and crushed leather, buttons, eyelets and an oversized zip, pinned and layered as a collage.' },
 ];
 
 window.FashionData = (() => {
