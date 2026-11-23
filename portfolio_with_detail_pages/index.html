@@ -96,7 +96,7 @@
   .carousel .thumb img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; pointer-events: none; -webkit-user-drag: none; }
   /* Product: the whole cut-out fits inside the white tile */
   .is-product .carousel .thumb img { inset: 3px; width: calc(100% - 6px); height: calc(100% - 6px); object-fit: contain; }
-  .tile-letter, .tile-work { display: none; }   /* Metal Craft layout: number only, top-right */
+  .tile-num, .tile-letter, .tile-work { display: none; }   /* no labels on the strip thumbs (3D / Product) */
   .tile-num, .tile-letter, .tile-work { position: absolute; z-index: 1; pointer-events: none; font-size: 9px; line-height: 1; color: #050505; font-variant-numeric: tabular-nums; }
   .tile-num { top: 4px; right: 3px; transform-origin: top right; }
   .tile-letter { bottom: 4px; left: 3px; transform-origin: bottom left; }
@@ -1205,6 +1205,19 @@ if (IS_PRODUCT) (() => {
       b.addEventListener('click', e => { e.stopPropagation(); step(dir); });
       document.body.appendChild(b);
     });
+    // mouse wheel / trackpad: scroll down → next product, up → previous (one step per gesture)
+    let wheelSum = 0, wheelLock = 0, wheelIdle = 0;
+    addEventListener('wheel', e => {
+      if (e.ctrlKey) return;                                         // pinch-zoom
+      const d = Math.abs(e.deltaY) >= Math.abs(e.deltaX) ? e.deltaY : e.deltaX;
+      const now = performance.now();
+      clearTimeout(wheelIdle); wheelIdle = setTimeout(() => { wheelSum = 0; }, 180);
+      if (now < wheelLock) { wheelLock = Math.max(wheelLock, now + 160); return; }   // trackpad inertia: wait it out
+      wheelSum += e.deltaMode === 1 ? d * 30 : d;                    // lines → pixels (Firefox)
+      if (Math.abs(wheelSum) < 50) return;
+      step(wheelSum > 0 ? 1 : -1);
+      wheelSum = 0; wheelLock = now + 550;
+    }, { passive: true });
   }
 
   // hover the browsing strip → preview the artwork
