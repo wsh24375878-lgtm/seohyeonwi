@@ -304,7 +304,7 @@ window.WorksData = (() => {
   const ARS = [[4, 5], [1, 1], [3, 4], [4, 5], [3, 2]];
   function placeholder(cat, p, i, type) {
     const [aw, ah] = cat === 'graphic' ? [[3, 4], [1, 1.414], [4, 5]][(p + i) % 3] : ARS[(p + i) % ARS.length];
-    const h = 900, w = Math.round(h * aw / ah);
+    const h = 400, w = Math.round(h * aw / ah);
     const c = document.createElement('canvas'); c.width = w; c.height = h;
     const g = c.getContext('2d');
     const tone = 214 + (p * 9 + i * 7) % 30;
@@ -342,35 +342,39 @@ window.WorksData = (() => {
     });
   }
 
-  /* every work as { category, categoryName, title, year, info, url, images:[{url,ar}] } */
+  // Archive only needs a small copy of the first two photos of each work: images/thumbs/… (480px)
+  // mirrors images/… — if a thumb is missing, the full photo is used instead.
+  const thumbOf = src => src && src.startsWith('images/') ? 'images/thumbs/' + src.slice(7).replace(/\.png$/i, '.jpg') : '';
+  const loadThumb = (src, fallback) => loadImage(thumbOf(src), () => null).then(r => r || loadImage(src, fallback));
+
+  /* every work as { category, categoryName, title, year, info, url, images:[{url,ar}] } (at most 2 images each) */
   async function loadAll() {
-    const list = [];
-    if (window.FASHION_WORKS && window.FashionData) {
+    const rows = [];
+    if (window.FASHION_WORKS) {
       // images that share a group become one project row
-      const imgs = await window.FashionData.loadAll();
       const groups = new Map();
       window.FASHION_WORKS.forEach((w, k) => {
         const key = w.group || w.title;
         if (!groups.has(key)) groups.set(key, {
-          category: 'fashion', categoryName: 'Fashion', title: key, year: w.year, info: w.info,
-          url: detailUrl('fashion', +w.project || k + 1), images: [],
+          row: { category: 'fashion', categoryName: 'Fashion', title: key, year: w.year, info: w.info,
+                 url: detailUrl('fashion', +w.project || k + 1), images: [] },
+          srcs: [],
         });
-        groups.get(key).images.push({ url: imgs[k].src, ar: imgs[k].aspect });
+        groups.get(key).srcs.push({ src: w.src, k });
       });
-      groups.forEach(g => list.push(g));
+      groups.forEach(g => rows.push(Promise.all(g.srcs.slice(0, 2).map(({ src, k }) =>
+        loadThumb(src, () => placeholder('fashion', k, 0, 'Fashion')))).then(images => Object.assign(g.row, { images }))));
     }
     for (const cat of Object.keys(window.OTHER_WORKS)) {
-      const works = window.OTHER_WORKS[cat];
-      for (let p = 0; p < works.length; p++) {
-        const w = works[p];
-        const images = await Promise.all(w.images.map((src, i) => loadImage(src, () => placeholder(cat, p, i, w.type))));
-        list.push({
-          category: cat, categoryName: CATEGORY_NAMES[cat], title: w.title, year: w.year, info: w.type || '',
-          url: detailUrl(cat, p + 1), images,
-        });
-      }
+      window.OTHER_WORKS[cat].forEach((w, p) => {
+        rows.push(Promise.all(w.images.slice(0, 2).map((src, i) => loadThumb(src, () => placeholder(cat, p, i, w.type))))
+          .then(images => ({
+            category: cat, categoryName: CATEGORY_NAMES[cat], title: w.title, year: w.year, info: w.type || '',
+            url: detailUrl(cat, p + 1), images,
+          })));
+      });
     }
-    return list;
+    return Promise.all(rows);   // all at once, not one after another
   }
 
   return { CATEGORY_NAMES, loadAll, loadImage };
