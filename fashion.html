@@ -152,6 +152,7 @@ const detailUrl = FashionData.detailUrl;
   const HERO_H = FashionData.HERO_H;
   const HERO_FALLBACK_W = 2.5;
   const ITEM_H = 0.68;
+  const RING_AR = 1;                  // ring cards are square (landscape boards no longer stick out)
   const INTRO_SCALE = 2.5;
 
   const stage = document.getElementById('stage');
@@ -495,7 +496,7 @@ const detailUrl = FashionData.detailUrl;
         el,
         src: data.src,
         aspect: data.aspect,
-        w: ITEM_H * data.aspect,
+        w: ITEM_H * RING_AR,               // every ring card has the same shape; the image is cropped to fit (object-fit: cover)
         h: ITEM_H,
         x: 0,
         z: 3 + i * 0.01,
