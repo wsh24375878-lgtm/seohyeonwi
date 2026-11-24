@@ -99,6 +99,23 @@
     font: 400 15px/1.3 Arial, Helvetica, sans-serif; color: #8c8c8c; cursor: pointer; transition: color .2s ease; }
   .fx-btn:hover { color: #050505; }
   @media (max-width: 700px) { .fx-btn { top: auto; right: 14px; bottom: calc(18px + 56px + 44px + env(safe-area-inset-bottom)); font-size: 12px; } }
+  /* 3D: finish swatches under the menu — small spheres you can tell apart at a glance; name on hover */
+  .mat-row { position: fixed; z-index: 99; top: 44px; left: 50%; transform: translateX(-50%); display: flex; gap: 12px; }
+  .sw { position: relative; padding: 3px; border: 0; background: none; border-radius: 50%; cursor: pointer; }
+  .sw-dot { display: block; width: 18px; height: 18px; border-radius: 50%; box-shadow: inset 0 0 0 1px rgba(0,0,0,.08); transition: transform .2s ease; }
+  .sw:hover .sw-dot { transform: scale(1.12); }
+  .sw.is-active { box-shadow: 0 0 0 1px #050505; }
+  .sw-name { position: absolute; left: 50%; top: calc(100% + 6px); transform: translateX(-50%); font: 400 11px/1 Arial, Helvetica, sans-serif;
+    color: #050505; white-space: nowrap; opacity: 0; pointer-events: none; transition: opacity .2s ease; }
+  .sw:hover .sw-name, .sw:focus-visible .sw-name { opacity: 1; }
+  .sw-chrome .sw-dot { background: radial-gradient(circle at 34% 28%, #fff 0 12%, #cfcfcf 28%, #5c5c5c 58%, #e8e8e8 80%, #8a8a8a 100%); }
+  .sw-satin .sw-dot  { background: radial-gradient(circle at 34% 30%, #fafafa 0 10%, #d6d6d6 40%, #9d9d9d 75%, #c4c4c4 100%); }
+  .sw-matte .sw-dot  { background: radial-gradient(circle at 36% 32%, #f3f1ec 0 20%, #e2dfd8 55%, #c9c5bd 100%); }
+  .sw-black .sw-dot  { background: radial-gradient(circle at 34% 28%, #8a8a8a 0 8%, #2a2a2a 30%, #0d0d0d 70%, #3a3a3a 100%); }
+  .sw-gold .sw-dot   { background: radial-gradient(circle at 34% 28%, #fff6d8 0 10%, #e6c46f 32%, #9a7223 65%, #e9cf86 100%); }
+  .sw-glass .sw-dot  { background: radial-gradient(circle at 34% 28%, rgba(255,255,255,1) 0 12%, rgba(220,232,240,.55) 40%, rgba(160,180,195,.35) 75%, rgba(255,255,255,.8) 100%);
+    box-shadow: inset 0 0 0 1px rgba(0,0,0,.18); }
+  @media (max-width: 700px) { .mat-row { top: 64px; left: 14px; transform: none; gap: 10px; } .sw-dot { width: 16px; height: 16px; } }
   /* 3D: finish row (Chrome · Satin · Matte · Black · Gold · Glass) — same look as the Product kind row */
   .p-kinds button { padding: 0; border: 0; background: none; font: inherit; color: #8c8c8c; cursor: pointer; transition: color .2s ease; }
   .p-kinds button:hover, .p-kinds button.is-active { color: #050505; }
@@ -529,14 +546,16 @@ function setFinish(name) {
   const glass = f.opacity !== undefined;
   if (material.transparent !== glass) { material.transparent = glass; material.depthWrite = !glass; material.needsUpdate = true; }
   material.opacity = glass ? f.opacity : 1;
-  document.querySelectorAll('.mat-row button').forEach(x => x.classList.toggle('is-active', x.textContent === name));
+  document.querySelectorAll('.mat-row button').forEach(x => x.classList.toggle('is-active', x.dataset.name === name));
 }
 {
   const row = document.createElement('nav');
-  row.className = 'p-kinds mat-row'; row.setAttribute('aria-label', 'Surface finish');
+  row.className = 'mat-row'; row.setAttribute('aria-label', 'Surface finish');
   Object.keys(FINISHES).forEach(name => {
     const b = document.createElement('button');
-    b.type = 'button'; b.textContent = name;
+    // a small round swatch that looks like the finish; its name shows on hover
+    b.type = 'button'; b.className = 'sw sw-' + name.toLowerCase(); b.dataset.name = name; b.title = name;
+    b.setAttribute('aria-label', name + ' finish'); b.innerHTML = '<span class="sw-dot"></span><span class="sw-name">' + name + '</span>';
     b.addEventListener('click', e => { e.stopPropagation(); setFinish(name); });
     row.appendChild(b);
   });
