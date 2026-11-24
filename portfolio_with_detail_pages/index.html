@@ -1499,9 +1499,9 @@ if (IS_PRODUCT) (() => {
     hero.type = 'button'; hero.className = 'm-cell hero is-current'; hero.textContent = '○';
     hero.setAttribute('aria-label', 'First object');
     strip.appendChild(hero); cells.push(hero);
-    ITEMS.forEach(it => {
+    ITEMS.forEach((it, k) => {
       const c = document.createElement('button');
-      c.type = 'button'; c.className = 'm-cell';
+      c.type = 'button'; c.className = 'm-cell'; c.dataset.i = k;   // its picture is swapped in when the 3D render is ready
       c.style.backgroundImage = `url("${it.url}")`;
       c.setAttribute('aria-label', label(it));
       strip.appendChild(c); cells.push(c);
@@ -1544,9 +1544,21 @@ if (IS_PRODUCT) (() => {
     });
   }
 
-  /* ---------- boot ---------- */
-  Promise.all(ITEMS.map(load)).then(res => {
-    res.forEach((r, k) => { ITEMS[k].url = r.url; ITEMS[k].ar = r.ar; });
+  /* ---------- boot ----------
+     The strip is drawn straight away (3D: grey stand-ins, Product: the photos), and each slot's
+     3D render is swapped in as soon as it is ready — so the strip never waits for all of them. */
+  ITEMS.forEach((it, k) => {
+    if (IS_PRODUCT) { it.url = it.cutout || placeholder(it, k).url; it.ar = '4 / 5'; }
+    else { const p = placeholder(it, k); it.url = p.url; it.ar = p.ar; }
+  });
+  ITEMS.forEach((it, k) => load(it, k).then(r => {
+    if (!r) return;
+    it.url = r.url; it.ar = r.ar;
+    document.querySelectorAll(`.carousel .thumb[data-i="${k}"] img`).forEach(im => { im.src = r.url; });
+    const cell = document.querySelector(`.m-cell[data-i="${k}"]`);
+    if (cell) cell.style.backgroundImage = `url("${r.url}")`;
+  }));
+  Promise.resolve().then(() => {
     ITEMS.forEach((it, i) => { const t = makeThumb(it, i, i === 0); carousel.appendChild(t); thumbs.push(t); });
     if (IS_PRODUCT && !document.querySelector('.carousel .thumb.is-current')) markCurrent(0);   // the first product is on show
     buildMobile();
