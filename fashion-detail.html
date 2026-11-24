@@ -32,7 +32,7 @@
     pointer-events: none;
   }
   .category-desc {
-    max-width: 360px;
+    max-width: 420px;
     margin-top: 14px;
   }
   .category-meta { margin-top: 6px; }
@@ -103,6 +103,9 @@
   .bottom-info a { pointer-events: auto; }
   .back { color: #8c8c8c; transition: color .2s ease; }
   .back:hover { color: #050505; }
+  /* back to the ring, top right (opposite the title) */
+  .to-ring { position: absolute; z-index: 6; right: 24px; top: 62px; font-size: 15px; line-height: 1; color: #050505; }
+  .to-ring:hover { text-decoration: underline; text-underline-offset: 3px; text-decoration-thickness: 1px; }
   .hint { color: #8c8c8c; }
 
   /* ---------- enter / leave ---------- */
@@ -117,6 +120,7 @@
     .category-desc { max-width: 260px; margin-top: 10px; }
     .bottom-info { bottom: 18px; font-size: 12px; gap: 10px; }
     .hint { display: none; }
+    .to-ring { right: 14px; top: 76px; font-size: 12px; }
   }
 </style>
 <link rel="stylesheet" href="site-nav.css">
@@ -145,6 +149,8 @@
   <p class="category-meta ui-text muted swap" id="workMeta"></p>
 </header>
 
+<a class="to-ring chrome is-hidden" id="toRing" href="fashion.html">← Projects</a>
+
 <main class="stage" id="stage" aria-label="Fashion works. Drag left or right to see the other works.">
   <div class="track" id="track"></div>
 </main>
@@ -169,7 +175,8 @@
   const P = fashionProjectOf(startWork);
   const STORY = { project: groupWorks[0].project, title: P.title, story: true,
     desc: P.process ? 'Process — ' + P.process : '', info: [P.kind, P.year].filter(Boolean).join(', ') };
-  const WORKS = P.story && P.story.length ? [STORY, ...groupWorks] : groupWorks;
+  // no separate text card: the project's story is written at the top as the images change (see showText)
+  const WORKS = groupWorks;
   const stage = document.getElementById('stage');
   const track = document.getElementById('track');
   const workTitle = document.getElementById('workTitle');
@@ -186,7 +193,7 @@
   } catch (e) {}
 
   // coming in on the project (its first image) → start on the story; a specific image → start there
-  let index = startWork === groupWorks[0] ? 0 : Math.max(0, WORKS.indexOf(startWork));
+  let index = Math.max(0, WORKS.indexOf(startWork));
   let slides = [];        // { el, aspect, w, x }
   let gap = 24;
   let pos = 0;            // rendered track offset (px)
@@ -231,9 +238,13 @@
   function showText(i, animate) {
     const work = WORKS[i];
     const apply = () => {
-      workTitle.textContent = work.title;
-      workDesc.textContent = work.desc || '';
-      workMeta.textContent = work.story ? work.info : [work.year, work.info].filter(Boolean).join(' — ');
+      // top-left text follows the image on show: the project name, what this step is, and its description
+      // (the first image also carries the project's story — its history and idea, from the portfolio)
+      workTitle.textContent = P.title;
+      const lead = i === 0 && P.story && P.story.length ? P.story.slice(0, 2).join(' ') + ' ' : '';
+      workDesc.textContent = lead + (work.desc || '');
+      const step = (work.title || '').split(' — ').slice(1).join(' — ') || work.info || '';
+      workMeta.textContent = [step, P.year || work.year].filter(Boolean).join(' — ');
       counter.textContent = `${String(i + 1).padStart(2, '0')} / ${String(WORKS.length).padStart(2, '0')}`;
       document.title = `${work.title} — Fashion — SEOHYEON WI™`;
       [workTitle, workDesc, workMeta, counter].forEach(el => el.classList.remove('is-out'));
@@ -376,6 +387,10 @@
     setTimeout(() => { location.href = url; }, 450);
   }
   back.addEventListener('click', e => { e.preventDefault(); leave(); });
+  // the top-right button and the Fashion link in the menu also go straight back to the ring (no intro)
+  document.getElementById('toRing').addEventListener('click', e => { e.preventDefault(); leave(); });
+  const navFashion = document.querySelector('.site-cats a[href="fashion.html"]');
+  if (navFashion) navFashion.addEventListener('click', e => { e.preventDefault(); leave(); });
 
   window.addEventListener('pageshow', e => {
     if (!e.persisted || !leaving) return;
