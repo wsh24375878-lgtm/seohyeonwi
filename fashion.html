@@ -84,9 +84,9 @@
     transition: opacity .15s ease-in-out;
   }
   .bottom-info.is-visible { opacity: 1; }
-  /* the project's name, large and clear under the ring (it changes as the ring turns) */
-  .bottom-info { bottom: 48px; gap: 16px; }
-  .info-title { font-size: clamp(22px, 2.2vw, 34px); letter-spacing: -.03em; line-height: 1; }
+  /* the project's name under the ring, in the page's own 15px type (it changes as the ring turns) */
+  .bottom-info { bottom: 40px; gap: 14px; }
+  .info-title { font-size: 15px; line-height: 1; }
   .info-meta { color: #8c8c8c; }
   .view-case { color: #8c8c8c; transition: color .2s ease; }
   .view-case:hover { color: #050505; }
@@ -103,7 +103,7 @@
 
   @media (max-width: 700px) {
     .bottom-info { bottom: 34px; font-size: 12px; gap: 10px; flex-wrap: wrap; justify-content: center; white-space: normal; text-align: center; width: 90vw; }
-    .info-title { font-size: 22px; width: 100%; }
+    .info-title { font-size: 12px; width: auto; }
   }
 </style>
 <link rel="stylesheet" href="site-nav.css">
