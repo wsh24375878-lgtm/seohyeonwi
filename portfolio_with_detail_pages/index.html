@@ -99,23 +99,28 @@
     font: 400 15px/1.3 Arial, Helvetica, sans-serif; color: #8c8c8c; cursor: pointer; transition: color .2s ease; }
   .fx-btn:hover { color: #050505; }
   @media (max-width: 700px) { .fx-btn { top: auto; right: 14px; bottom: calc(18px + 56px + 44px + env(safe-area-inset-bottom)); font-size: 12px; } }
-  /* 3D: finish swatches under the menu — small spheres you can tell apart at a glance; name on hover */
-  .mat-row { position: fixed; z-index: 99; top: 44px; left: 50%; transform: translateX(-50%); display: flex; gap: 12px; }
-  .sw { position: relative; padding: 3px; border: 0; background: none; border-radius: 50%; cursor: pointer; }
-  .sw-dot { display: block; width: 18px; height: 18px; border-radius: 50%; box-shadow: inset 0 0 0 1px rgba(0,0,0,.08); transition: transform .2s ease; }
-  .sw:hover .sw-dot { transform: scale(1.12); }
-  .sw.is-active { box-shadow: 0 0 0 1px #050505; }
-  .sw-name { position: absolute; left: 50%; top: calc(100% + 6px); transform: translateX(-50%); font: 400 11px/1 Arial, Helvetica, sans-serif;
-    color: #050505; white-space: nowrap; opacity: 0; pointer-events: none; transition: opacity .2s ease; }
-  .sw:hover .sw-name, .sw:focus-visible .sw-name { opacity: 1; }
-  .sw-chrome .sw-dot { background: radial-gradient(circle at 34% 28%, #fff 0 12%, #cfcfcf 28%, #5c5c5c 58%, #e8e8e8 80%, #8a8a8a 100%); }
-  .sw-satin .sw-dot  { background: radial-gradient(circle at 34% 30%, #fafafa 0 10%, #d6d6d6 40%, #9d9d9d 75%, #c4c4c4 100%); }
-  .sw-matte .sw-dot  { background: radial-gradient(circle at 36% 32%, #f3f1ec 0 20%, #e2dfd8 55%, #c9c5bd 100%); }
-  .sw-black .sw-dot  { background: radial-gradient(circle at 34% 28%, #8a8a8a 0 8%, #2a2a2a 30%, #0d0d0d 70%, #3a3a3a 100%); }
-  .sw-gold .sw-dot   { background: radial-gradient(circle at 34% 28%, #fff6d8 0 10%, #e6c46f 32%, #9a7223 65%, #e9cf86 100%); }
-  .sw-glass .sw-dot  { background: radial-gradient(circle at 34% 28%, rgba(255,255,255,1) 0 12%, rgba(220,232,240,.55) 40%, rgba(160,180,195,.35) 75%, rgba(255,255,255,.8) 100%);
-    box-shadow: inset 0 0 0 1px rgba(0,0,0,.18); }
-  @media (max-width: 700px) { .mat-row { top: 64px; left: 14px; transform: none; gap: 10px; } .sw-dot { width: 16px; height: 16px; } }
+  /* 3D: finish list on the right, under "Drop & spin" — the page's own 15px grey type, a tiny dot hinting the finish */
+  .mat-row { position: fixed; z-index: 7; right: var(--pad); top: calc(50% + 84px); display: flex; flex-direction: column; align-items: flex-end; gap: 4px;
+    font: 400 15px/1.3 Arial, Helvetica, sans-serif; }
+  .mat-row::before { content: 'Finish'; color: #050505; margin-bottom: 2px; }
+  .sw { display: flex; align-items: center; gap: 8px; padding: 0; border: 0; background: none; color: #8c8c8c; cursor: pointer; transition: color .2s ease; }
+  .sw:hover, .sw.is-active { color: #050505; }
+  .sw.is-active .sw-name { text-decoration: underline; text-underline-offset: 3px; text-decoration-thickness: 1px; }
+  .sw-name { order: 1; }
+  .sw-dot { order: 2; display: block; width: 8px; height: 8px; border-radius: 50%; box-shadow: inset 0 0 0 1px rgba(0,0,0,.15); }
+  .sw-chrome .sw-dot { background: linear-gradient(135deg, #fff, #9a9a9a 55%, #e6e6e6); }
+  .sw-satin .sw-dot  { background: #c9c9c9; }
+  .sw-matte .sw-dot  { background: #e6e3dc; }
+  .sw-black .sw-dot  { background: #111; }
+  .sw-gold .sw-dot   { background: #c9a75a; }
+  .sw-glass .sw-dot  { background: transparent; }
+  body.work-open .mat-row, body.playing .mat-row { opacity: 1; }
+  @media (max-width: 700px) {
+    .mat-row { top: 66px; right: 14px; left: 14px; flex-direction: row; align-items: center; gap: 10px; font-size: 12px; overflow-x: auto; scrollbar-width: none; }
+    .mat-row::-webkit-scrollbar { display: none; }
+    .sw { gap: 5px; flex: none; }
+    .mat-row::before { display: none; }
+  }
   /* 3D: finish row (Chrome · Satin · Matte · Black · Gold · Glass) — same look as the Product kind row */
   .p-kinds button { padding: 0; border: 0; background: none; font: inherit; color: #8c8c8c; cursor: pointer; transition: color .2s ease; }
   .p-kinds button:hover, .p-kinds button.is-active { color: #050505; }
@@ -389,7 +394,7 @@ envTex.dispose(); pmrem.dispose();
 /* chrome material with a click "water drop": the spot where you click dips in and springs back,
    then a few wide rings spread out from it and fade — like one drop falling into still water */
 const material = new THREE.MeshStandardMaterial({ color: 0xffffff, metalness: 1, roughness: 0, envMapIntensity: 1.2 });
-const DROPS = 6;                                                   // drops that can ripple at the same time
+const DROPS = 12;                                                  // drops that can ripple at the same time (rubbing makes many)
 const dropC = Array.from({ length: DROPS }, () => new THREE.Vector3());
 const dropT = new Array(DROPS).fill(-1);                           // seconds since each drop fell (-1 = idle)
 let nextDrop = 0;
@@ -534,9 +539,7 @@ function playEffect() {
 const FINISHES = {
   Chrome: { color: 0xffffff, metalness: 1, roughness: 0, env: 1.2 },
   Satin:  { color: 0xf2f2f2, metalness: 1, roughness: .32, env: 1.1 },
-  Matte:  { color: 0xe9e7e2, metalness: 0, roughness: .9, env: .9 },
   Black:  { color: 0x141414, metalness: .6, roughness: .18, env: 1.2 },
-  Gold:   { color: 0xd8b25a, metalness: 1, roughness: .12, env: 1.2 },
   Glass:  { color: 0xffffff, metalness: .05, roughness: 0, env: 1.6, opacity: .38 },
 };
 function setFinish(name) {
@@ -693,13 +696,30 @@ renderer.domElement.addEventListener('pointerdown', e => {
   viewVY = viewVX = 0;
   renderer.domElement.setPointerCapture(e.pointerId);
 });
+/* rubbing: a small water drop wherever the cursor passes over the object (a new one every ~14px of travel) */
+let lastRub = null;
+function rubAt(e) {
+  if (lastRub && Math.hypot(e.clientX - lastRub.x, e.clientY - lastRub.y) < 14) return;
+  const r = renderer.domElement.getBoundingClientRect();
+  ndc.set((e.clientX - r.left) / r.width * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1);
+  ray.setFromCamera(ndc, camera);
+  const hit = ray.intersectObject(subject, true)[0];
+  if (!hit) return;
+  lastRub = { x: e.clientX, y: e.clientY };
+  dropC[nextDrop].copy(hit.object.worldToLocal(hit.point.clone()));
+  dropT[nextDrop] = 0;
+  nextDrop = (nextDrop + 1) % DROPS;
+}
 renderer.domElement.addEventListener('pointermove', e => {
   if (!press || pinch) return;
   if (!dragging && Math.hypot(e.clientX - press.x, e.clientY - press.y) > 5) {
     dragging = true;
-    renderer.domElement.style.cursor = 'grabbing';
+    // mouse pressed on the object → rubbing it (water drops follow the cursor); pressed on the empty screen → turning it
+    press.rub = e.pointerType === 'mouse' && !!press.hit;
+    renderer.domElement.style.cursor = press.rub ? 'crosshair' : 'grabbing';
   }
   if (!dragging) return;
+  if (press.rub) { rubAt(e); return; }
   const mx = e.clientX - lastPX, my = e.clientY - lastPY;
   lastPX = e.clientX; lastPY = e.clientY;
   viewVY = mx * DRAG_Y;
@@ -709,6 +729,7 @@ renderer.domElement.addEventListener('pointermove', e => {
 });
 const endPress = () => {
   if (!press) return;
+  lastRub = null;
   // a click on the open work's object opens its detail page; the first (pebble) object still ripples / spins
   if (!dragging && press.hit) {
     const edge = Math.abs(press.hit.point.x) >= SIDE;                // edges: spin it
@@ -1446,7 +1467,8 @@ if (IS_PRODUCT) (() => {
     hovered = t;
     openWork(ITEMS[+t.dataset.i]);
   });
-  carousel.addEventListener('pointerleave', () => { hovered = null; if (!playing) closeWork(); });
+  // leaving the strip keeps the work that was last previewed (moving up to turn / rub it used to drop back to the first object)
+  carousel.addEventListener('pointerleave', () => { hovered = null; });
 
   // drag the play strip to scrub
   document.addEventListener('pointerdown', e => {
