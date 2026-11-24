@@ -725,6 +725,7 @@ let wheelAcc = 0;
 let sc = 1, scV = 0, driftY = 0, driftV = 0;
 addEventListener('wheel', e => {
   if (!introDone || innerWidth <= 640) return;
+  if (e.clientY > innerHeight - 150) return;      // down by the strip the wheel scrolls through the works instead
   const d = Math.max(-120, Math.min(120, e.deltaY));
   wheelAcc = Math.max(WHEEL_MIN, Math.min(WHEEL_MAX, wheelAcc + d * WHEEL_GROW));
 }, { passive: true });
@@ -1374,8 +1375,8 @@ if (IS_PRODUCT) (() => {
     if (e.key === 'ArrowLeft') { glideTo = null; B = (Math.round(B / QT) - 1) * QT; wake(); }
   });
 
-  // Product: ‹ › buttons at both sides step to the previous / next product
-  if (IS_PRODUCT && N > 1) {
+  // stepping along the strip (Product arrows, the wheel on both pages)
+  if (N > 1) {
     const step = dir => {
       if (getComputedStyle(carousel).display === 'none') {          // phones: same as a swipe
         dispatchEvent(new CustomEvent('objectswipe', { detail: dir }));
@@ -1393,8 +1394,8 @@ if (IS_PRODUCT) (() => {
       show(mod(Math.round(glideTo / QT), N));
       lastT = 0; wake();
     };
-    // small round buttons with a short arrow, either side of the photo
-    [['prev', -1, 'Previous product', 'M13 5H1M5 1L1 5l4 4'], ['next', 1, 'Next product', 'M1 5h12M9 1l4 4-4 4']].forEach(([cls, dir, lbl, d]) => {
+    // Product: a short arrow either side of the photo
+    if (IS_PRODUCT) [['prev', -1, 'Previous product', 'M13 5H1M5 1L1 5l4 4'], ['next', 1, 'Next product', 'M1 5h12M9 1l4 4-4 4']].forEach(([cls, dir, lbl, d]) => {
       const b = document.createElement('button');
       b.type = 'button'; b.className = `p-nav p-nav-${cls}`;
       b.setAttribute('aria-label', lbl);
@@ -1405,9 +1406,12 @@ if (IS_PRODUCT) (() => {
     // mouse wheel / trackpad: the strip follows the scroll — a slow notch moves one product,
     // a fast flick runs through several — then it glides and settles on the nearest product.
     const WHEEL_PX_PER_ITEM = 100;                                   // ≈ one mouse-wheel notch per product
+    const STRIP_ZONE = 150;                                          // 3D: bottom band (px) where the wheel moves the strip
     let wheelPos = null, wheelIdle = 0, openLock = 0;
     addEventListener('wheel', e => {
       if (e.ctrlKey) return;                                         // pinch-zoom
+      // 3D: only with the mouse down by the strip — elsewhere the wheel zooms the object
+      if (!IS_PRODUCT && e.clientY < innerHeight - STRIP_ZONE) return;
       let d = Math.abs(e.deltaY) >= Math.abs(e.deltaX) ? e.deltaY : e.deltaX;
       if (e.deltaMode === 1) d *= 33; else if (e.deltaMode === 2) d *= innerHeight;   // lines / pages → pixels
       if (!d) return;
