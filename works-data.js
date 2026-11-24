@@ -356,10 +356,11 @@ window.WorksData = (() => {
         const key = w.group || w.title;
         if (!groups.has(key)) groups.set(key, {
           row: { category: 'fashion', categoryName: 'Fashion', title: key, year: w.year, info: w.info,
-                 url: detailUrl('fashion', +w.project || k + 1), images: [] },
+                 url: detailUrl('fashion', +w.project || k + 1), images: [], all: [] },
           srcs: [],
         });
         groups.get(key).srcs.push({ src: w.src, k });
+        if (w.src) groups.get(key).row.all.push(w.src);
       });
       groups.forEach(g => rows.push(Promise.all(g.srcs.slice(0, 2).map(({ src, k }) =>
         loadThumb(src, () => placeholder('fashion', k, 0, 'Fashion')))).then(images => Object.assign(g.row, { images }))));
@@ -369,12 +370,12 @@ window.WorksData = (() => {
         rows.push(Promise.all(w.images.slice(0, 2).map((src, i) => loadThumb(src, () => placeholder(cat, p, i, w.type))))
           .then(images => ({
             category: cat, categoryName: CATEGORY_NAMES[cat], title: w.title, year: w.year, info: w.type || '',
-            url: detailUrl(cat, p + 1), images,
+            url: detailUrl(cat, p + 1), images, all: w.images.filter(Boolean),   // all = every photo (Archive rows)
           })));
       });
     }
     return Promise.all(rows);   // all at once, not one after another
   }
 
-  return { CATEGORY_NAMES, loadAll, loadImage };
+  return { CATEGORY_NAMES, loadAll, loadImage, thumbOf };
 })();

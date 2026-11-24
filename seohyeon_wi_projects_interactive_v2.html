@@ -61,6 +61,30 @@ body.native .scroller{position:static;transform:none!important}
 .tile-cat{margin-top:6px;padding-bottom:6px;font-family:var(--serif);font-size:13px;line-height:1.2;color:var(--muted)}
 .empty{grid-column:1/-1;padding:40px 0;text-align:center;font-size:13px;color:var(--muted)}
 
+/* ---------- project rows: one row per project, all its images side by side (scroll / drag sideways) ---------- */
+.grid.rows{display:block;padding:0}
+.row{margin:0 0 56px}
+.row-head{display:flex;align-items:baseline;gap:12px;padding:0 var(--pad) 12px 24px}
+.row-title{font-size:13px;line-height:1.2}
+.row-cat{font-family:var(--serif);font-size:14px;line-height:1.2;color:var(--muted)}
+.row-count{margin-left:auto;padding-right:16px;font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
+.row-strip{display:flex;gap:6px;overflow-x:auto;overflow-y:hidden;padding:0 24px;scrollbar-width:none;cursor:grab;
+  -webkit-overflow-scrolling:touch;overscroll-behavior-x:contain}
+.row-strip::-webkit-scrollbar{display:none}
+.row-strip.is-dragging{cursor:grabbing}
+.row-strip.is-dragging a{pointer-events:none}
+.row-strip a{flex:none;display:block;height:220px;background:var(--skeleton);cursor:none}
+.row-strip img{display:block;height:100%;width:auto;-webkit-user-drag:none;user-select:none;opacity:0;transition:opacity .5s ease}
+.row-strip img.is-loaded{opacity:1}
+@media (hover:none){.row-strip a{cursor:pointer}}
+@media (max-width:700px){
+  .row{margin-bottom:40px}
+  .row-head{padding:0 14px 10px}
+  .row-count{padding-right:0}
+  .row-strip{padding:0 14px;gap:4px}
+  .row-strip a{height:150px}
+}
+
 /* ---------- footer ---------- */
 .foot{padding:240px var(--pad) 20px;text-align:center;font-family:var(--serif);font-size:13px;line-height:1.2}
 
@@ -115,6 +139,7 @@ body.mode-space .cursor{display:none}
 .space-index:hover{background:#e4e4e4}
 .space-index:focus-visible{outline:2px solid #777;outline-offset:2px}
 .to-space{all:unset;cursor:pointer;display:inline-block;margin-top:14px;font-family:var(--serif);font-size:14px;color:var(--muted);transition:color .2s ease}
+.to-space{display:none!important}
 .to-space:hover{color:var(--ink)}
 .to-space:focus-visible{outline:2px solid #777;outline-offset:2px}
 /* the work picked in the sphere briefly glows in the grid */
@@ -222,30 +247,56 @@ body.mode-space .cursor{display:none}
     const done = () => img.classList.add('is-loaded');
     if (img.complete && img.naturalWidth) done(); else img.addEventListener('load', done, { once: true });
   }
+  // one row per project: its name, then every image of it side by side (small thumbnails, loaded as they come near)
   function renderGrid() {
-    const shown = current === 'all' ? works : works.filter(w => w.category === current);
+    const shown = (current === 'all' ? works : works.filter(w => w.category === current)).filter(w => (w.all || []).length);
     grid.innerHTML = '';
+    grid.classList.add('rows');
     if (!shown.length) { grid.innerHTML = '<p class="empty">No work here yet.</p>'; measure(); return; }
     shown.forEach(w => {
-      const [first, second] = w.images;
-      const t = document.createElement('a');
-      t.className = 'tile';
-      t.href = w.url;
-      t.dataset.w = works.indexOf(w);
-      t.setAttribute('aria-label', `${w.title} — ${w.categoryName}`);
-      const info = [w.info, w.year].filter(Boolean).join(', ');
-      t.innerHTML =
-        `<div class="tile-media">` +
-          (first ? `<img class="main${second ? ' has-alt' : ''}" src="${first.url}" alt="" loading="lazy">` : '') +
-          (second ? `<img class="alt" src="${second.url}" alt="" loading="lazy">` : '') +
-          `<div class="chips"><span class="chip">${w.categoryName}</span></div>` +
-        `</div>` +
-        `<p class="tile-title">${w.title}</p>` +
-        `<p class="tile-cat">${info || w.categoryName}</p>`;
-      grid.appendChild(t);
-      t.querySelectorAll('img').forEach(revealImg);
+      const row = document.createElement('section');
+      row.className = 'row';
+      row.dataset.w = works.indexOf(w);
+      const info = [w.categoryName, w.info, w.year].filter(Boolean).join(', ');
+      const imgs = w.all.map(src => {
+        const thumb = WorksData.thumbOf(src) || src;
+        return `<a class="tile" href="${w.url}" aria-label="${w.title}"><img src="${thumb}" data-full="${src}" alt="" loading="lazy" draggable="false"></a>`;
+      }).join('');
+      row.innerHTML =
+        `<div class="row-head"><p class="row-title">${w.title}</p><p class="row-cat">${info}</p>` +
+        `<p class="row-count">${String(w.all.length).padStart(2, '0')}</p></div>` +
+        `<div class="row-strip">${imgs}</div>`;
+      grid.appendChild(row);
+      row.querySelectorAll('img').forEach(img => {
+        // no thumbnail yet → use the full photo
+        img.addEventListener('error', () => { if (img.dataset.full && !img.dataset.triedFull) { img.dataset.triedFull = 1; img.src = img.dataset.full; } });
+        revealImg(img);
+      });
+      dragStrip(row.querySelector('.row-strip'));
     });
     measure();
+  }
+  // mouse: drag a row sideways (a plain click still opens the work)
+  function dragStrip(strip) {
+    let down = null;
+    strip.addEventListener('pointerdown', e => {
+      if (e.pointerType !== 'mouse' || e.button !== 0) return;
+      down = { x: e.clientX, left: strip.scrollLeft, moved: false };
+    });
+    addEventListener('pointermove', e => {
+      if (!down) return;
+      const dx = e.clientX - down.x;
+      if (!down.moved && Math.abs(dx) > 5) { down.moved = true; strip.classList.add('is-dragging'); }
+      if (down.moved) strip.scrollLeft = down.left - dx;
+    });
+    addEventListener('pointerup', () => {
+      if (!down) return;
+      const moved = down.moved; down = null;
+      setTimeout(() => strip.classList.remove('is-dragging'), 0);
+      if (moved) strip.addEventListener('click', ev => ev.preventDefault(), { once: true, capture: true });
+    });
+    // a sideways trackpad swipe scrolls the row; an up / down wheel keeps scrolling the page
+    strip.addEventListener('wheel', e => { if (Math.abs(e.deltaX) > Math.abs(e.deltaY)) e.stopPropagation(); }, { passive: true });
   }
 
   function setFilter(key) {
@@ -536,13 +587,13 @@ body.mode-space .cursor{display:none}
   /* ---------- boot ---------- */
   // a plain visit opens the sphere; ?view=grid or ?category=… opens the grid straight away
   const q0 = new URLSearchParams(location.search);
-  const startInGrid = q0.get('view') === 'grid' || !!param;
+  const startInGrid = true;          // the archive now opens straight into the project rows (the sphere is no longer shown)
   if (!startInGrid) document.body.classList.add('mode-space');
   document.title = `${current === 'all' ? 'Archive' : NAMES[current]} — SEOHYEON WI™`;
   WorksData.loadAll().then(list => {
     works = list;
     renderFilters(); setHead(); renderGrid();
-    buildSphere();
+    // (sphere not built any more — the archive is the list of project rows)
     if (!startInGrid) { introStart = performance.now(); space.classList.add('is-in'); }
   });
 })();
