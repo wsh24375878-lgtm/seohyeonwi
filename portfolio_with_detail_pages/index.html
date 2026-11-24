@@ -99,29 +99,18 @@
     font: 400 15px/1.3 Arial, Helvetica, sans-serif; color: #8c8c8c; cursor: pointer; transition: color .2s ease; }
   .fx-btn:hover { color: #050505; }
   @media (max-width: 700px) { .fx-btn { top: auto; right: 14px; bottom: calc(18px + 56px + 44px + env(safe-area-inset-bottom)); font-size: 12px; } }
-  /* 3D: finish list on the right, under "Drop & spin" — the page's own 15px grey type, a tiny dot hinting the finish */
-  .mat-row { position: fixed; z-index: 7; right: var(--pad); top: calc(50% + 84px); display: flex; flex-direction: column; align-items: flex-end; gap: 4px;
-    font: 400 15px/1.3 Arial, Helvetica, sans-serif; }
-  .mat-row::before { content: 'Finish'; color: #050505; margin-bottom: 2px; }
-  .sw { display: flex; align-items: center; gap: 8px; padding: 0; border: 0; background: none; color: #8c8c8c; cursor: pointer; transition: color .2s ease; }
-  .sw:hover, .sw.is-active { color: #050505; }
-  .sw.is-active .sw-name { text-decoration: underline; text-underline-offset: 3px; text-decoration-thickness: 1px; }
-  .sw-name { order: 1; }
-  .sw-dot { order: 2; display: block; width: 8px; height: 8px; border-radius: 50%; box-shadow: inset 0 0 0 1px rgba(0,0,0,.15); }
-  .sw-chrome .sw-dot { background: linear-gradient(135deg, #fff, #9a9a9a 55%, #e6e6e6); }
-  .sw-satin .sw-dot  { background: #c9c9c9; }
-  .sw-matte .sw-dot  { background: #e6e3dc; }
-  .sw-black .sw-dot  { background: #111; }
-  .sw-gold .sw-dot   { background: #c9a75a; }
-  .sw-glass .sw-dot  { background: transparent; }
-  body.work-open .mat-row, body.playing .mat-row { opacity: 1; }
-  @media (max-width: 700px) {
-    .mat-row { top: 66px; right: 14px; left: 14px; flex-direction: row; align-items: center; gap: 10px; font-size: 12px; overflow-x: auto; scrollbar-width: none; }
-    .mat-row::-webkit-scrollbar { display: none; }
-    .sw { gap: 5px; flex: none; }
-    .mat-row::before { display: none; }
-  }
-  /* 3D: finish row (Chrome · Satin · Matte · Black · Gold · Glass) — same look as the Product kind row */
+  /* 3D: finish picker under the menu — small squares only (no names), each showing its finish; the chosen one framed */
+  .mat-row { position: fixed; z-index: 99; top: 46px; left: 50%; transform: translateX(-50%); display: flex; gap: 8px; }
+  .sw { padding: 2px; border: 0; background: none; cursor: pointer; border-radius: 3px; transition: box-shadow .2s ease; }
+  .sw-name { display: none; }
+  .sw-dot { display: block; width: 14px; height: 14px; border-radius: 1px; box-shadow: inset 0 0 0 1px rgba(0,0,0,.12); transition: transform .2s ease; }
+  .sw:hover .sw-dot { transform: scale(1.12); }
+  .sw.is-active { box-shadow: 0 0 0 1px #050505; }
+  .sw-chrome .sw-dot { background: linear-gradient(135deg, #fff 0%, #9a9a9a 45%, #f2f2f2 70%, #7d7d7d 100%); }
+  .sw-satin .sw-dot  { background: linear-gradient(135deg, #f0f0f0, #c4c4c4); }
+  .sw-black .sw-dot  { background: linear-gradient(135deg, #4a4a4a, #0d0d0d 60%); }
+  .sw-glass .sw-dot  { background: linear-gradient(135deg, rgba(255,255,255,.9), rgba(205,220,230,.5)); box-shadow: inset 0 0 0 1px rgba(0,0,0,.2); }
+  @media (max-width: 700px) { .mat-row { top: 66px; left: 14px; transform: none; } }  /* 3D: finish row (Chrome · Satin · Matte · Black · Gold · Glass) — same look as the Product kind row */
   .p-kinds button { padding: 0; border: 0; background: none; font: inherit; color: #8c8c8c; cursor: pointer; transition: color .2s ease; }
   .p-kinds button:hover, .p-kinds button.is-active { color: #050505; }
   .p-kinds button.is-active { text-decoration: underline; text-underline-offset: 3px; text-decoration-thickness: 1px; }
@@ -557,7 +546,7 @@ function setFinish(name) {
   Object.keys(FINISHES).forEach(name => {
     const b = document.createElement('button');
     // a small round swatch that looks like the finish; its name shows on hover
-    b.type = 'button'; b.className = 'sw sw-' + name.toLowerCase(); b.dataset.name = name; b.title = name;
+    b.type = 'button'; b.className = 'sw sw-' + name.toLowerCase(); b.dataset.name = name;
     b.setAttribute('aria-label', name + ' finish'); b.innerHTML = '<span class="sw-dot"></span><span class="sw-name">' + name + '</span>';
     b.addEventListener('click', e => { e.stopPropagation(); setFinish(name); });
     row.appendChild(b);
