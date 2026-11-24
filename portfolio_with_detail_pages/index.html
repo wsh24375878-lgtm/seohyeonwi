@@ -1170,10 +1170,11 @@ if (IS_PRODUCT) (() => {
       im.onerror = () => res(placeholder(it, k));
       im.src = it.cutout;
     });
-    const timeout = new Promise(res => setTimeout(() => res(null), 8000));
-    return Promise.race([objectSnap.then(snap => snap(it, k)), timeout])
-      .then(r => r || placeholder(it, k))
-      .catch(() => placeholder(it, k));
+    // no time limit: the strip already shows a stand-in, and the real 3D render replaces it whenever it is ready
+    // (a slow phone or a big .glb used to be cut off after 8 s and stay grey)
+    return objectSnap.then(snap => snap(it, k))
+      .then(r => r || null)
+      .catch(() => null);
   }
 
   const carousel = document.getElementById('carousel');

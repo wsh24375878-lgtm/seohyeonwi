@@ -24,7 +24,9 @@ window.OTHER_WORKS = {
       images: ['images/object/reconstructing-fear/01.jpg', 'images/object/reconstructing-fear/02.jpg'] },
     { title: 'Bone Case — Phone', type: '3D · Phone Case', year: '2025',
       desc: 'The organic bone structure seen in the alien, turned into a phone case. The motif is hard bone, but because a phone lives in the hand, the form is finished in soft, organic curves. Sketch (left) and model (right).',
-      images: ['images/object/bone-case-phone/01.jpg', 'images/object/bone-case-phone/02.jpg'] },
+      images: ['images/object/bone-case-phone/01.jpg', 'images/object/bone-case-phone/02.jpg'],
+      // 3D: vase + flower + stamen from "화병 작업 stl" (Metal Living Design, 2025-1), simplified to a 5 MB .glb
+      models: ['models/object/vase.glb'] },
     { title: 'Bone Case — Lighter', type: '3D · Lighter Case', year: '2025',
       desc: 'The same alien bone structure applied to a lighter case. To keep it light, the inside is hollowed out while the outer form stays intact. Sketch and model.',
       images: ['images/object/bone-case-lighter/01.jpg', 'images/object/bone-case-lighter/02.jpg'] },
