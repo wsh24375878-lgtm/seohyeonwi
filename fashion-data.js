@@ -56,6 +56,39 @@ window.FASHION_WORKS = [
 // slots that have no image yet (src: '') are kept above for later but not shown anywhere
 window.FASHION_WORKS = window.FASHION_WORKS.filter(w => w.src);
 
+/* =========================================================
+   Fashion projects — one card each on the ring; the detail page opens with this story
+   (history and how the design developed, from the portfolio), then the project's images.
+   ========================================================= */
+window.FASHION_PROJECTS = {
+  'Confusion': {
+    title: 'Confusion', kind: 'Graduation Collection', year: '',
+    story: [
+      'The fear in the film Alien is not the creature itself but the fear of what we cannot know. Like an alien that may appear anywhere in the dark, I feel uneasy about a future I cannot see one step ahead.',
+      'Instead of avoiding that fear, I chose to analyse and rebuild it. Taking the alien’s biological design apart and recombining it on clothing turns what threatened me into something I can handle — a form I control.',
+      'Unsorted feelings burst out through the garment: exaggerated padded volumes gather and come apart like a living thing that keeps multiplying, while loose strings and bleeding prints show a chaos that cannot be controlled. The human silhouette is erased so the clothes breathe like one organism — strange, yet overwhelmingly sublime.',
+    ],
+    process: 'Research → mood board → concept & material → design sketch → textile → final sketch → tech packs → making → final look',
+  },
+  'Ready-to-wear': {
+    title: 'Ready-to-wear', kind: 'Ready-to-wear Design', year: '2022',
+    story: [
+      'A ready-to-wear line of layered, utility-driven pieces, drawn as a line-up of eleven looks.',
+      'Four key items were taken further into sample work orders (tech packs): a cargo skirt with a fold-over waist, wide trousers crossed by belt straps, a knit top with an asymmetric open shoulder and a denim bustier closed with buckles. Each sheet sets out the flats, measurements, stitch details and the fabric swatch, next to reference images.',
+    ],
+    process: 'Line-up → tech pack 01 – 04',
+  },
+  'Miseki seoul 26FW': {
+    title: 'Miseki seoul 26FW', kind: 'Mood Board · Flats', year: '2025',
+    story: [
+      'A season proposal for Miseki seoul 26FW: misty greens and grey-blues, wet grass and blurred light, set against black layered looks.',
+      'The mood board was laid out as a printed book spread opposite the Miseki seoul wordmark, then developed into technical flats — a hooded long coat with toggles, a ribbed knit cardigan with an asymmetric button line and a wrapped pleated skirt with a tie belt.',
+    ],
+    process: 'Mood board → book → flats',
+  },
+};
+window.fashionProjectOf = work => (window.FASHION_PROJECTS[work.group] || { title: work.group || work.title, kind: work.info, year: work.year, story: [] });
+
 window.FashionData = (() => {
   // Shared scene size so the image keeps exactly the same size between pages.
   const CAMERA_Z = 8;

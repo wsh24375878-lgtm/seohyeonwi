@@ -73,6 +73,16 @@
     -webkit-user-drag: none;
   }
   .slide.is-side { cursor: pointer; }
+  /* the story card at the start of each project */
+  .story-slide { background: #f4f4f4; }
+  .story { position: absolute; inset: 0; overflow: auto; padding: clamp(18px, 2.4vw, 34px); font-size: 15px; line-height: 1.5;
+    color: #050505; scrollbar-width: none; }
+  .story::-webkit-scrollbar { display: none; }
+  .story p + p { margin-top: .9em; }
+  .story-k { font-size: 12px; color: #8c8c8c; letter-spacing: .02em; }
+  .story-steps { font-size: 13px; color: #8c8c8c; }
+  .story-next { font-size: 13px; color: #8c8c8c; }
+  @media (max-width: 700px) { .story { font-size: 11.5px; line-height: 1.42; padding: 14px; } .story p + p { margin-top: .7em; } .story-steps, .story-next { display: none; } }
 
   /* ---------- bottom info (same spot as fashion.html) ---------- */
   .bottom-info {
@@ -150,7 +160,16 @@
 <script src="fashion-data.js"></script>
 <script>
 (() => {
-  const WORKS = window.FASHION_WORKS;
+  // one project per page: a story slide (history + how the design developed), then the project's images
+  const ALL = window.FASHION_WORKS;
+  const askedFor = new URLSearchParams(location.search).get('project');
+  const startWork = ALL.find(w => w.project === askedFor) || ALL[0];
+  const GROUP = startWork.group || startWork.title;
+  const groupWorks = ALL.filter(w => (w.group || w.title) === GROUP);
+  const P = fashionProjectOf(startWork);
+  const STORY = { project: groupWorks[0].project, title: P.title, story: true,
+    desc: P.process ? 'Process — ' + P.process : '', info: [P.kind, P.year].filter(Boolean).join(', ') };
+  const WORKS = P.story && P.story.length ? [STORY, ...groupWorks] : groupWorks;
   const stage = document.getElementById('stage');
   const track = document.getElementById('track');
   const workTitle = document.getElementById('workTitle');
@@ -166,8 +185,8 @@
     sessionStorage.removeItem('fashionTransition');
   } catch (e) {}
 
-  const startProject = new URLSearchParams(location.search).get('project') || WORKS[0].project;
-  let index = FashionData.indexOf(startProject);   // work in the centre
+  // coming in on the project (its first image) → start on the story; a specific image → start there
+  let index = startWork === groupWorks[0] ? 0 : Math.max(0, WORKS.indexOf(startWork));
   let slides = [];        // { el, aspect, w, x }
   let gap = 24;
   let pos = 0;            // rendered track offset (px)
@@ -214,7 +233,7 @@
     const apply = () => {
       workTitle.textContent = work.title;
       workDesc.textContent = work.desc || '';
-      workMeta.textContent = [work.year, work.info].filter(Boolean).join(' — ');
+      workMeta.textContent = work.story ? work.info : [work.year, work.info].filter(Boolean).join(' — ');
       counter.textContent = `${String(i + 1).padStart(2, '0')} / ${String(WORKS.length).padStart(2, '0')}`;
       document.title = `${work.title} — Fashion — SEOHYEON WI™`;
       [workTitle, workDesc, workMeta, counter].forEach(el => el.classList.remove('is-out'));
@@ -369,10 +388,25 @@
 
   /* ---------- boot ---------- */
   showText(index, false);
-  FashionData.loadAll().then(loaded => {
+  Promise.all(WORKS.map(w => w.story ? Promise.resolve({ story: true, aspect: innerWidth <= 700 ? .78 : 1.15 }) : new Promise(res => {
+    const im = new Image();
+    im.onload = () => res({ src: im.src, aspect: im.naturalWidth / im.naturalHeight || .8 });
+    im.onerror = () => res({ src: w.src, aspect: .8 });
+    im.src = w.src;
+  }))).then(loaded => {
     slides = loaded.map((data, i) => {
       const el = document.createElement('figure');
       el.className = 'slide';
+      if (data.story) {
+        // the story card: what the project is about and how it was developed
+        el.classList.add('story-slide');
+        el.innerHTML = '<div class="story"><p class="story-k">History &amp; process</p>' +
+          P.story.map(s => '<p>' + s + '</p>').join('') +
+          (P.process ? '<p class="story-steps">' + P.process + '</p>' : '') +
+          '<p class="story-next">Images →</p></div>';
+        track.appendChild(el);
+        return { el, aspect: data.aspect, w: 0, x: 0 };
+      }
       const img = document.createElement('img');
       img.src = data.src;
       img.alt = WORKS[i].title;

@@ -84,6 +84,10 @@
     transition: opacity .15s ease-in-out;
   }
   .bottom-info.is-visible { opacity: 1; }
+  /* the project's name, large and clear under the ring (it changes as the ring turns) */
+  .bottom-info { bottom: 48px; gap: 16px; }
+  .info-title { font-size: clamp(22px, 2.2vw, 34px); letter-spacing: -.03em; line-height: 1; }
+  .info-meta { color: #8c8c8c; }
   .view-case { color: #8c8c8c; transition: color .2s ease; }
   .view-case:hover { color: #050505; }
 
@@ -98,7 +102,8 @@
   :focus-visible { outline: 2px solid #777; outline-offset: 2px; }
 
   @media (max-width: 700px) {
-    .bottom-info { bottom: 18px; font-size: 12px; gap: 10px; }
+    .bottom-info { bottom: 34px; font-size: 12px; gap: 10px; flex-wrap: wrap; justify-content: center; white-space: normal; text-align: center; width: 90vw; }
+    .info-title { font-size: 22px; width: 100%; }
   }
 </style>
 <link rel="stylesheet" href="site-nav.css">
@@ -132,7 +137,8 @@
   </div>
 
   <div class="bottom-info" id="bottomInfo">
-    <a id="infoTitle" href="#"></a>
+    <a id="infoTitle" class="info-title" href="#"></a>
+    <span class="info-meta" id="infoMeta"></span>
     <a class="view-case" id="infoCase" href="#">View Case →</a>
   </div>
 </main>
@@ -141,8 +147,16 @@
 
 <script src="fashion-data.js"></script>
 <script>
-/* 작품 목록은 fashion-data.js 에서 수정하세요. */
-const WORKS = window.FASHION_WORKS;
+/* 작품 목록은 fashion-data.js 에서 수정하세요.
+   The ring shows one card per project (its first image); the cards repeat so the ring stays full.
+   Each card opens the project's own page, which starts with its story. */
+const PROJECT_CARDS = (() => {
+  const seen = new Map();
+  window.FASHION_WORKS.forEach(w => { const g = w.group || w.title; if (!seen.has(g)) seen.set(g, w); });
+  return [...seen.values()].map(w => { const p = fashionProjectOf(w); return { project: w.project, group: w.group, src: w.src, title: p.title, meta: [p.kind, p.year].filter(Boolean).join(', ') }; });
+})();
+const WORKS = [];
+for (let i = 0; PROJECT_CARDS.length && (WORKS.length < 6 || WORKS.length % PROJECT_CARDS.length); i++) WORKS.push(PROJECT_CARDS[i % PROJECT_CARDS.length]);
 const detailUrl = FashionData.detailUrl;
 
 (() => {
@@ -255,6 +269,7 @@ const detailUrl = FashionData.detailUrl;
     clearTimeout(setActive.timer);
     setActive.timer = setTimeout(() => {
       infoTitle.textContent = work.title;
+      document.getElementById('infoMeta').textContent = work.meta || '';
       infoTitle.href = detailUrl(work);
       infoCase.href = detailUrl(work);
       if (!intro || setActive.revealed) bottomInfo.classList.add('is-visible');
@@ -482,11 +497,18 @@ const detailUrl = FashionData.detailUrl;
   // fashion.html?work=03 → coming back from a detail page: show that work at the front
   const returnParam = new URLSearchParams(location.search).get('work');
   const returning = returnParam !== null;
-  const returnIndex = returning ? FashionData.indexOf(returnParam) : 0;
+  const returnWork = returning ? window.FASHION_WORKS.find(w => w.project === returnParam) : null;
+  const returnIndex = returnWork ? Math.max(0, WORKS.findIndex(c => c.group === returnWork.group)) : 0;
 
   if (!returning) document.querySelectorAll('.chrome').forEach(el => el.classList.add('intro-hide'));
 
-  FashionData.loadAll().then(loaded => {
+  // load just the project covers on the ring
+  Promise.all(WORKS.map(w => new Promise(res => {
+    const im = new Image();
+    im.onload = () => res({ src: im.src, aspect: im.naturalWidth / im.naturalHeight || .8 });
+    im.onerror = () => res({ src: w.src, aspect: .8 });
+    im.src = w.src;
+  }))).then(loaded => {
     items = loaded.map((data, i) => {
       const el = document.createElement('figure');
       el.className = 'ring-item';
