@@ -84,10 +84,6 @@
     transition: opacity .15s ease-in-out;
   }
   .bottom-info.is-visible { opacity: 1; }
-  /* the project's name under the ring, in the page's own 15px type (it changes as the ring turns) */
-  .bottom-info { bottom: 40px; gap: 14px; }
-  .info-title { font-size: 15px; line-height: 1; }
-  .info-meta { color: #8c8c8c; }
   .view-case { color: #8c8c8c; transition: color .2s ease; }
   .view-case:hover { color: #050505; }
 
@@ -102,8 +98,7 @@
   :focus-visible { outline: 2px solid #777; outline-offset: 2px; }
 
   @media (max-width: 700px) {
-    .bottom-info { bottom: 34px; font-size: 12px; gap: 10px; flex-wrap: wrap; justify-content: center; white-space: normal; text-align: center; width: 90vw; }
-    .info-title { font-size: 12px; width: auto; }
+    .bottom-info { bottom: 18px; font-size: 12px; gap: 10px; }
   }
 </style>
 <link rel="stylesheet" href="site-nav.css">
@@ -137,8 +132,7 @@
   </div>
 
   <div class="bottom-info" id="bottomInfo">
-    <a id="infoTitle" class="info-title" href="#"></a>
-    <span class="info-meta" id="infoMeta"></span>
+    <a id="infoTitle" href="#"></a>
     <a class="view-case" id="infoCase" href="#">View Case →</a>
   </div>
 </main>
@@ -269,7 +263,6 @@ const detailUrl = FashionData.detailUrl;
     clearTimeout(setActive.timer);
     setActive.timer = setTimeout(() => {
       infoTitle.textContent = work.title;
-      document.getElementById('infoMeta').textContent = work.meta || '';
       infoTitle.href = detailUrl(work);
       infoCase.href = detailUrl(work);
       if (!intro || setActive.revealed) bottomInfo.classList.add('is-visible');
