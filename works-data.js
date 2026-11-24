@@ -18,24 +18,22 @@
 window.OTHER_WORKS = {
   // Living Design — "Reconstructing fear into techwear." (3D / resin, June 2025)
   object: [
+    // Living Design (Sungshin Univ., June 2025) — "Reconstructing fear into techwear." Texts and images from the portfolio PDF.
     { title: 'Reconstructing Fear', type: '3D · Resin', year: '2025',
-      desc: 'A living-design project that turns the fear of the unknown into objects you carry every day — modelled in Rhino and ZBrush, printed in resin and finished by hand.',
-      images: ['images/object/reconstructing-fear/01.jpg'] },
+      desc: 'A living-design project, "Reconstructing fear into techwear." The fear in the film Alien is not just a parasite but the fear of what we cannot know — like the future, unseen one step ahead. Instead of avoiding it, the alien’s design is taken apart and rebuilt into objects you carry every day, so the fear becomes something you can hold. Sketched, modelled to the millimetre in Rhino and ZBrush to fit real devices, printed in resin, filled and hand-sanded, then lit and photographed.',
+      images: ['images/object/reconstructing-fear/01.jpg', 'images/object/reconstructing-fear/02.jpg'] },
     { title: 'Bone Case — Phone', type: '3D · Phone Case', year: '2025',
-      desc: 'A phone case built from the organic bone structure of the alien, shaped so the hand naturally finds its grip.',
-      images: [''],
-      // 3D: vase + flower + stamen from "화병 작업 stl" (Metal Living Design, 2025-1), simplified to a 5 MB .glb
-      models: ['models/object/vase.glb'] },
+      desc: 'The organic bone structure seen in the alien, turned into a phone case. The motif is hard bone, but because a phone lives in the hand, the form is finished in soft, organic curves. Sketch (left) and model (right).',
+      images: ['images/object/bone-case-phone/01.jpg', 'images/object/bone-case-phone/02.jpg'] },
     { title: 'Bone Case — Lighter', type: '3D · Lighter Case', year: '2025',
-      desc: 'The same bone language applied to a lighter case, kept light while holding a solid outer form.',
-      images: [''] },
+      desc: 'The same alien bone structure applied to a lighter case. To keep it light, the inside is hollowed out while the outer form stays intact. Sketch and model.',
+      images: ['images/object/bone-case-lighter/01.jpg', 'images/object/bone-case-lighter/02.jpg'] },
     { title: 'Bone Case — AirPods', type: '3D · AirPods Case', year: '2025',
-      desc: 'Taking apart and rebuilding a spine-like structure — familiar and uncanny at the same time.',
-      images: [''] },
+      desc: 'The alien’s figure is close to human but subtly foreign — the uncanny valley. A human spine is taken apart and recombined so that the familiar and the unsettling sit together in one AirPods case. Sketch and model.',
+      images: ['images/object/bone-case-airpods/01.jpg', 'images/object/bone-case-airpods/02.jpg'] },
     { title: 'Alien Case — AirPods Max', type: '3D · Headphone Case', year: '2025',
-      desc: 'An exaggerated spine that wraps the headphones like a living creature, balancing function and form.',
-      images: ['images/object/alien-airpods-max/01.jpg'] },
-    // furniture — 3D files rebuilt from the product photos (bent black tube + black panels)
+      desc: 'An AirPods Max case built on the alien’s spine, holding function and form together. The body’s structure is exaggerated so it looks like a creature living on the device — a familiar yet strange form that blurs the line between the body and the object and gives a lifeless thing an organic life. Resin, finished by hand.',
+      images: ['01', '02', '03', '04', '05'].map(n => `images/object/alien-airpods-max/${n}.jpg`) },    // furniture — 3D files rebuilt from the product photos (bent black tube + black panels)
     { title: 'Curve Chair', type: 'Furniture · Chair', year: '2022',
       desc: 'One bent iron tube draws the whole chair — a stepped backrest, a curl at the arm and a triangle at the foot — around a glossy black seat. Opaque acrylic and iron, 71 × 53 × 74 cm.',
       images: ['images/object/tube-chair/01.jpg', 'images/object/tube-chair/02.jpg'],
@@ -285,9 +283,10 @@ window.OTHER_WORKS = {
       desc: '突然變異 — a FromW2 poster for the Mutant Collection, January 2021: an inverted blue rose and pale butterflies with a short manifesto — "Don\'t be afraid to be different from others."',
       images: ['images/graphic/mutant-collection/01.jpg'],
       posters: ['images/graphic/mutant-collection/01.jpg'] },
-    { title: 'FromW2', type: 'Brand Identity', year: '',
-      desc: 'Identity and visuals for FromW2, a techwear brand — logo, product imagery and a collaboration with It\'s Skin.',
-      images: ['', ''] },
+    // FromW2 — the techwear brand run by the designer (portfolio pages: brand, celebrities, collaboration, followers, Instagram, sales)
+    { title: 'FromW2', type: 'Brand · Operation', year: '2020',
+      desc: 'FromW2 is the techwear brand I run — from the blackletter Fw2 monogram and product design to shoots and selling. The brand has been worn by K-pop artists and celebrities, collaborated with It\'s Skin, built its following on Instagram and sells through ABLY, ZIGZAG and 29CM.',
+      images: ['01', '02', '03', '04', '05', '06', '07'].map(n => `images/graphic/fromw2/${n}.jpg`) },
   ],
 };
 // works marked hidden: true are left out everywhere (Product page, detail pages, Archive) until the mark is removed
