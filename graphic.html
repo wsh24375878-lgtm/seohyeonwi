@@ -30,9 +30,11 @@ a{color:inherit;text-decoration:none}
 .card:hover .card-label{opacity:1;transform:none}
 .card:nth-child(8n+2),.card:nth-child(8n+4),.card:nth-child(8n+6),.card:nth-child(8n+8){width:max(154px,min(13.8vw,calc(158.6px + 4.83vw)));height:var(--card-tall)}
 .card:nth-child(8n+5){width:max(254px,min(24vw,calc(271.7px + 8.4vw)));height:max(150px,min(14vw,calc(159.9px + 4.9vw)))}
+/* no cropping: each card keeps the height of its slot in the pattern above, and its width follows the poster's own ratio */
+.track .card{width:auto!important;aspect-ratio:var(--ar,.75)}
 .art{width:100%;height:100%;background:#ebebeb;transition:transform .5s cubic-bezier(.16,1,.3,1)}
 .card:hover .art{transform:scale(1.055)}
-.art img{display:block;width:100%;height:100%;object-fit:cover;object-position:center;-webkit-user-drag:none}
+.art img{display:block;width:100%;height:100%;object-fit:contain;object-position:center;-webkit-user-drag:none}
 .card-label{z-index:1;background:#fff;padding:3px 5px}
 .card:nth-child(8n+1){animation:floatA 6.6s ease-in-out infinite}
 .card:nth-child(8n+2){animation:floatB 7.4s ease-in-out infinite}

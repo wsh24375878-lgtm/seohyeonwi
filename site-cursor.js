@@ -44,3 +44,16 @@
     document.body.classList.remove("cursor-dragging");
   });
 })();
+
+/* GitHub Pages sometimes answers "busy" (503) when a page asks for many photos at once, and the phone then
+   shows a broken-image "?" — so any picture that fails is quietly asked for again a few times. */
+document.addEventListener('error', e => {
+  const img = e.target;
+  if (!(img instanceof HTMLImageElement)) return;
+  const orig = img.dataset.orig || img.getAttribute('src') || '';
+  if (!orig || orig.startsWith('data:')) return;
+  const n = +(img.dataset.retry || 0);
+  if (n >= 4) return;
+  img.dataset.orig = orig; img.dataset.retry = n + 1;
+  setTimeout(() => { img.src = orig + (orig.includes('?') ? '&' : '?') + 'retry=' + (n + 1); }, 700 * (n + 1));
+}, true);

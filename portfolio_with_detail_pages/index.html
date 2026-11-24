@@ -30,31 +30,27 @@
   /* ---------- Product page (index.html?cat=product): a 2D cut-out photo in the middle instead of the 3D object ---------- */
   .product-stage { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; pointer-events: none; }
   /* fixed box (not max-*) so every photo fills the same area whatever its pixel size */
-  .product-stage img { position: absolute; width: min(52vw, 720px); height: 62vh; object-fit: contain;
+  /* mix-blend-mode: multiply — the photos' white backgrounds melt into the white page, so no white box shows while two photos cross-fade */
+  .product-stage img { position: absolute; width: min(52vw, 720px); height: 54vh; object-fit: contain; mix-blend-mode: multiply;
     opacity: 0; transform: scale(var(--size, 1));
     transition: opacity .45s ease;
     animation: productFloat 6s ease-in-out infinite; -webkit-user-drag: none; }
   .product-stage img.on { opacity: 1; pointer-events: auto; cursor: pointer; }
-  /* Product: previous / next buttons at the sides */
-  /* the numbers of the previous / next products in small type — no box, just a wide invisible hit area */
-  .p-nav { position: fixed; top: 50%; z-index: 30; width: 64px; height: 96px; margin-top: -48px;
-    display: flex; align-items: center; justify-content: center; padding: 0;
-    border: 0; background: none; color: #111; opacity: .45;
-    font: 400 13px/1 Arial, Helvetica, sans-serif; font-variant-numeric: tabular-nums; letter-spacing: .02em; cursor: pointer;
-    transition: opacity .2s, transform .25s; }
+  /* Product: previous / next — a thin long arrow either side of the photo, in a tall invisible hit area */
+  .p-nav { position: fixed; top: 50%; z-index: 30; width: 72px; height: 40vh; margin-top: -20vh; padding: 0;
+    display: flex; align-items: center; justify-content: center; border: 0; background: none;
+    color: #050505; opacity: .5; cursor: pointer; transition: opacity .2s ease, transform .25s ease; }
   .p-nav:hover { opacity: 1; }
   .p-nav-prev:hover { transform: translateX(-4px); }
   .p-nav-next:hover { transform: translateX(4px); }
+  .p-nav svg { display: block; overflow: visible; }
   .p-nav:focus-visible { outline: 1px solid #111; outline-offset: -8px; opacity: 1; }
-  /* current position, small and centred above the strip: 08 / 31 */
-  .p-count { position: fixed; left: 50%; bottom: calc(var(--pad) + 86px); transform: translateX(-50%); z-index: 6;
-    font: 400 13px/1 Arial, Helvetica, sans-serif; font-variant-numeric: tabular-nums; color: #8c8c8c; pointer-events: none; }
-  @media (max-width: 700px) { .p-count { bottom: calc(18px + 56px + 70px); font-size: 12px; } }
-  /* just outside the product image (which is at most min(52vw, 720px) wide), clear of the side text */
-  .p-nav-prev { left: max(200px, calc(50% - min(26vw, 360px) - 84px)); }
-  .p-nav-next { right: max(40px, calc(50% - min(26vw, 360px) - 84px)); }
+  /* just outside the photo (at most min(52vw, 720px) wide), clear of the side text and Close */
+  .p-nav-prev { left: max(200px, calc(50% - min(26vw, 360px) - 96px)); }
+  .p-nav-next { right: max(110px, calc(50% - min(26vw, 360px) - 96px)); }
   @media (max-width: 700px) {
-    .p-nav { width: 48px; height: 80px; margin-top: -40px; font-size: 12px; top: calc(50% - 45px); }
+    .p-nav { width: 44px; height: 30vh; margin-top: -15vh; top: calc(50% - 22px); }
+    .p-nav svg { width: 24px; }
     .p-nav-prev { left: 0; }
     .p-nav-next { right: 0; }
   }
@@ -82,8 +78,8 @@
   @keyframes productFloat { 50% { translate: 0 -10px; } }
   .product-empty { font-size: 15px; margin: 0; }
   @media (max-width: 700px) {
-    .product-stage { bottom: 150px; top: 92px; }       /* between the menu (+ kind row) and the strip */
-    .product-stage img { width: 80vw; height: 100%; }
+    .product-stage { bottom: 168px; top: 124px; }      /* between the menu (+ kind row) and the strip, with room to breathe */
+    .product-stage img { width: 76vw; height: 100%; }
   }
   .is-product .side-hint { display: none; }
   .is-product #app { filter: none; }
@@ -95,6 +91,15 @@
     transform: translate(14px, -50%); opacity: 0; transition: opacity .18s ease; }
   .spin-tag.left { transform: translate(calc(-100% - 14px), -50%); }
   .spin-tag.on { opacity: 1; }
+  /* 3D: "Drop & spin" button (the water drop + full turn that used to be on click) */
+  .fx-btn { position: fixed; z-index: 7; right: var(--pad); top: calc(50% + 46px); padding: 0; border: 0; background: none;
+    font: 400 15px/1.3 Arial, Helvetica, sans-serif; color: #8c8c8c; cursor: pointer; transition: color .2s ease; }
+  .fx-btn:hover { color: #050505; }
+  @media (max-width: 700px) { .fx-btn { top: auto; right: 14px; bottom: calc(18px + 56px + 44px + env(safe-area-inset-bottom)); font-size: 12px; } }
+  /* 3D: finish row (Chrome · Satin · Matte · Black · Gold · Glass) — same look as the Product kind row */
+  .p-kinds button { padding: 0; border: 0; background: none; font: inherit; color: #8c8c8c; cursor: pointer; transition: color .2s ease; }
+  .p-kinds button:hover, .p-kinds button.is-active { color: #050505; }
+  .p-kinds button.is-active { text-decoration: underline; text-underline-offset: 3px; text-decoration-thickness: 1px; }
   @media (hover: none), (pointer: coarse) { .spin-tag { display: none; } }
   .work-link:hover .case-arrow { color: #050505; }
   .work-link:hover #workName { text-decoration: underline; text-underline-offset: 3px; }
@@ -170,9 +175,9 @@
     .m-cell.is-current { opacity: 1; transform: none; }
     .is-product .m-cell { background-size: contain; background-origin: content-box; padding: 10px 8px; }
     .m-cell.hero { background: #fff; display: flex; align-items: center; justify-content: center; font-size: 10px; color: #8c8c8c; }
-    /* the red mark in the middle, like the playhead on a computer */
+    /* a thin black mark in the middle, like the playhead on a computer */
     .m-mark { display: block; position: fixed; left: 50%; bottom: calc(18px + 56px + 6px + env(safe-area-inset-bottom)); z-index: 6;
-      width: 2px; height: 8px; margin-left: -1px; border-radius: 2px; background: #e5302a; pointer-events: none; }
+      width: 1px; height: 8px; margin-left: -.5px; background: #050505; pointer-events: none; }
     .m-head { display: block; position: fixed; left: 14px; right: 14px; bottom: calc(18px + 56px + 22px + env(safe-area-inset-bottom)); z-index: 5;
       text-align: center; font-size: 12px; line-height: 1.35; pointer-events: none; }
     .m-head .muted { display: block; }
@@ -215,7 +220,7 @@
     <span class="muted case-arrow">View Case →</span>
   </a>
 </div>
-<div class="side-hint muted">Drag to turn,<br>click to ripple,<br>click the edge to spin</div>
+<div class="side-hint muted">Drag to turn,<br>click a work to see its details</div>
 
 <div class="media-stack" id="mediaStack"></div>
 
@@ -483,6 +488,59 @@ function clickEffect(hit) {
   ripT = 0;
 }
 
+/* the work on show (index in the strip's project list) — clicking its object opens its detail page */
+let curWork = null;
+addEventListener('objectwork', e => { curWork = e.detail ? e.detail.it.project : null; });
+
+/* "Drop & spin" button: a water drop on the front of the object, then one full turn */
+function playEffect() {
+  if (!introDone) return;
+  ndc.set(0, 0); ray.setFromCamera(ndc, camera);
+  const hit = ray.intersectObject(subject, true)[0];
+  if (hit) {
+    dropC[nextDrop].copy(hit.object.worldToLocal(hit.point.clone()));
+    dropT[nextDrop] = 0; nextDrop = (nextDrop + 1) % DROPS; ripT = 0;
+  }
+  setTimeout(() => { if (spinT < 0) { spinT = 0; spinDir = 1; } }, 260);
+}
+{
+  const b = document.createElement('button');
+  b.type = 'button'; b.className = 'fx-btn'; b.textContent = 'Drop & spin ↻';
+  b.addEventListener('click', e => { e.stopPropagation(); playEffect(); });
+  document.body.appendChild(b);
+}
+
+/* surface: see the objects in other finishes (the main view only; the strip thumbnails stay chrome) */
+const FINISHES = {
+  Chrome: { color: 0xffffff, metalness: 1, roughness: 0, env: 1.2 },
+  Satin:  { color: 0xf2f2f2, metalness: 1, roughness: .32, env: 1.1 },
+  Matte:  { color: 0xe9e7e2, metalness: 0, roughness: .9, env: .9 },
+  Black:  { color: 0x141414, metalness: .6, roughness: .18, env: 1.2 },
+  Gold:   { color: 0xd8b25a, metalness: 1, roughness: .12, env: 1.2 },
+  Glass:  { color: 0xffffff, metalness: .05, roughness: 0, env: 1.6, opacity: .38 },
+};
+function setFinish(name) {
+  const f = FINISHES[name]; if (!f) return;
+  material.color.setHex(f.color); material.metalness = f.metalness; material.roughness = f.roughness;
+  material.envMapIntensity = f.env;
+  const glass = f.opacity !== undefined;
+  if (material.transparent !== glass) { material.transparent = glass; material.depthWrite = !glass; material.needsUpdate = true; }
+  material.opacity = glass ? f.opacity : 1;
+  document.querySelectorAll('.mat-row button').forEach(x => x.classList.toggle('is-active', x.textContent === name));
+}
+{
+  const row = document.createElement('nav');
+  row.className = 'p-kinds mat-row'; row.setAttribute('aria-label', 'Surface finish');
+  Object.keys(FINISHES).forEach(name => {
+    const b = document.createElement('button');
+    b.type = 'button'; b.textContent = name;
+    b.addEventListener('click', e => { e.stopPropagation(); setFinish(name); });
+    row.appendChild(b);
+  });
+  document.querySelector('.site-top').after(row);
+  setFinish('Chrome');
+}
+
 /* mouse over the object's edge (where a click spins it): a small "spin" tag follows the cursor */
 const spinTag = document.createElement('div');
 spinTag.className = 'spin-tag';
@@ -498,11 +556,12 @@ function checkEdge() {
     ndc.set((e.clientX - r.left) / r.width * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1);
     ray.setFromCamera(ndc, camera);
     const hit = ray.intersectObject(subject, true)[0];
-    if (hit && Math.abs(hit.point.x) >= SIDE) side = hit.point.x >= 0 ? 1 : -1;
+    if (hit && curWork !== null) side = 2;                       // over an open work: it links to its detail page
+    else if (hit && Math.abs(hit.point.x) >= SIDE) side = hit.point.x >= 0 ? 1 : -1;
   }
   if (side) {
-    spinTag.textContent = side > 0 ? 'Click to spin ↻' : '↺ Click to spin';
-    spinTag.classList.toggle('left', side < 0);
+    spinTag.textContent = side === 2 ? 'View details →' : side > 0 ? 'Click to spin ↻' : '↺ Click to spin';
+    spinTag.classList.toggle('left', side === 2 ? e.clientX > innerWidth - 160 : side < 0);
     spinTag.style.left = `${e.clientX}px`;
     spinTag.style.top = `${e.clientY}px`;
   }
@@ -627,7 +686,8 @@ renderer.domElement.addEventListener('pointermove', e => {
 });
 const endPress = () => {
   if (!press) return;
-  if (!dragging && press.hit) clickEffect(press.hit);
+  // a click on the open work's object opens its detail page; the first (pebble) object still ripples / spins
+  if (!dragging && press.hit) { if (curWork !== null) location.href = caseUrl(curWork); else clickEffect(press.hit); }
   press = null;
   dragging = false;
   renderer.domElement.style.cursor = '';
@@ -907,7 +967,7 @@ function setSubject(obj) {
   dropT.fill(-1);
   // (no size pop on arrival — works keep the same size while switching)
 }
-let subjectToken = 0, lastWorkK = null;
+let subjectToken = 0, lastWorkK = null, prefetchTimer = 0;
 addEventListener('objectwork', async e => {
   const d = e.detail;
   const my = ++subjectToken;
@@ -919,6 +979,13 @@ addEventListener('objectwork', async e => {
     dir = diff <= n / 2 ? 1 : -1;
   }
   lastWorkK = d.k;
+  // build the neighbours' objects once this one has settled, so the next swipe doesn't stutter
+  clearTimeout(prefetchTimer);
+  prefetchTimer = setTimeout(() => {
+    const items = window.__stripItems, n = items ? items.length : 0;
+    if (!n) return;
+    [1, -1].forEach(o => { const j = ((d.k + o) % n + n) % n; subjectFor(items[j], j); });
+  }, (SLIDE_DUR + .15) * 1000);
   const obj = await subjectFor(d.it, d.k);
   if (my !== subjectToken) return;
   if (!dir || reduceMotion3D || subject === mesh) { slide = null; setSubject(obj); return; }
@@ -1092,6 +1159,7 @@ if (IS_PRODUCT) (() => {
   const workName = document.getElementById('workName');
   const QT = 40, SPEED_S = 1.5, N = ITEMS.length, STRIP = N * QT, SPEED = QT / SPEED_S, EDGE = 24;
   window.__stripN = N;
+  window.__stripItems = ITEMS;      // the 3D view prepares the neighbouring works' objects ahead of time
 
   function makeThumb(it, i, first) {
     const t = document.createElement('div');
@@ -1302,26 +1370,15 @@ if (IS_PRODUCT) (() => {
       show(mod(Math.round(glideTo / QT), N));
       lastT = 0; wake();
     };
-    // numbers instead of arrows: each side shows the number of the product it goes to (07 ‹ 08 › 09),
-    // and the current position sits small above the strip (08 / 31)
-    const num = i => String(mod(i, N) + 1).padStart(2, '0');
-    const navs = [['prev', -1, 'Previous product'], ['next', 1, 'Next product']].map(([cls, dir, lbl]) => {
+    // arrow buttons: a thin long arrow (line + head) either side of the photo, in a tall invisible hit area
+    [['prev', -1, 'Previous product', 'M33 6H1M6 1L1 6l5 5'], ['next', 1, 'Next product', 'M1 6h32M28 1l5 5-5 5']].forEach(([cls, dir, lbl, d]) => {
       const b = document.createElement('button');
       b.type = 'button'; b.className = `p-nav p-nav-${cls}`;
       b.setAttribute('aria-label', lbl);
+      b.innerHTML = `<svg width="34" height="12" viewBox="0 0 34 12" aria-hidden="true"><path d="${d}" fill="none" stroke="currentColor" stroke-width="1" vector-effect="non-scaling-stroke"/></svg>`;
       b.addEventListener('click', e => { e.stopPropagation(); step(dir); });
       document.body.appendChild(b);
-      return { b, dir };
     });
-    const count = document.createElement('div');
-    count.className = 'p-count'; count.setAttribute('aria-hidden', 'true');
-    document.body.appendChild(count);
-    const setNumbers = k => {
-      navs.forEach(({ b, dir }) => { b.textContent = num(k + dir); });
-      count.textContent = `${num(k)} / ${String(N).padStart(2, '0')}`;
-    };
-    setNumbers(0);
-    addEventListener('objectwork', e => { if (e.detail) setNumbers(e.detail.k); });
     // mouse wheel / trackpad: the strip follows the scroll — a slow notch moves one product,
     // a fast flick runs through several — then it glides and settles on the nearest product.
     const WHEEL_PX_PER_ITEM = 100;                                   // ≈ one mouse-wheel notch per product
