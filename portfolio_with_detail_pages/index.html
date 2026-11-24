@@ -240,7 +240,7 @@
     <span class="muted case-arrow">View Case →</span>
   </a>
 </div>
-<div class="side-hint muted">Drag to turn,<br>click a work to see its details</div>
+<div class="side-hint muted">Drag to turn,<br>click a work to see its details,<br>click the edge to spin</div>
 
 <div class="media-stack" id="mediaStack"></div>
 
@@ -578,8 +578,9 @@ function checkEdge() {
     ndc.set((e.clientX - r.left) / r.width * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1);
     ray.setFromCamera(ndc, camera);
     const hit = ray.intersectObject(subject, true)[0];
-    if (hit && curWork !== null) side = 2;                       // over an open work: it links to its detail page
-    else if (hit && Math.abs(hit.point.x) >= SIDE) side = hit.point.x >= 0 ? 1 : -1;
+    // the object's edges spin it; anywhere else on an open work links to its detail page
+    if (hit && Math.abs(hit.point.x) >= SIDE) side = hit.point.x >= 0 ? 1 : -1;
+    else if (hit && curWork !== null) side = 2;
   }
   if (side) {
     spinTag.textContent = side === 2 ? 'View details →' : side > 0 ? 'Click to spin ↻' : '↺ Click to spin';
@@ -709,7 +710,10 @@ renderer.domElement.addEventListener('pointermove', e => {
 const endPress = () => {
   if (!press) return;
   // a click on the open work's object opens its detail page; the first (pebble) object still ripples / spins
-  if (!dragging && press.hit) { if (curWork !== null) location.href = caseUrl(curWork); else clickEffect(press.hit); }
+  if (!dragging && press.hit) {
+    const edge = Math.abs(press.hit.point.x) >= SIDE;                // edges: spin it
+    if (!edge && curWork !== null) location.href = caseUrl(curWork); else clickEffect(press.hit);
+  }
   press = null;
   dragging = false;
   renderer.domElement.style.cursor = '';
