@@ -4,88 +4,76 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>Archive — SEOHYEON WI™</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
 <style>
 /* =========================================================
-   Archive — an index of every work.
-   A quiet typographic list (no. / title / category / type / year) in the site's own
-   Arial + grey. Computer: hovering a row shows the work's images floating by the cursor,
-   one after another, while the other rows step back. Phone: tap a row to open it and
-   swipe through its images. Filter by category, sort by year or name.
-   (Earlier versions are in the git history.)
+   Archive — a timeline of every work.
+   Years run left to right, each a column between thin vertical rules; the works of that year are
+   stacked above and below one horizontal axis like a bar chart (taller stacks = busier years),
+   with small italic captions along the bottom. Scroll / drag sideways; hover a picture for its name,
+   click to open it; the filter at the top right lights up one category.
    ========================================================= */
-:root{ --ink:#050505; --muted:#8c8c8c; --line:#e7e7e7; --pad:24px; }
+:root{ --ink:#050505; --muted:#8c8c8c; --rule:#bdbdbd; --pad:24px; --tile:88px; --gap:6px;
+  --serif:'Instrument Serif','Times New Roman',serif; }
 *{box-sizing:border-box}
-html,body{margin:0;background:#fff;color:var(--ink);font-family:Arial,Helvetica,sans-serif;font-weight:400;-webkit-font-smoothing:antialiased}
+html,body{margin:0;height:100%;background:#fff;color:var(--ink);font-family:Arial,Helvetica,sans-serif;-webkit-font-smoothing:antialiased;overflow:hidden}
 a{color:inherit;text-decoration:none}
 button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer}
-p,h1{margin:0;font-weight:400}
 
 /* ---------- head ---------- */
-.head{padding:150px var(--pad) 56px;display:grid;grid-template-columns:1fr auto;align-items:end;gap:24px}
-.title{font-size:clamp(26px,3.25vw,56px);line-height:1.05;letter-spacing:-.04em}
-.title sup{font-size:.32em;letter-spacing:0;color:var(--muted);vertical-align:top;margin-left:.25em;font-variant-numeric:tabular-nums}
-.controls{display:flex;flex-direction:column;align-items:flex-end;gap:10px;font-size:15px;line-height:1}
-.filters,.sorts{display:flex;gap:16px;flex-wrap:wrap;justify-content:flex-end}
-.filters button,.sorts button{color:var(--muted);transition:color .2s ease}
-.filters button:hover,.sorts button:hover,.filters button.on,.sorts button.on{color:var(--ink)}
-.filters button.on,.sorts button.on{text-decoration:underline;text-underline-offset:3px;text-decoration-thickness:1px}
-.filters sup{font-size:9px;margin-left:2px;font-variant-numeric:tabular-nums}
-.sorts{font-size:13px}
+.head{position:fixed;z-index:20;left:var(--pad);right:var(--pad);top:54px;display:flex;justify-content:space-between;align-items:flex-start;pointer-events:none}
+.title{margin:0;font-weight:400;font-size:clamp(26px,3.25vw,56px);line-height:1.05;letter-spacing:-.04em}
+.title sup{font-size:.3em;letter-spacing:0;color:var(--muted);vertical-align:top;margin-left:.25em;font-variant-numeric:tabular-nums}
+.filters{display:flex;gap:16px;font-size:15px;line-height:1;pointer-events:auto}
+.filters button{color:var(--muted);transition:color .2s ease}
+.filters button:hover,.filters button.on{color:var(--ink)}
+.filters button.on{text-decoration:underline;text-underline-offset:3px;text-decoration-thickness:1px}
+.filters sup{font-size:9px;margin-left:2px}
 
-/* ---------- index ---------- */
-.index{padding:0 var(--pad) 160px}
-.cols,.row-main{display:grid;grid-template-columns:56px minmax(0,2.2fr) minmax(0,.9fr) minmax(0,1.6fr) 64px;column-gap:16px;align-items:baseline}
-.cols{padding:0 0 10px;font-size:12px;color:var(--muted);border-bottom:1px solid var(--ink)}
-.cols span:last-child,.row-main .y{text-align:right}
-.row{border-bottom:1px solid var(--line);opacity:0;transform:translateY(14px);transition:opacity .6s ease,transform .7s cubic-bezier(.16,1,.3,1)}
-.row.in{opacity:1;transform:none}
-.row-main{padding:15px 0 14px;font-size:15px;line-height:1.25;transition:opacity .25s ease,color .25s ease}
-.row-main .n,.row-main .c,.row-main .t,.row-main .y{color:var(--muted);font-variant-numeric:tabular-nums}
-.row-main .ti{position:relative;transition:transform .35s cubic-bezier(.16,1,.3,1)}
-.row-main .ti small{font-size:12px;color:var(--muted);margin-left:8px;font-variant-numeric:tabular-nums}
-/* hover: the row steps forward, the rest step back */
-@media (hover:hover){
-  .index.hovering .row-main{opacity:.28}
-  .index.hovering .row.is-hover .row-main{opacity:1}
-  .row.is-hover .row-main .ti{transform:translateX(10px)}
-  .row.is-hover .row-main .n,.row.is-hover .row-main .c,.row.is-hover .row-main .t,.row.is-hover .row-main .y{color:var(--ink)}
-}
-.empty{padding:40px 0;color:var(--muted);font-size:15px}
+/* ---------- timeline ---------- */
+.scroller{position:fixed;inset:0;overflow-x:auto;overflow-y:hidden;scrollbar-width:none;cursor:grab;touch-action:pan-x}
+.scroller::-webkit-scrollbar{display:none}
+.scroller.dragging{cursor:grabbing}
+.track{position:relative;display:flex;height:100%;padding:0 var(--pad);width:max-content;min-width:100%}
+.axis{position:absolute;left:0;right:0;top:var(--axis);height:1px;background:var(--ink);opacity:.55;pointer-events:none}
+.phase{position:relative;display:flex;gap:var(--gap);padding:0 22px;border-left:1px solid var(--rule);height:100%}
+.phase:last-child{border-right:1px solid var(--rule)}
+.col{position:relative;width:var(--w);height:100%}
+.up,.down{position:absolute;left:0;right:0;display:flex;flex-direction:column;gap:var(--gap)}
+.up{bottom:calc(100% - var(--axis) + 4px);flex-direction:column-reverse}
+.down{top:calc(var(--axis) + 4px)}
+.tile{display:block;width:100%;background:#f1f1f1;overflow:hidden;
+  transform:scaleY(0);transition:transform .7s cubic-bezier(.16,1,.3,1),opacity .3s ease,filter .3s ease}
+.up .tile{transform-origin:50% 100%}
+.down .tile{transform-origin:50% 0}
+.in .tile{transform:none}
+.tile img{display:block;width:100%;height:100%;object-fit:cover;-webkit-user-drag:none;user-select:none;pointer-events:none}
+.track.hovering .tile{opacity:.35}
+.track.hovering .tile.is-hover{opacity:1}
+.tile.off{opacity:.12!important;filter:grayscale(1)}
+.label{position:absolute;left:22px;bottom:64px;font-family:var(--serif);font-style:italic;font-size:13px;line-height:1.15;text-transform:uppercase;letter-spacing:.02em;white-space:nowrap}
+.label span{display:block;color:var(--muted)}
 
-/* ---------- floating preview (computer) ---------- */
-.preview{position:fixed;left:0;top:0;z-index:90;pointer-events:none;width:clamp(220px,20vw,320px);
-  opacity:0;transform:translate(-50%,-50%) scale(.92);transition:opacity .3s ease,transform .45s cubic-bezier(.16,1,.3,1)}
-.preview.show{opacity:1;transform:translate(-50%,-50%) scale(1)}
-.preview .frame{position:relative;width:100%;aspect-ratio:4/5;background:#f1f1f1;overflow:hidden}
-.preview img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity .35s ease}
-.preview img.on{opacity:1}
-.preview .cap{display:flex;justify-content:space-between;margin-top:8px;font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
-@media (hover:none){.preview{display:none}}
+/* ---------- hover caption ---------- */
+.cap{position:fixed;z-index:30;left:0;top:0;pointer-events:none;font-size:13px;line-height:1.3;background:#fff;padding:4px 6px;white-space:nowrap;
+  opacity:0;transform:translate(14px,14px);transition:opacity .2s ease}
+.cap.show{opacity:1}
+.cap small{display:block;color:var(--muted);font-size:11px}
+@media (hover:none){.cap{display:none}}
 
-/* ---------- opened row (phone) ---------- */
-.row-open{display:none}
-.row.open .row-open{display:block;padding:0 0 18px}
-.strip{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch;margin:0 calc(var(--pad) * -1);padding:0 var(--pad)}
-.strip::-webkit-scrollbar{display:none}
-.strip img{flex:none;height:150px;width:auto;display:block;background:#f1f1f1}
-.go{display:inline-block;margin-top:12px;font-size:13px}
+.hint{position:fixed;z-index:20;right:var(--pad);bottom:28px;font-size:13px;color:var(--muted);pointer-events:none}
 
-@media (max-width:900px){
-  .cols,.row-main{grid-template-columns:40px minmax(0,1fr) minmax(0,.8fr) 52px}
-  .cols .tcol,.row-main .t{display:none}
-}
 @media (max-width:700px){
-  :root{--pad:14px}
-  .head{padding:120px var(--pad) 36px;grid-template-columns:1fr}
-  .controls{align-items:flex-start;font-size:13px}
-  .filters,.sorts{justify-content:flex-start;gap:12px}
-  .sorts{font-size:12px}
-  .cols,.row-main{grid-template-columns:30px minmax(0,1fr) 44px;column-gap:10px}
-  .cols .ccol,.row-main .c{display:none}
-  .row-main{font-size:14px;padding:14px 0 13px}
-  .row.open .row-main .ti,.row.open .row-main .n,.row.open .row-main .y{color:var(--ink)}
+  :root{--pad:14px;--tile:64px;--gap:4px}
+  .head{top:66px;flex-direction:column;gap:12px}
+  .filters{gap:12px;font-size:12px;flex-wrap:wrap}
+  .phase{padding:0 12px}
+  .label{left:12px;bottom:56px;font-size:11px}
+  .hint{display:none}
 }
-@media (prefers-reduced-motion:reduce){.row{transition:none;opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){.tile{transition:none;transform:none}}
 </style>
 <link rel="stylesheet" href="site-nav.css">
 <link rel="stylesheet" href="site-cursor.css">
@@ -106,21 +94,16 @@ p,h1{margin:0;font-weight:400}
   </nav>
 </header>
 
-<main>
-  <section class="head">
-    <h1 class="title">Archive<sup id="total"></sup></h1>
-    <div class="controls">
-      <div class="filters" id="filters" role="tablist" aria-label="Category"></div>
-      <div class="sorts" id="sorts" aria-label="Sort"></div>
-    </div>
-  </section>
-  <section class="index" id="index" aria-live="polite">
-    <div class="cols" aria-hidden="true"><span>No.</span><span>Title</span><span class="ccol">Category</span><span class="tcol">Type</span><span>Year</span></div>
-    <div id="rows"></div>
-  </section>
-</main>
+<div class="head">
+  <h1 class="title">Archive<sup id="total"></sup></h1>
+  <div class="filters" id="filters" aria-label="Category"></div>
+</div>
 
-<div class="preview" id="preview" aria-hidden="true"><div class="frame" id="frame"></div><div class="cap"><span id="capT"></span><span id="capN"></span></div></div>
+<div class="scroller" id="scroller" aria-label="Timeline of all work — scroll sideways">
+  <div class="track" id="track"><div class="axis" aria-hidden="true"></div></div>
+</div>
+<div class="cap" id="cap" aria-hidden="true"></div>
+<div class="hint" aria-hidden="true">Scroll →</div>
 <div class="cursor" aria-hidden="true"></div>
 
 <script src="fashion-data.js"></script>
@@ -129,124 +112,125 @@ p,h1{margin:0;font-weight:400}
 (() => {
   const ORDER = ['all', 'fashion', 'object', 'product', 'graphic'];
   const NAMES = { all: 'All', ...WorksData.CATEGORY_NAMES };
-  const SORTS = [['new', 'Newest'], ['old', 'Oldest'], ['az', 'A–Z']];
-  const q = new URLSearchParams(location.search);
-  let cat = ORDER.includes(q.get('category')) ? q.get('category') : 'all';
-  let sort = 'new';
-  let works = [];
-  const rowsEl = document.getElementById('rows'), indexEl = document.getElementById('index');
-  const pad = n => String(n).padStart(2, '0');
-  const thumb = src => WorksData.thumbOf(src) || src;
+  const track = document.getElementById('track'), scroller = document.getElementById('scroller');
+  const cap = document.getElementById('cap');
+  let works = [], cat = 'all';
 
-  /* ---------- controls ---------- */
-  function renderControls() {
+  /* ---------- layout ----------
+     the axis sits a little below the middle; each year's works fill columns of tiles, each column
+     stacking upward from the axis and downward from it until there is no more room, then the next column */
+  const axisRatio = () => innerWidth <= 700 ? .5 : .54;
+  function build() {
+    track.querySelectorAll('.phase').forEach(n => n.remove());
+    const H = innerHeight, axis = Math.round(H * axisRatio());
+    track.style.setProperty('--axis', axis + 'px');
+    const tileW = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--tile')) || 88;
+    const gap = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--gap')) || 6;
+    const roomUp = axis - (innerWidth <= 700 ? 190 : 150);        // keep clear of the menu and title
+    const roomDown = H - axis - 130;                               // keep clear of the captions
+
+    const years = new Map();
+    works.forEach(w => { const y = parseInt(w.year, 10) || 0; if (!years.has(y)) years.set(y, []); years.get(y).push(w); });
+    const keys = [...years.keys()].sort((a, b) => (a || 9999) - (b || 9999));
+    let delay = 0;
+    keys.forEach(y => {
+      const list = years.get(y);
+      const phase = document.createElement('section');
+      phase.className = 'phase';
+      // columns: alternate up / down so both sides grow evenly
+      let col = null, upH = 0, downH = 0, side = 0;
+      const newCol = (i) => {
+        col = document.createElement('div'); col.className = 'col';
+        const w = Math.round(tileW * (.86 + ((i * 7) % 5) * .07));       // a little variety in width, like the reference
+        col.style.setProperty('--w', w + 'px'); col._w = w;
+        col.innerHTML = '<div class="up"></div><div class="down"></div>';
+        phase.appendChild(col); upH = 0; downH = 0; side = 0;
+      };
+      list.forEach((w, i) => {
+        const img = w.images[0];
+        if (!col) newCol(i);
+        let h = Math.round(col._w / Math.max(.45, Math.min(2.2, img ? img.ar : .8)));
+        const fitsUp = upH + h + gap <= roomUp, fitsDown = downH + h + gap <= roomDown;
+        let where = side % 2 === 0 ? 'up' : 'down';
+        if (where === 'up' && !fitsUp) where = fitsDown ? 'down' : null;
+        else if (where === 'down' && !fitsDown) where = fitsUp ? 'up' : null;
+        if (!where) { newCol(i + 1); h = Math.round(col._w / Math.max(.45, Math.min(2.2, img ? img.ar : .8))); where = 'up'; }
+        const a = document.createElement('a');
+        a.className = 'tile'; a.href = w.url; a.style.height = h + 'px';
+        a.dataset.cat = w.category; a._w = w;
+        a.style.transitionDelay = (delay += 18) + 'ms';
+        a.innerHTML = `<img src="${img ? img.url : ''}" alt="${w.title}" loading="lazy" draggable="false">`;
+        col.querySelector('.' + where).appendChild(a);
+        if (where === 'up') upH += h + gap; else downH += h + gap;
+        side++;
+      });
+      const cats = [...new Set(list.map(w => w.categoryName))].join(' · ');
+      const lab = document.createElement('p');
+      lab.className = 'label';
+      lab.innerHTML = `${y ? 'Year ' + y : 'Undated'}<span>${cats}</span>`;
+      phase.appendChild(lab);
+      track.appendChild(phase);
+    });
+    applyFilter();
+    requestAnimationFrame(() => requestAnimationFrame(() => track.classList.add('in')));
+  }
+
+  /* ---------- filter: one category stays lit, the rest go quiet ---------- */
+  function renderFilters() {
     const f = document.getElementById('filters'); f.innerHTML = '';
     ORDER.forEach(k => {
       const n = k === 'all' ? works.length : works.filter(w => w.category === k).length;
       if (!n && k !== 'all') return;
       const b = document.createElement('button');
-      b.type = 'button'; b.className = k === cat ? 'on' : ''; b.setAttribute('role', 'tab'); b.setAttribute('aria-selected', String(k === cat));
-      b.innerHTML = `${NAMES[k]}<sup>${n}</sup>`;
-      b.addEventListener('click', () => { if (k === cat) return; cat = k; history.replaceState(null, '', k === 'all' ? location.pathname : `?category=${k}`); renderControls(); renderRows(); });
+      b.type = 'button'; b.className = k === cat ? 'on' : ''; b.innerHTML = `${NAMES[k]}<sup>${n}</sup>`;
+      b.addEventListener('click', () => { cat = k; renderFilters(); applyFilter(); });
       f.appendChild(b);
     });
-    const s = document.getElementById('sorts'); s.innerHTML = '';
-    SORTS.forEach(([k, label]) => {
-      const b = document.createElement('button');
-      b.type = 'button'; b.className = k === sort ? 'on' : ''; b.textContent = label;
-      b.addEventListener('click', () => { if (k === sort) return; sort = k; renderControls(); renderRows(); });
-      s.appendChild(b);
-    });
+    document.getElementById('total').textContent = String(works.length).padStart(2, '0');
   }
+  function applyFilter() { track.querySelectorAll('.tile').forEach(t => t.classList.toggle('off', cat !== 'all' && t.dataset.cat !== cat)); }
 
-  /* ---------- rows ---------- */
-  const yearOf = w => parseInt(w.year, 10) || 0;
-  function renderRows() {
-    let list = works.filter(w => cat === 'all' || w.category === cat);
-    list = list.slice().sort((a, b) =>
-      sort === 'az' ? a.title.localeCompare(b.title) :
-      sort === 'old' ? (yearOf(a) || 9999) - (yearOf(b) || 9999) || a.i - b.i :
-      yearOf(b) - yearOf(a) || a.i - b.i);
-    document.getElementById('total').textContent = pad(list.length);
-    rowsEl.innerHTML = '';
-    if (!list.length) { rowsEl.innerHTML = '<p class="empty">No work here yet.</p>'; return; }
-    list.forEach((w, i) => {
-      const row = document.createElement('div');
-      row.className = 'row';
-      row.innerHTML =
-        `<a class="row-main" href="${w.url}">` +
-          `<span class="n">${pad(i + 1)}</span>` +
-          `<span class="ti">${w.title}${w.all.length > 1 ? `<small>${pad(w.all.length)}</small>` : ''}</span>` +
-          `<span class="c">${w.categoryName}</span>` +
-          `<span class="t">${w.info || ''}</span>` +
-          `<span class="y">${w.year || '—'}</span>` +
-        `</a>` +
-        `<div class="row-open"><div class="strip"></div><a class="go" href="${w.url}">View project →</a></div>`;
-      row._w = w;
-      rowsEl.appendChild(row);
-      // rows rise in one after another
-      setTimeout(() => row.classList.add('in'), 40 + Math.min(i, 24) * 35);
-    });
-  }
-
-  /* ---------- computer: hover a row → its images float by the cursor, one after another ---------- */
-  const preview = document.getElementById('preview'), frame = document.getElementById('frame');
-  const capT = document.getElementById('capT'), capN = document.getElementById('capN');
-  let hoverRow = null, imgs = [], cur = 0, cycle = 0;
-  let mx = innerWidth / 2, my = innerHeight / 2, px = mx, py = my;
-  function showPreview(row) {
-    clearInterval(cycle);
-    hoverRow?.classList.remove('is-hover');
-    hoverRow = row;
-    indexEl.classList.toggle('hovering', !!row);
-    if (!row) { preview.classList.remove('show'); return; }
-    row.classList.add('is-hover');
-    const w = row._w, srcs = w.all.slice(0, 12);
-    frame.innerHTML = ''; imgs = srcs.map(src => { const im = new Image(); im.src = thumb(src); im.alt = ''; frame.appendChild(im); return im; });
-    cur = 0; imgs[0] && imgs[0].classList.add('on');
-    capT.textContent = w.categoryName; capN.textContent = srcs.length > 1 ? `1 / ${srcs.length}` : '';
-    preview.classList.add('show');
-    if (imgs.length > 1) cycle = setInterval(() => {
-      imgs[cur].classList.remove('on'); cur = (cur + 1) % imgs.length; imgs[cur].classList.add('on');
-      capN.textContent = `${cur + 1} / ${imgs.length}`;
-    }, 650);
-  }
-  if (matchMedia('(hover: hover)').matches) {
-    addEventListener('pointermove', e => {
-      if (e.pointerType !== 'mouse') return;
-      mx = e.clientX; my = e.clientY;
-      const row = document.elementFromPoint(mx, my)?.closest('.row') || null;
-      if (row !== hoverRow) showPreview(row);
-    });
-    document.addEventListener('mouseleave', () => showPreview(null));
-    addEventListener('scroll', () => { const row = document.elementFromPoint(mx, my)?.closest('.row') || null; if (row !== hoverRow) showPreview(row); }, { passive: true });
-    (function follow() {
-      // the image trails the cursor a little, and sits beside it so it never covers the row's text
-      const w = preview.offsetWidth, side = mx + 40 + w > innerWidth ? -1 : 1;
-      const tx = mx + side * (w / 2 + 40), ty = Math.max(w * .65, Math.min(innerHeight - w * .65, my));
-      px += (tx - px) * .16; py += (ty - py) * .16;
-      preview.style.left = px + 'px'; preview.style.top = py + 'px';
-      requestAnimationFrame(follow);
-    })();
-  }
-
-  /* ---------- phone: tap a row to open it (its images side by side), tap again to close ---------- */
-  rowsEl.addEventListener('click', e => {
-    if (matchMedia('(hover: hover)').matches) return;          // computer: the row links straight to the work
-    const main = e.target.closest('.row-main'); if (!main) return;
-    e.preventDefault();
-    const row = main.parentElement, opening = !row.classList.contains('open');
-    rowsEl.querySelectorAll('.row.open').forEach(r => r.classList.remove('open'));
-    if (!opening) return;
-    const strip = row.querySelector('.strip');
-    if (!strip.childElementCount) strip.innerHTML = row._w.all.map(src => `<img src="${thumb(src)}" alt="" loading="lazy">`).join('');
-    row.classList.add('open');
+  /* ---------- hover: name by the cursor, the rest step back ---------- */
+  let hover = null;
+  addEventListener('pointermove', e => {
+    if (e.pointerType !== 'mouse') return;
+    cap.style.left = e.clientX + 'px'; cap.style.top = e.clientY + 'px';
+    const t = e.target.closest && e.target.closest('.tile');
+    if (t === hover) return;
+    hover?.classList.remove('is-hover'); hover = t;
+    track.classList.toggle('hovering', !!t);
+    if (t) { t.classList.add('is-hover'); const w = t._w; cap.innerHTML = `${w.title}<small>${[w.categoryName, w.year].filter(Boolean).join(', ')}</small>`; }
+    cap.classList.toggle('show', !!t);
   });
 
-  /* ---------- go ---------- */
+  /* ---------- sideways: the wheel scrolls the timeline, the mouse can drag it ---------- */
+  let tx = 0, raf = 0;
+  scroller.addEventListener('wheel', e => {
+    e.preventDefault();
+    tx = Math.max(0, Math.min(scroller.scrollWidth - scroller.clientWidth, (raf ? tx : scroller.scrollLeft) + (Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : e.deltaY)));
+    if (!raf) raf = requestAnimationFrame(function glide() {
+      const d = tx - scroller.scrollLeft; scroller.scrollLeft += d * .16;
+      raf = Math.abs(d) > .5 ? requestAnimationFrame(glide) : 0;
+    });
+  }, { passive: false });
+  let drag = null;
+  scroller.addEventListener('pointerdown', e => { if (e.pointerType !== 'mouse' || e.button !== 0) return; drag = { x: e.clientX, l: scroller.scrollLeft, moved: false }; });
+  addEventListener('pointermove', e => {
+    if (!drag) return; const dx = e.clientX - drag.x;
+    if (!drag.moved && Math.abs(dx) > 5) { drag.moved = true; scroller.classList.add('dragging'); }
+    if (drag.moved) { scroller.scrollLeft = drag.l - dx; tx = scroller.scrollLeft; }
+  });
+  addEventListener('pointerup', () => {
+    if (!drag) return; const moved = drag.moved; drag = null; scroller.classList.remove('dragging');
+    if (moved) scroller.addEventListener('click', ev => ev.preventDefault(), { once: true, capture: true });
+  });
+
+  let resizeT = 0;
+  addEventListener('resize', () => { clearTimeout(resizeT); resizeT = setTimeout(() => { track.classList.remove('in'); build(); }, 200); });
+
   WorksData.loadAll().then(list => {
-    works = list.filter(w => (w.all || []).length).map((w, i) => Object.assign(w, { i }));
-    renderControls(); renderRows();
+    works = list.filter(w => w.images && w.images[0]);
+    renderFilters(); build();
   });
 })();
 </script>
