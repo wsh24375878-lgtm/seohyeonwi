@@ -99,12 +99,12 @@
     font: 400 15px/1.3 Arial, Helvetica, sans-serif; color: #8c8c8c; cursor: pointer; transition: color .2s ease; }
   .fx-btn:hover { color: #050505; }
   @media (max-width: 700px) { .fx-btn { top: auto; right: 14px; bottom: calc(18px + 56px + 44px + env(safe-area-inset-bottom)); font-size: 12px; } }
-  /* 3D: finish picker on the right under "Drop & spin" — plain flat squares in the finish's colour, no words.
+  /* 3D: finish picker under the menu (same place as the Product kind row) — plain flat squares in the finish's colour, no words.
      The chosen one is "lit": full strength with a soft glow; the others are dimmed. No size change. */
-  .mat-row { position: fixed; z-index: 7; right: var(--pad); top: calc(50% + 88px); display: flex; align-items: center; gap: 10px; }
+  .mat-row { position: fixed; z-index: 99; top: 49px; left: 50%; transform: translateX(-50%); display: flex; align-items: center; gap: 10px; }
   .sw { padding: 0; border: 0; background: none; cursor: pointer; }
   .sw-name { display: none; }
-  .sw-dot { display: block; width: 16px; height: 16px; border-radius: 1px; box-shadow: inset 0 0 0 1px rgba(0,0,0,.12);
+  .sw-dot { display: block; width: 12px; height: 12px; border-radius: 1px; box-shadow: inset 0 0 0 1px rgba(0,0,0,.12);
     opacity: .3; filter: saturate(.6); transition: opacity .3s ease, box-shadow .3s ease, filter .3s ease; }
   .sw:hover .sw-dot { opacity: .6; }
   .sw.is-active .sw-dot { opacity: 1; filter: none; box-shadow: inset 0 0 0 1px rgba(0,0,0,.12), 0 0 10px 2px var(--glow, rgba(0,0,0,.22)); }
@@ -112,7 +112,8 @@
   .sw-satin .sw-dot  { background: #a9a9a9; --glow: rgba(120,120,120,.5); }
   .sw-black .sw-dot  { background: #141414; --glow: rgba(0,0,0,.45); }
   .sw-glass .sw-dot  { background: #e9f1f5; --glow: rgba(140,185,210,.6); box-shadow: inset 0 0 0 1px rgba(0,0,0,.2); }
-  @media (max-width: 700px) { .mat-row { top: 70px; right: auto; left: 14px; gap: 12px; } .sw-dot { width: 14px; height: 14px; } }  .p-kinds button:hover, .p-kinds button.is-active { color: #050505; }
+  @media (max-width: 700px) { .mat-row { top: 68px; left: 14px; transform: none; gap: 10px; } .sw-dot { width: 12px; height: 12px; } }
+  .p-kinds button:hover, .p-kinds button.is-active { color: #050505; }
   .p-kinds button.is-active { text-decoration: underline; text-underline-offset: 3px; text-decoration-thickness: 1px; }
   @media (hover: none), (pointer: coarse) { .spin-tag { display: none; } }
   .work-link:hover .case-arrow { color: #050505; }
