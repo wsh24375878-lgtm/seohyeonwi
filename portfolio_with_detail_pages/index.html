@@ -339,7 +339,8 @@ const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(35, innerWidth / innerHeight, .1, 100);
 camera.position.set(0, 0, 12.6);
 const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+// phones: draw at most 1.5× (looks the same, much lighter — smoother when switching works)
+renderer.setPixelRatio(Math.min(devicePixelRatio, innerWidth <= 700 ? 1.5 : 2));
 renderer.setClearColor(0x000000, 0);
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
 renderer.toneMappingExposure = 1.05;
@@ -1038,6 +1039,22 @@ addEventListener('objectwork', async e => {
   }
 });
 
+/* build every work's object ahead of time, one at a time while the page is idle, so switching works
+   (swipe / strip / wheel) only shows something that is already made — no stutter from building it then */
+function prebuildAll() {
+  const items = window.__stripItems || [];
+  let k = 0;
+  const idle = window.requestIdleCallback || (cb => setTimeout(cb, 60));
+  const next = () => {
+    if (k >= items.length) return;
+    const j = k++;
+    subjectFor(items[j], j).catch(() => {}).then(() => idle(next, { timeout: 500 }));
+  };
+  idle(next, { timeout: 500 });
+}
+if (window.__objectIntroDone) setTimeout(prebuildAll, 1200);
+else addEventListener('objectintrodone', () => setTimeout(prebuildAll, 1200), { once: true });
+
 window.setObjectSnap && window.setObjectSnap(async (it, k) => snapshot(await slotObject(it, k), k));
 }   // end of the 3D-only part
 </script>
@@ -1553,11 +1570,14 @@ if (IS_PRODUCT) (() => {
       cur = i;
       cells[i].classList.add('is-current');
       if (i === 0) {
+        clearTimeout(select.timer);
         liveWork(null);
         mName.textContent = CAT_LABEL; mInfo.textContent = N ? 'Swipe to see each object' : 'Coming soon';
       } else {
         const it = ITEMS[i - 1];
-        liveWork(it);
+        // the name changes at once; the object only once the swipe settles (no building every object it passes)
+        clearTimeout(select.timer);
+        select.timer = setTimeout(() => { if (cur === i) liveWork(it); }, 140);
         mName.innerHTML = `<a href="${caseUrl(it.project)}">${label(it)}</a>`;
         mInfo.innerHTML = `${it.info || ''} · <a href="${caseUrl(it.project)}">View Case →</a>`;
       }
