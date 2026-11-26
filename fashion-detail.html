@@ -36,6 +36,7 @@
     margin-top: 14px;
   }
   .category-meta { margin-top: 6px; }
+  .desc-more { display: none; }
   .swap { transition: opacity .15s ease-in-out; }
   .swap.is-out { opacity: 0; }
 
@@ -117,7 +118,14 @@
 
   @media (max-width: 700px) {
     .title { left: 14px; top: 64px; }
-    .category-desc { max-width: 260px; margin-top: 10px; }
+    /* phones: the story is long and would run over the picture — show 4 lines, tap "More +" for the rest */
+    .category-desc { max-width: none; width: calc(100vw - 28px); margin-top: 10px;
+      display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 4; overflow: hidden; }
+    .title.is-open .category-desc { display: block; -webkit-line-clamp: unset; }
+    .title.is-open { background: rgba(255,255,255,.96); padding-bottom: 10px; box-shadow: 0 0 0 14px rgba(255,255,255,.96); }
+    .desc-more { display: inline-block; pointer-events: auto; margin-top: 4px; font: inherit; font-size: 12px; color: #050505;
+      background: none; border: 0; padding: 4px 0; text-decoration: underline; text-underline-offset: 3px; text-decoration-thickness: 1px; }
+    .desc-more[hidden] { display: none; }
     .bottom-info { bottom: 18px; font-size: 12px; gap: 10px; }
     .hint { display: none; }
     .to-ring { right: 14px; top: 76px; font-size: 12px; }
@@ -146,6 +154,7 @@
 <header class="title chrome is-hidden">
   <h1 class="big-text swap" id="workTitle">Fashion</h1>
   <p class="category-desc ui-text swap" id="workDesc"></p>
+  <button type="button" class="desc-more" id="descMore" hidden>More +</button>
   <p class="category-meta ui-text muted swap" id="workMeta"></p>
 </header>
 
@@ -237,6 +246,13 @@
   }
 
   /* ---------- text ---------- */
+  const titleBox = document.querySelector('header.title'), descMore = document.getElementById('descMore');
+  const KO = window.SiteLang && window.SiteLang.lang === 'ko';
+  descMore.addEventListener('click', e => {
+    e.stopPropagation();
+    const open = titleBox.classList.toggle('is-open');
+    descMore.textContent = open ? (KO ? '접기 −' : 'Less −') : (KO ? '더보기 +' : 'More +');
+  });
   function showText(i, animate) {
     const work = WORKS[i];
     const apply = () => {
@@ -250,6 +266,10 @@
       counter.textContent = `${String(i + 1).padStart(2, '0')} / ${String(WORKS.length).padStart(2, '0')}`;
       document.title = `${work.title} — Fashion — SEOHYEON WI™`;
       [workTitle, workDesc, workMeta, counter].forEach(el => el.classList.remove('is-out'));
+      // phones: long text is cut to 4 lines → offer "More +"
+      titleBox.classList.remove('is-open');
+      descMore.textContent = KO ? '더보기 +' : 'More +';
+      descMore.hidden = workDesc.scrollHeight <= workDesc.clientHeight + 2;
     };
     if (!animate) return apply();
     [workTitle, workDesc, workMeta, counter].forEach(el => el.classList.add('is-out'));

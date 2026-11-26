@@ -19,7 +19,8 @@
   $('projectTitle').textContent = title;
   const desc = document.querySelector('.head .desc');
   if (desc) desc.textContent = (work && work.desc) || '';
-  $('projectMeta').textContent = `${pad(n)} / ${pad(total)} — ${[label, work && work.type, work && work.year].filter(Boolean).join(', ')}`;
+  const type = work && work.type ? work.type.split(label + ' · ').join('') : '';   // "3D · Resin" under 3D → "Resin"
+  $('projectMeta').textContent = `${pad(n)} / ${pad(total)} — ${[label, type, work && work.year].filter(Boolean).join(', ')}`;
   const next = n % total + 1;
   const keepCat = params.get('category') ? `&category=${category}` : '';
   $('nextLink').href = `project-detail.html?project=${pad(next)}${keepCat}`;

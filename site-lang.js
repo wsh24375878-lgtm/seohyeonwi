@@ -3,7 +3,7 @@
    The choice is remembered (localStorage) and can be forced with ?lang=ko / ?lang=en.
    Load this before ko-text.js and before the page's own detail script. */
 (() => {
-  const KEY = 'sw-lang';
+  const KEY = 'site-lang';             // the same key the intro's 한국어 / English choice (index.html) saves
   const q = new URLSearchParams(location.search).get('lang');
   let saved = null;
   try { saved = localStorage.getItem(KEY); } catch (e) {}
