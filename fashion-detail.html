@@ -77,6 +77,14 @@
     -webkit-user-drag: none;
   }
   .slide.is-side { cursor: pointer; }
+  /* mouse on the white around the pictures: a small "← Back to projects" label follows it; a click goes back */
+  .back-tag { position: fixed; z-index: 20; left: 0; top: 0; pointer-events: none; font-size: 13px; line-height: 1; color: #050505;
+    background: #fff; padding: 5px 7px; white-space: nowrap; opacity: 0; transform: translate(14px, 14px); transition: opacity .2s ease; }
+  .back-tag.on { opacity: 1; }
+  .back-tag.left { transform: translate(calc(-100% - 14px), 14px); }
+  .stage.is-back { cursor: pointer; }
+  @media (hover: none) { .back-tag { display: none; } }
+
   /* the story card at the start of each project */
   .story-slide { background: #f4f4f4; }
   .story { position: absolute; inset: 0; overflow: auto; padding: clamp(18px, 2.4vw, 34px); font-size: 15px; line-height: 1.5;
@@ -331,7 +339,23 @@
   /* ---------- drag ---------- */
   let dragging = false;
   let startX = 0, startTarget = 0, lastX = 0, lastT = 0, velocity = 0, moved = 0;
-  let downSlide = -1;
+  let downSlide = -1, downMouse = false;
+
+  /* the white around the pictures: "← Back to projects" follows the mouse there, and a click goes back */
+  const backTag = document.createElement('div');
+  backTag.className = 'back-tag';
+  backTag.textContent = '← Back to projects';
+  document.body.appendChild(backTag);
+  stage.addEventListener('pointermove', e => {
+    if (e.pointerType !== 'mouse') return;
+    const onPic = !dragging && document.elementsFromPoint(e.clientX, e.clientY).some(n => n.classList && n.classList.contains('slide'));
+    const show = !dragging && !leaving && !onPic;
+    backTag.classList.toggle('on', show);
+    backTag.classList.toggle('left', e.clientX > innerWidth - 190);
+    stage.classList.toggle('is-back', show);
+    if (show) { backTag.style.left = e.clientX + 'px'; backTag.style.top = e.clientY + 'px'; }
+  });
+  stage.addEventListener('pointerleave', () => { backTag.classList.remove('on'); stage.classList.remove('is-back'); });
 
   stage.addEventListener('pointerdown', e => {
     if (leaving || (e.pointerType === 'mouse' && e.button !== 0)) return;
@@ -343,6 +367,7 @@
     moved = 0;
     const el = document.elementsFromPoint(e.clientX, e.clientY).find(n => n.classList && n.classList.contains('slide'));
     downSlide = el ? slides.findIndex(s => s.el === el) : -1;
+    downMouse = e.pointerType === 'mouse';
     stage.setPointerCapture(e.pointerId);
     stage.classList.add('is-grabbing');
   });
@@ -367,6 +392,8 @@
     dragging = false;
     stage.classList.remove('is-grabbing');
     if (moved < 6) {
+      // a click on the white around the pictures (mouse) → back to the projects
+      if (downSlide < 0 && downMouse) { backTag.classList.remove('on'); leave(); return; }
       // a click: jump to the image that was clicked
       if (downSlide >= 0 && downSlide !== index) goTo(downSlide);
       else target = -slides[index].x;
