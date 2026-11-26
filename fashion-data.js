@@ -15,7 +15,7 @@ window.FASHION_WORKS = [
   { project: '03', group: 'Confusion', title: 'Confusion — Mood Board', src: 'images/fashion/confusion/03.jpg', info: 'Research',
     desc: 'Organic, parasitic forms and a cold palette of shadow mint, lucent white and midnight denim.' },
   { project: '04-0', group: 'Confusion', title: 'Confusion — Concept', src: 'images/fashion/material-board/00-concept.jpg', info: 'Concept',
-    desc: 'The concept, Confusion: the fear in Alien comes from what we cannot know. Rather than avoid it, the project takes the alien’s design apart and recombines it — turning that fear into something I can handle.' },
+    desc: 'Concept — Confusion: facing the fear of the unknown.' },
   { project: '04', group: 'Confusion', title: 'Confusion — Material Board', src: 'images/fashion/material-board/01.jpg', info: 'Material',
     desc: 'A material board of belts, buckles, eyelets, padding and worn, frayed denim in grey and black.' },
   { project: '05', group: 'Confusion', title: 'Confusion — Design Sketch', src: 'images/fashion/confusion/05.jpg', info: 'Sketch',
