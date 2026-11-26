@@ -126,6 +126,44 @@ window.KO_TEXT = {
       process: '무드보드 → 북 → 도식화',
     },
   },
+
+  /* 작품명 (Korean title) — the first line of the exhibition-style caption */
+  titles: {
+    'Reconstructing Fear': '공포의 재구성', 'Bone Case — Phone': '본 케이스 — 폰', 'Bone Case — Lighter': '본 케이스 — 라이터',
+    'Bone Case — AirPods': '본 케이스 — 에어팟', 'Alien Case — AirPods Max': '에이리언 케이스 — 에어팟 맥스',
+    'Curve Chair': '커브 체어', 'Empty Container': '빈 그릇', 'Glass Paperweight': '유리 문진', 'Fw2 Logo': 'Fw2 로고',
+    'Rose Juicy Fabric': '로즈 쥬시 패브릭', 'Pale Rose Fabric': '페일 로즈 패브릭', 'Goldfish Fabric Poster': '금붕어 패브릭 포스터',
+    'Aerial Aquarium Fabric': '공중어항 패브릭', 'Daybreak & Sparkling Fabric Posters': '새벽 & 반짝임 패브릭 포스터',
+    'Jellyfish Fabric Poster': '해파리 패브릭 포스터', 'Rose Garden Blanket': '장미 정원 담요', 'Aquarium Paperweight': '어항 문진',
+    'Wave Paperweight': '파도 문진', 'Pudding Bead Curtain — Blue': '푸딩 비즈발 — 블루', 'Melon Soda Bead Curtain': '메론소다 비즈발',
+    'Pudding Bead Curtain — Yellow': '푸딩 비즈발 — 옐로', 'Oriental Stickers': '오리엔탈 스티커', 'Chungking Express Stickers': '중경삼림 스티커',
+    'Red Koi Stickers': '레드 잉어 스티커', 'About Love, Happiness & Sadness': '사랑에 관하여 · 행복에 관하여 · 슬픔에 관하여',
+    'Betta Stickers': '베타 스티커', 'Call Me Stickers': '콜미 스티커', 'Sea Creature Stickers': '해양생물 스티커',
+    'Jellyfish & Fish Masking Tape': '해파리 마스킹 테이프', 'Cyberpunk Stickers': '사이버 펑크 스티커', 'Ink & Jade Koi Stickers': '잉어 스티커',
+    'White & Black Goldfish Stickers': '화이트·블랙 피시 스티커', 'Rose Stickers': '장미 스티커', 'Odd Stickers': '오드 스티커',
+    'Pieonam Lighter': '피어남 라이터', 'About Love Lighter': '사랑에 관하여 라이터', 'Ballet Shoe Cases': '발레슈 케이스',
+    'Rose iPad Case': '장미 아이패드 케이스', 'Pale Rose Umbrella': '페일 로즈 우산', 'Nakhwa Pouch': '낙화 파우치',
+    'Knot Cushion Pouch': '낫쿠션 파우치', 'Wave iPad Case': '파도 아이패드 케이스', 'Mir Lighter': '미르 라이터', 'Tattoo Lighter': '타투 라이터',
+    'Black Wave Umbrella': '블랙 파도 우산', 'Basalt Umbrella': '현무암 우산', 'Ornament Tree': '오너먼트 트리', 'Spine Bracelet': '척추 팔찌',
+    '2025 Wall Calendar': '2025 벽걸이 캘린더', 'Phone Booth Aquarium': '전화부스 어항', 'Columbine': '콜럼바인',
+    '2025 Desk Calendar': '2025 탁상 캘린더', '2025 Annual Planner': '2025 연간 플래너', 'CIRCULATION': '순환', 'Piece of Cake': '피스 오브 케이크',
+    'Phone Case Posters': '폰케이스 포스터', 'October Wallpapers — Sea': '10월 배경화면 — 바다', 'October Wallpapers — Dessert': '10월 배경화면 — 디저트',
+    'Mutant Collection': '돌연변이 컬렉션', 'FromW2': '프롬더블유투',
+  },
+
+  /* the words of the type line (e.g. "3D · Resin") → 분류 · 재료 */
+  types: {
+    '3D': '3D', 'Acrylic Paperweight': '아크릴 문진', 'AirPods Case': '에어팟 케이스', 'Bead Curtain': '비즈 커튼', 'Blanket': '담요',
+    'Bracelet': '팔찌', 'Brand': '브랜드', 'Chair': '의자', 'DIY Kit': 'DIY 키트', 'Desk Calendar': '탁상 캘린더', 'Display': '디스플레이',
+    'Epoxy Paperweight': '에폭시 문진', 'Exhibition Poster': '전시 포스터', 'Fabric': '패브릭', 'Fabric Poster': '패브릭 포스터',
+    'FromW2': 'FromW2', 'Furniture': '가구', 'Glass': '유리', 'Headphone Case': '헤드폰 케이스', 'Lighter': '라이터',
+    'Lighter Case': '라이터 케이스', 'Logo': '로고', 'Masking Tape': '마스킹 테이프', 'Metal': '금속', 'Operation': '운영',
+    'Ornaments': '오너먼트', 'Packaging': '패키지', 'Paperweight': '문진', 'Phone Case': '폰케이스', 'Phone Wallpaper': '폰 배경화면',
+    'Poster': '포스터', 'Poster Calendar': '포스터 캘린더', 'Pouch': '파우치', 'Resin': '레진', 'Side Table': '사이드 테이블',
+    'Sticker': '스티커', 'Tote Bag': '토트백', 'Umbrella': '우산', 'Wall Planner': '벽걸이 플래너', 'iPad & Phone Case': '아이패드 & 폰케이스',
+    'iPad Case': '아이패드 케이스',
+  },
+  categories: { '3D': '3D', 'Product': '제품', 'Graphic': '그래픽', 'Fashion': '패션', 'Archive': '아카이브' },
 };
 
 /* KO selected → put the Korean text in place of the English descriptions before the page renders them */
@@ -133,7 +171,11 @@ window.KO_TEXT = {
   if (!window.SiteLang || window.SiteLang.lang !== 'ko') return;
   const K = window.KO_TEXT;
   if (window.OTHER_WORKS) Object.values(window.OTHER_WORKS).forEach(list =>
-    list.forEach(w => { if (K.works[w.title]) w.desc = K.works[w.title]; }));
+    list.forEach(w => {
+      if (K.works[w.title]) w.desc = K.works[w.title];
+      if (K.titles[w.title]) w.titleKo = K.titles[w.title];
+      if (w.type) w.typeKo = w.type.split(' · ').map(t => K.types[t] || t).join(' · ');
+    }));
   if (window.FASHION_WORKS) window.FASHION_WORKS.forEach(w => { if (K.fashion[w.project]) w.desc = K.fashion[w.project]; });
   if (window.FASHION_PROJECTS) Object.keys(window.FASHION_PROJECTS).forEach(k => {
     const p = window.FASHION_PROJECTS[k], ko = K.projects[k];
