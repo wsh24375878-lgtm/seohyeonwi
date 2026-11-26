@@ -37,7 +37,7 @@
   }
   /* the first picture carries the project's story — a long text, so it runs wide in a few lines
      instead of a tall column that would sit over the pictures */
-  .title.is-wide .category-desc { max-width: min(1080px, calc(100vw - 220px)); }
+  @media (min-width: 701px) { .title.is-wide .category-desc { max-width: min(1080px, calc(100vw - 220px)); } }
   .category-meta { margin-top: 6px; }
   .desc-more { display: none; }
   .swap { transition: opacity .15s ease-in-out; }
@@ -77,13 +77,17 @@
     -webkit-user-drag: none;
   }
   .slide.is-side { cursor: pointer; }
-  /* mouse on the white around the pictures: a small "← Back to projects" label follows it; a click goes back */
-  .back-tag { position: fixed; z-index: 20; left: 0; top: 0; pointer-events: none; font-size: 13px; line-height: 1; color: #050505;
-    background: #fff; padding: 5px 7px; white-space: nowrap; opacity: 0; transform: translate(14px, 14px); transition: opacity .2s ease; }
-  .back-tag.on { opacity: 1; }
-  .back-tag.left { transform: translate(calc(-100% - 14px), 14px); }
-  .stage.is-back { cursor: pointer; }
-  @media (hover: none) { .back-tag { display: none; } }
+  /* the title reads "Fashion / Confusion" — "Fashion" goes back to the projects */
+  .crumb { pointer-events: auto; color: #8c8c8c; transition: color .2s ease; }
+  .crumb:hover { color: #050505; }
+  .crumb-sep { color: #bdbdbd; }
+  /* pulled past the first picture: "← Back to projects" slides in at the left edge (see the drag code) */
+  .pull-back { position: fixed; z-index: 20; left: 24px; top: 50%; pointer-events: none; font-size: 15px; line-height: 1; color: #8c8c8c;
+    white-space: nowrap; opacity: 0; transform: translate(-24px, -50%); transition: color .2s ease; }
+  .pull-back.ready { color: #050505; }
+  .pull-back .pull-arrow { display: inline-block; transition: transform .2s ease; }
+  .pull-back.ready .pull-arrow { transform: translateX(-4px); }
+  @media (max-width: 700px) { .pull-back { left: 14px; font-size: 13px; } .to-ring { display: none; } }
 
   /* the story card at the start of each project */
   .story-slide { background: #f4f4f4; }
@@ -163,7 +167,7 @@
 </header>
 
 <header class="title chrome is-hidden">
-  <h1 class="big-text swap" id="workTitle">Fashion</h1>
+  <h1 class="big-text"><a class="crumb" id="crumb" href="fashion.html">Fashion</a><span class="crumb-sep"> / </span><span class="swap" id="workTitle">Fashion</span></h1>
   <p class="category-desc ui-text swap" id="workDesc"></p>
   <button type="button" class="desc-more" id="descMore" hidden>More +</button>
   <p class="category-meta ui-text muted swap" id="workMeta"></p>
@@ -339,23 +343,23 @@
   /* ---------- drag ---------- */
   let dragging = false;
   let startX = 0, startTarget = 0, lastX = 0, lastT = 0, velocity = 0, moved = 0;
-  let downSlide = -1, downMouse = false;
+  let downSlide = -1;
 
-  /* the white around the pictures: "← Back to projects" follows the mouse there, and a click goes back */
-  const backTag = document.createElement('div');
-  backTag.className = 'back-tag';
-  backTag.textContent = '← Back to projects';
-  document.body.appendChild(backTag);
-  stage.addEventListener('pointermove', e => {
-    if (e.pointerType !== 'mouse') return;
-    const onPic = !dragging && document.elementsFromPoint(e.clientX, e.clientY).some(n => n.classList && n.classList.contains('slide'));
-    const show = !dragging && !leaving && !onPic;
-    backTag.classList.toggle('on', show);
-    backTag.classList.toggle('left', e.clientX > innerWidth - 190);
-    stage.classList.toggle('is-back', show);
-    if (show) { backTag.style.left = e.clientX + 'px'; backTag.style.top = e.clientY + 'px'; }
-  });
-  stage.addEventListener('pointerleave', () => { backTag.classList.remove('on'); stage.classList.remove('is-back'); });
+  /* pull past the first picture → back to the projects.
+     Dragging (or wheeling) further back than the first picture brings in "← Back to projects" at the left
+     edge; pulled far enough and let go, the page goes back — short of that, it springs back. */
+  const PULL_BACK = 150;               // px of pull (drag) needed
+  const pullTag = document.createElement('div');
+  pullTag.className = 'pull-back';
+  pullTag.innerHTML = '<span class="pull-arrow">←</span> Back to projects';
+  document.body.appendChild(pullTag);
+  const showPull = px => {             // px: how far past the first picture (0 = not at all)
+    const k = Math.max(0, Math.min(1, px / PULL_BACK));
+    pullTag.style.opacity = k ? (.25 + k * .75).toFixed(3) : '0';
+    pullTag.style.transform = `translate(${(-24 + k * 24).toFixed(1)}px, -50%)`;
+    pullTag.classList.toggle('ready', k >= 1);
+  };
+  let pull = 0;
 
   stage.addEventListener('pointerdown', e => {
     if (leaving || (e.pointerType === 'mouse' && e.button !== 0)) return;
@@ -367,7 +371,6 @@
     moved = 0;
     const el = document.elementsFromPoint(e.clientX, e.clientY).find(n => n.classList && n.classList.contains('slide'));
     downSlide = el ? slides.findIndex(s => s.el === el) : -1;
-    downMouse = e.pointerType === 'mouse';
     stage.setPointerCapture(e.pointerId);
     stage.classList.add('is-grabbing');
   });
@@ -378,7 +381,9 @@
     const dx = e.clientX - startX;
     moved = Math.max(moved, Math.abs(dx));
     let t = startTarget + dx;
-    // rubber band past the first / last image
+    // rubber band past the first / last image (past the first one also offers the way back)
+    pull = Math.max(0, t - maxTarget());
+    showPull(pull);
     if (t > maxTarget()) t = maxTarget() + (t - maxTarget()) * .35;
     if (t < minTarget()) t = minTarget() + (t - minTarget()) * .35;
     target = t;
@@ -391,9 +396,10 @@
     if (!dragging) return;
     dragging = false;
     stage.classList.remove('is-grabbing');
+    const pulled = pull >= PULL_BACK;
+    pull = 0; showPull(0);
+    if (pulled) { leave(); return; }
     if (moved < 6) {
-      // a click on the white around the pictures (mouse) → back to the projects
-      if (downSlide < 0 && downMouse) { backTag.classList.remove('on'); leave(); return; }
       // a click: jump to the image that was clicked
       if (downSlide >= 0 && downSlide !== index) goTo(downSlide);
       else target = -slides[index].x;
@@ -406,11 +412,20 @@
   stage.addEventListener('pointercancel', endDrag);
 
   /* ---------- wheel / keys ---------- */
-  let wheelTimer = 0;
+  let wheelTimer = 0, wheelPull = 0, wheelPullTimer = 0;
   window.addEventListener('wheel', e => {
     e.preventDefault();
     if (leaving) return;
-    target = clampTarget(target - (Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : e.deltaY));
+    const d = Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : e.deltaY;
+    // wheeling back while already on the first picture builds up the same pull as dragging
+    if (d < 0 && index === 0 && target >= maxTarget() - 1) {
+      wheelPull += -d * .6;
+      showPull(wheelPull);
+      clearTimeout(wheelPullTimer);
+      if (wheelPull >= PULL_BACK * 1.6) { wheelPull = 0; showPull(0); leave(); return; }
+      wheelPullTimer = setTimeout(() => { wheelPull = 0; showPull(0); }, 420);
+    } else if (wheelPull) { wheelPull = 0; showPull(0); }
+    target = clampTarget(target - d);
     clearTimeout(wheelTimer);
     wheelTimer = setTimeout(() => goTo(nearestIndex(target)), 140);
   }, { passive: false });
@@ -442,6 +457,7 @@
   back.addEventListener('click', e => { e.preventDefault(); leave(); });
   // the top-right button and the Fashion link in the menu also go straight back to the ring (no intro)
   document.getElementById('toRing').addEventListener('click', e => { e.preventDefault(); leave(); });
+  document.getElementById('crumb').addEventListener('click', e => { e.preventDefault(); leave(); });
   const navFashion = document.querySelector('.site-cats a[href="fashion.html"]');
   if (navFashion) navFashion.addEventListener('click', e => { e.preventDefault(); leave(); });
 
