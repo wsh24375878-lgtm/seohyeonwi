@@ -44,15 +44,15 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
 .up,.down{position:absolute;left:0;right:0;display:flex;flex-direction:column;gap:var(--gap)}
 .up{bottom:calc(100% - var(--axis) + 4px);flex-direction:column-reverse}
 .down{top:calc(var(--axis) + 4px)}
-.tile{display:block;width:100%;background:#f1f1f1;overflow:hidden;
+.tile{display:block;width:100%;background:#fff;overflow:hidden;
   transform:scaleY(0);transition:transform .7s cubic-bezier(.16,1,.3,1),opacity .3s ease,filter .3s ease}
 .up .tile{transform-origin:50% 100%}
 .down .tile{transform-origin:50% 0}
 .in .tile{transform:none}
 .tile img{display:block;width:100%;height:100%;object-fit:cover;-webkit-user-drag:none;user-select:none;pointer-events:none;
-  filter:grayscale(1) contrast(.92);opacity:.88;transition:filter .35s ease,opacity .35s ease}
+  filter:grayscale(1);transition:filter .35s ease}
 /* quiet by default: every picture in grey; the one under the mouse (or the chosen category) comes back in colour */
-.tile.is-hover img,.track.filtered .tile:not(.off) img{filter:none;opacity:1}
+.tile.is-hover img,.track.filtered .tile:not(.off) img{filter:none}
 .track.hovering .tile{opacity:.35}
 .track.hovering .tile.is-hover{opacity:1}
 .tile.off{opacity:.12!important;filter:grayscale(1)}
