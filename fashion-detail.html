@@ -30,15 +30,14 @@
     left: 24px;
     top: 54px;
     pointer-events: none;
-    /* a soft white haze behind the text, so it stays readable when a picture slides under it */
-    background: rgba(255,255,255,.82);
-    box-shadow: 0 0 28px 22px rgba(255,255,255,.82);
-    border-radius: 2px;
   }
   .category-desc {
     max-width: 420px;
     margin-top: 14px;
   }
+  /* the first picture carries the project's story — a long text, so it runs wide in a few lines
+     instead of a tall column that would sit over the pictures */
+  .title.is-wide .category-desc { max-width: min(1080px, calc(100vw - 220px)); }
   .category-meta { margin-top: 6px; }
   .desc-more { display: none; }
   .swap { transition: opacity .15s ease-in-out; }
@@ -272,6 +271,7 @@
       [workTitle, workDesc, workMeta, counter].forEach(el => el.classList.remove('is-out'));
       // phones: long text is cut to 4 lines → offer "More +"
       titleBox.classList.remove('is-open');
+      titleBox.classList.toggle('is-wide', i === 0);
       descMore.textContent = KO ? '더보기 +' : 'More +';
       descMore.hidden = workDesc.scrollHeight <= workDesc.clientHeight + 2;
     };
