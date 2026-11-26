@@ -19,7 +19,7 @@ window.OTHER_WORKS = {
   // Living Design — "Reconstructing fear into techwear." (3D / resin, June 2025)
   object: [
     // Living Design (Sungshin Univ., June 2025) — "Reconstructing fear into techwear." Texts and images from the portfolio PDF.
-    { title: 'Reconstructing Fear', type: '3D · Resin', year: '2025',
+    { title: 'Reconstructing Fear', type: '3D · Resin', year: '2025', in3D: false,   // not in the 3D page strip (the vase leads it)
       desc: 'A living-design project, "Reconstructing fear into techwear." The fear in the film Alien is not just a parasite but the fear of what we cannot know — like the future, unseen one step ahead. Instead of avoiding it, the alien’s design is taken apart and rebuilt into objects you carry every day, so the fear becomes something you can hold. Sketched, modelled to the millimetre in Rhino and ZBrush to fit real devices, printed in resin, filled and hand-sanded, then lit and photographed.',
       images: ['images/object/reconstructing-fear/01.jpg', 'images/object/reconstructing-fear/02.jpg'] },
     { title: 'Bone Case — Phone', type: '3D · Phone Case', year: '2025',

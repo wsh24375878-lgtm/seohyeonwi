@@ -112,7 +112,7 @@
   .sw-satin .sw-dot  { background: #a9a9a9; --glow: rgba(120,120,120,.5); }
   .sw-black .sw-dot  { background: #141414; --glow: rgba(0,0,0,.45); }
   .sw-glass .sw-dot  { background: #e9f1f5; --glow: rgba(140,185,210,.6); box-shadow: inset 0 0 0 1px rgba(0,0,0,.2); }
-  @media (max-width: 700px) { .mat-row { top: 68px; left: 14px; transform: none; gap: 12px; } .sw-dot { width: 22px; height: 22px; } }
+  @media (max-width: 700px) { .mat-row { top: 70px; left: 50%; transform: translateX(-50%); gap: 12px; } .sw-dot { width: 22px; height: 22px; } }
   .p-kinds button:hover, .p-kinds button.is-active { color: #050505; }
   .p-kinds button.is-active { text-decoration: underline; text-underline-offset: 3px; text-decoration-thickness: 1px; }
   @media (hover: none), (pointer: coarse) { .spin-tag { display: none; } }
@@ -277,7 +277,7 @@ const KINDS = IS_PRODUCT ? [...new Set(ALL_WORKS.map(w => w.kind).filter(Boolean
   .sort((a, b) => ((KIND_ORDER.indexOf(a) + 1) || 99) - ((KIND_ORDER.indexOf(b) + 1) || 99)) : [];
 let KIND = IS_PRODUCT ? kindSlug(new URLSearchParams(location.search).get('kind')) : '';
 if (!KINDS.some(k => kindSlug(k) === KIND)) KIND = '';
-const PROJECTS = ALL_WORKS.map((w, orig) => ({ w, orig })).filter(({ w }) => !KIND || kindSlug(w.kind) === KIND).map(({ w, orig }) => ({
+const PROJECTS = ALL_WORKS.map((w, orig) => ({ w, orig })).filter(({ w }) => (!KIND || kindSlug(w.kind) === KIND) && (IS_PRODUCT || w.in3D !== false)).map(({ w, orig }) => ({
   orig,
   size: w.size || 1,                     // Product: display size of the centre photo (1 = normal)
   title: w.title,
@@ -1068,6 +1068,16 @@ function prebuildAll() {
   };
   idle(next, { timeout: 500 });
 }
+
+/* the page opens on the first work (the vase) — the pebble object is no longer shown */
+mesh.visible = false;
+{
+  const items = window.__stripItems;
+  if (items && items[0]) {
+    lastWorkK = 0; curWork = items[0].project;
+    subjectFor(items[0], 0).then(o => { if (subject === mesh) setSubject(o); });
+  }
+}
 if (window.__objectIntroDone) setTimeout(prebuildAll, 1200);
 else addEventListener('objectintrodone', () => setTimeout(prebuildAll, 1200), { once: true });
 
@@ -1181,7 +1191,8 @@ if (IS_PRODUCT) (() => {
   }
   // the strip thumb(s) of the work on show stay at full strength, the rest are faded
   const markCurrent = k => document.querySelectorAll('.carousel .thumb').forEach(t => t.classList.toggle('is-current', k != null && +t.dataset.i === k));
-  const liveWork = it => { markCurrent(it ? it.k : null); dispatchEvent(new CustomEvent('objectwork', { detail: it ? { it, k: it.k } : null })); };
+  const liveWork = it => { if (!it && !IS_PRODUCT) it = ITEMS[0] || null;   // 3D: no pebble any more — the first work (the vase) is home
+  markCurrent(it ? it.k : null); dispatchEvent(new CustomEvent('objectwork', { detail: it ? { it, k: it.k } : null })); };
   const label = it => `${it.title} ${it.idx}/${it.total}`;
   const workCase = document.getElementById('workCase');
   const workInfo = document.getElementById('workInfo');
@@ -1567,14 +1578,16 @@ if (IS_PRODUCT) (() => {
     const mName = document.getElementById('mName'), mInfo = document.getElementById('mInfo');
     mName.textContent = CAT_LABEL;
     if (!N) mInfo.textContent = 'Coming soon';
+    // one cell per work — the first work is the one on show when the page opens (no separate first-object cell)
     const cells = [];
-    const hero = document.createElement('button');
-    hero.type = 'button'; hero.className = 'm-cell hero is-current'; hero.textContent = '○';
-    hero.setAttribute('aria-label', 'First object');
-    strip.appendChild(hero); cells.push(hero);
+    const showName = it => {
+      mName.innerHTML = `<a href="${caseUrl(it.project)}">${label(it)}</a>`;
+      mInfo.innerHTML = `${it.info || ''} · <a href="${caseUrl(it.project)}">View Case →</a>`;
+    };
+    if (ITEMS[0]) showName(ITEMS[0]);
     ITEMS.forEach((it, k) => {
       const c = document.createElement('button');
-      c.type = 'button'; c.className = 'm-cell'; c.dataset.i = k;   // its picture is swapped in when the 3D render is ready
+      c.type = 'button'; c.className = 'm-cell' + (k === 0 ? ' is-current' : ''); c.dataset.i = k;   // its picture is swapped in when the 3D render is ready
       c.style.backgroundImage = `url("${it.url}")`;
       c.setAttribute('aria-label', label(it));
       strip.appendChild(c); cells.push(c);
@@ -1585,19 +1598,12 @@ if (IS_PRODUCT) (() => {
       cells[cur].classList.remove('is-current');
       cur = i;
       cells[i].classList.add('is-current');
-      if (i === 0) {
-        clearTimeout(select.timer);
-        liveWork(null);
-        mName.textContent = CAT_LABEL; mInfo.textContent = N ? 'Swipe to see each object' : 'Coming soon';
-      } else {
-        const it = ITEMS[i - 1];
-        // the name changes at once; the object only once the swipe settles (no building every object it passes)
-        clearTimeout(select.timer);
-        if (now) liveWork(it);
-        else select.timer = setTimeout(() => { if (cur === i) liveWork(it); }, 140);
-        mName.innerHTML = `<a href="${caseUrl(it.project)}">${label(it)}</a>`;
-        mInfo.innerHTML = `${it.info || ''} · <a href="${caseUrl(it.project)}">View Case →</a>`;
-      }
+      const it = ITEMS[i];
+      // the name changes at once; the object only once the swipe settles (no building every object it passes)
+      clearTimeout(select.timer);
+      if (now) liveWork(it);
+      else select.timer = setTimeout(() => { if (cur === i) liveWork(it); }, 140);
+      showName(it);
     }
     // while swiping, whichever cell sits on the middle mark is shown right away
     let raf = 0;
