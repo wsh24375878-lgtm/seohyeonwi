@@ -843,7 +843,8 @@ tick();
    - A .glb listed in works-data.js (models: [...]) is used for that slot.
    - Otherwise a temporary object is made here (8 shapes, in turn).
    ========================================================= */
-const SNAP_W = 960, SNAP_H = 1200;
+const SNAP_SMALL = innerWidth <= 700;                            // phones: the strip cells are small, so are the renders
+const SNAP_W = SNAP_SMALL ? 480 : 960, SNAP_H = SNAP_SMALL ? 600 : 1200;
 const snapRenderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawingBuffer: true });
 snapRenderer.setPixelRatio(1);
 snapRenderer.setSize(SNAP_W, SNAP_H, false);
@@ -993,9 +994,24 @@ function subjectFor(it, k) {
       try { obj = await loadModel(it.model); }
       catch (e) { console.warn(`could not load ${it.model} — using a temporary object`, e); }
     }
-    return toSubject(obj || TEMP_OBJECTS[k % TEMP_OBJECTS.length]());
+    return warm(toSubject(obj || TEMP_OBJECTS[k % TEMP_OBJECTS.length]()));
   })());
   return subjectCache.get(k);
+}
+/* draw a freshly built work once into a tiny off-screen target, so its geometry is already on the GPU —
+   otherwise the upload happens mid-slide, on the frame the work arrives, and phones hitch there */
+const warmScene = new THREE.Scene(), warmRT = new THREE.WebGLRenderTarget(4, 4);
+function warm(obj) {
+  const prev = renderer.getRenderTarget();
+  try {
+    warmScene.environment = scene.environment;
+    warmScene.add(obj);
+    renderer.setRenderTarget(warmRT);
+    renderer.render(warmScene, camera);
+  } catch (e) {}
+  renderer.setRenderTarget(prev);
+  warmScene.remove(obj);
+  return obj;
 }
 function setSubject(obj) {
   if (obj === subject) return;
@@ -1563,8 +1579,8 @@ if (IS_PRODUCT) (() => {
       c.setAttribute('aria-label', label(it));
       strip.appendChild(c); cells.push(c);
     });
-    let cur = 0;
-    function select(i) {
+    let cur = 0, lock = -1, lockT = 0;
+    function select(i, now) {
       if (i === cur) return;
       cells[cur].classList.remove('is-current');
       cur = i;
@@ -1577,7 +1593,8 @@ if (IS_PRODUCT) (() => {
         const it = ITEMS[i - 1];
         // the name changes at once; the object only once the swipe settles (no building every object it passes)
         clearTimeout(select.timer);
-        select.timer = setTimeout(() => { if (cur === i) liveWork(it); }, 140);
+        if (now) liveWork(it);
+        else select.timer = setTimeout(() => { if (cur === i) liveWork(it); }, 140);
         mName.innerHTML = `<a href="${caseUrl(it.project)}">${label(it)}</a>`;
         mInfo.innerHTML = `${it.info || ''} · <a href="${caseUrl(it.project)}">View Case →</a>`;
       }
@@ -1588,6 +1605,7 @@ if (IS_PRODUCT) (() => {
       if (raf) return;
       raf = requestAnimationFrame(() => {
         raf = 0;
+        if (lock >= 0) return;        // the strip is still catching up with a swipe / tap — the work already changed
         const mid = strip.scrollLeft + strip.clientWidth / 2;
         let best = 0, bd = Infinity;
         cells.forEach((c, i) => { const d = Math.abs(c.offsetLeft + c.offsetWidth / 2 - mid); if (d < bd) { bd = d; best = i; } });
@@ -1596,12 +1614,20 @@ if (IS_PRODUCT) (() => {
     }, { passive: true });
     // tapping a cell brings it to the middle
     const centre = c => strip.scrollTo({ left: c.offsetLeft + c.offsetWidth / 2 - strip.clientWidth / 2, behavior: reduceMotion ? 'auto' : 'smooth' });
-    cells.forEach(c => c.addEventListener('click', () => centre(c)));
+    // a swipe on the screen or a tap on a cell switches the work at once; the strip glides after it
+    // (it used to wait for the strip to scroll there and settle first, so the object hung, then jumped)
+    const jump = i => {
+      if (i === cur) return;
+      lock = i; clearTimeout(lockT); lockT = setTimeout(() => { lock = -1; }, 900);
+      select(i, true);
+      centre(cells[i]);
+    };
+    const unlock = () => { lock = -1; clearTimeout(lockT); };
+    strip.addEventListener('scrollend', () => { if (lock >= 0) setTimeout(unlock, 60); });
+    strip.addEventListener('touchstart', unlock, { passive: true });   // the finger takes over the strip again
+    cells.forEach((c, i) => c.addEventListener('click', () => jump(i)));
     // a sideways swipe on the empty screen steps one object along the strip
-    addEventListener('objectswipe', e => {
-      const i = Math.max(0, Math.min(cells.length - 1, cur + e.detail));
-      if (i !== cur) centre(cells[i]);
-    });
+    addEventListener('objectswipe', e => jump(Math.max(0, Math.min(cells.length - 1, cur + e.detail))));
   }
 
   /* ---------- boot ----------
