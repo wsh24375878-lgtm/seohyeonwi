@@ -12,7 +12,7 @@
    with small italic captions along the bottom. Scroll / drag sideways; hover a picture for its name,
    click to open it; the filter at the top right lights up one category.
    ========================================================= */
-:root{ --ink:#050505; --muted:#8c8c8c; --rule:#bdbdbd; --pad:24px; --tile:88px; --gap:6px;
+:root{ --ink:#050505; --muted:#8c8c8c; --rule:#bdbdbd; --pad:24px; --tile:88px; --gap:12px;
 }
 *{box-sizing:border-box}
 html,body{margin:0;height:100%;background:#fff;color:var(--ink);font-family:Arial,Helvetica,sans-serif;-webkit-font-smoothing:antialiased;overflow:hidden}
@@ -35,7 +35,7 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
 .scroller.dragging{cursor:grabbing}
 .track{position:relative;display:flex;height:100%;padding:0 var(--pad);width:max-content;min-width:100%}
 .axis{position:absolute;left:0;right:0;top:var(--axis);height:1px;background:var(--ink);opacity:.55;pointer-events:none}
-.phase{position:relative;display:flex;gap:var(--gap);padding:0 22px;height:100%}
+.phase{position:relative;display:flex;gap:var(--gap);padding:0 36px;height:100%}
 /* column rules: strongest around the axis, fading out toward the top and bottom of the page */
 .phase::before,.phase:last-child::after{content:"";position:absolute;top:0;bottom:0;left:0;width:1px;pointer-events:none;
   background:linear-gradient(to bottom,transparent 6%,var(--rule) calc(var(--axis) - 22%),var(--rule) calc(var(--axis) + 12%),transparent 94%)}
@@ -49,11 +49,14 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
 .up .tile{transform-origin:50% 100%}
 .down .tile{transform-origin:50% 0}
 .in .tile{transform:none}
-.tile img{display:block;width:100%;height:100%;object-fit:cover;-webkit-user-drag:none;user-select:none;pointer-events:none}
+.tile img{display:block;width:100%;height:100%;object-fit:cover;-webkit-user-drag:none;user-select:none;pointer-events:none;
+  filter:grayscale(1) contrast(.92);opacity:.88;transition:filter .35s ease,opacity .35s ease}
+/* quiet by default: every picture in grey; the one under the mouse (or the chosen category) comes back in colour */
+.tile.is-hover img,.track.filtered .tile:not(.off) img{filter:none;opacity:1}
 .track.hovering .tile{opacity:.35}
 .track.hovering .tile.is-hover{opacity:1}
 .tile.off{opacity:.12!important;filter:grayscale(1)}
-.label{position:absolute;left:22px;bottom:64px;font-size:13px;line-height:1.3;white-space:nowrap;margin:0}
+.label{position:absolute;left:36px;bottom:64px;font-size:13px;line-height:1.3;white-space:nowrap;margin:0}
 .label span{display:block;color:var(--muted)}
 
 /* ---------- hover caption ---------- */
@@ -66,7 +69,7 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
 .hint{position:fixed;z-index:20;right:var(--pad);bottom:28px;font-size:13px;color:var(--muted);pointer-events:none}
 
 @media (max-width:700px){
-  :root{--pad:14px;--tile:64px;--gap:4px}
+  :root{--pad:14px;--tile:64px;--gap:8px}
   .head{top:66px;flex-direction:column;gap:12px}
   .filters{gap:12px;font-size:12px;flex-wrap:wrap}
   .phase{padding:0 12px}
@@ -141,7 +144,7 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
       let col = null, upH = 0, downH = 0, side = 0;
       const newCol = (i) => {
         col = document.createElement('div'); col.className = 'col';
-        const w = Math.round(tileW * (.86 + ((i * 7) % 5) * .07));       // a little variety in width, like the reference
+        const w = tileW;                                                  // every column the same width — the stacks line up
         col.style.setProperty('--w', w + 'px'); col._w = w;
         col.innerHTML = '<div class="up"></div><div class="down"></div>';
         phase.appendChild(col); upH = 0; downH = 0; side = 0;
@@ -188,7 +191,7 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
     });
     document.getElementById('total').textContent = String(works.length).padStart(2, '0');
   }
-  function applyFilter() { track.querySelectorAll('.tile').forEach(t => t.classList.toggle('off', cat !== 'all' && t.dataset.cat !== cat)); }
+  function applyFilter() { track.classList.toggle('filtered', cat !== 'all'); track.querySelectorAll('.tile').forEach(t => t.classList.toggle('off', cat !== 'all' && t.dataset.cat !== cat)); }
 
   /* ---------- hover: name by the cursor, the rest step back ---------- */
   let hover = null;
