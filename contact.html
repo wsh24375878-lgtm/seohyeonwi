@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
@@ -28,7 +28,7 @@ p,h1,h2{margin:0}
   .intro{width:100%}
   .item{grid-template-columns:1fr auto;gap:6px 12px;padding:14px 0 16px}
   .item .label{grid-column:1/-1}
-  .value{font-size:clamp(20px,6.4vw,34px)}
+  .value{font-size:clamp(18px,5.6vw,34px);overflow-wrap:anywhere}
 }
 </style>
 <link rel="stylesheet" href="site-nav.css">
@@ -55,19 +55,17 @@ p,h1,h2{margin:0}
 
   <section aria-label="Contact information">
     <div class="list">
-      <!-- 실제 정보로 바꿔주세요: data-copy 값과 버튼 글자를 함께 수정 -->
       <div class="item">
         <span class="label ui-text muted">Email</span>
-        <button class="value" type="button" data-copy="hello@example.com">hello@example.com</button>
+        <button class="value" type="button" data-copy="wsh24375878@gmail.com">wsh24375878@gmail.com</button>
         <span class="state ui-text muted" aria-live="polite">Click to copy</span>
       </div>
       <div class="item">
         <span class="label ui-text muted">Instagram</span>
-        <button class="value" type="button" data-copy="@your_instagram">@your_instagram</button>
+        <button class="value" type="button" data-copy="@hyeonseowi">@hyeonseowi</button>
         <span class="state ui-text muted" aria-live="polite">Click to copy</span>
       </div>
     </div>
-    <p class="note ui-text muted">임시 예시 연락처입니다 — 실제 이메일과 인스타그램으로 바꿔주세요.</p>
   </section>
 </main>
 <div class="cursor" aria-hidden="true"></div>
