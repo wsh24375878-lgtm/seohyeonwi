@@ -164,11 +164,15 @@ window.FashionData = (() => {
     HERO_H,
     unit: () => window.innerHeight / VIEW_UNITS,           // px per scene unit
     heroHeight: () => HERO_H * window.innerHeight / VIEW_UNITS,
-    // centre-image size; wide images shrink so they never overflow a phone screen
+    // centre-image size (ring page and project page alike): about 60% of the screen height on computers,
+    // a little larger than the base on phones; never wider than the screen or taller than the room between
+    // the text at the top and the line at the bottom
     heroSize: aspect => {
-      let h = HERO_H * window.innerHeight / VIEW_UNITS;
+      const phone = window.innerWidth <= 700;
+      let h = HERO_H * window.innerHeight / VIEW_UNITS * (phone ? 1.12 : 1.3);
+      h = Math.min(h, window.innerHeight - (phone ? 300 : 230));
       let w = h * aspect;
-      const maxW = window.innerWidth * (window.innerWidth <= 700 ? 0.86 : 0.9);
+      const maxW = window.innerWidth * (phone ? 0.9 : 0.92);
       if (w > maxW) { h *= maxW / w; w = maxW; }
       return { w, h };
     },
