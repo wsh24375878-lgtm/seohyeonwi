@@ -1143,6 +1143,83 @@ if (IS_PRODUCT) (() => {
   });
   if (!PROJECTS.length) wrap.insertAdjacentHTML('beforeend', '<p class="product-empty muted">Coming soon</p>');
 
+  /* ---------- fabric posters flutter when rubbed ----------
+     Moving the mouse (or a finger) across a fabric photo blows a little wind through it: the cloth hangs
+     from its top edge, so the bottom swings most, and soft folds ripple down it in the direction of the rub,
+     then settle. Drawn on a canvas laid exactly over the photo only while it moves. */
+  let fabric = !!(first && /fabric/i.test(first.title || ''));
+  addEventListener('objectwork', e => {
+    const it = e.detail && e.detail.it;
+    fabric = it ? /fabric/i.test(`${it.title || ''} ${it.info || ''}`) : !!(first && /fabric/i.test(first.title || ''));
+    stopFlutter();
+  });
+  const cvs = document.createElement('canvas');
+  cvs.className = 'flutter';
+  cvs.style.cssText = 'position:fixed;left:0;top:0;pointer-events:none;mix-blend-mode:multiply;display:none;z-index:1';
+  document.body.appendChild(cvs);
+  const g2 = cvs.getContext('2d');
+  let wind = 0, windDir = 1, phase = 0, fRaf = 0, fLast = 0, lastMove = null, rubbed = false;
+  function stopFlutter() {
+    wind = 0; cancelAnimationFrame(fRaf); fRaf = 0;
+    cvs.style.display = 'none'; imgs.forEach(im => { im.style.visibility = ''; });
+  }
+  function blow(e) {
+    if (!fabric || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    const now = performance.now();
+    if (lastMove && now - lastMove.t < 120) {
+      const dx = e.clientX - lastMove.x, dy = e.clientY - lastMove.y, dt = Math.max(8, now - lastMove.t);
+      const speed = Math.hypot(dx, dy) / dt;                       // px per ms
+      if (Math.abs(dx) > 1) windDir = Math.sign(dx);
+      wind = Math.min(1, wind + Math.min(.22, speed * (e.buttons || e.pointerType === 'touch' ? .12 : .06)));
+      if (Math.hypot(dx, dy) > 0) rubbed = rubbed || !!e.buttons;
+    }
+    lastMove = { x: e.clientX, y: e.clientY, t: now };
+    if (wind > .01 && !fRaf) { fLast = now; fRaf = requestAnimationFrame(flutter); }
+  }
+  function flutter(now) {
+    const dt = Math.min(.05, (now - fLast) / 1000); fLast = now;
+    wind *= Math.exp(-dt * 1.4);
+    phase += dt * (5 + wind * 5) * windDir;
+    const im = imgs[front];
+    if (wind < .006 || !im.naturalWidth) { stopFlutter(); return; }
+    // where the photo is actually painted inside its box (object-fit: contain, plus its scale / float)
+    const r = im.getBoundingClientRect(), ar = im.naturalWidth / im.naturalHeight;
+    let w = r.width, h = r.height;
+    if (w / h > ar) w = h * ar; else h = w / ar;
+    const x0 = r.left + (r.width - w) / 2, y0 = r.top + (r.height - h) / 2;
+    const pad = Math.ceil(w * .08), dpr = Math.min(2, devicePixelRatio || 1);
+    const W = Math.round((w + pad * 2) * dpr), H = Math.round(h * dpr);
+    if (cvs.width !== W || cvs.height !== H) { cvs.width = W; cvs.height = H; }
+    cvs.style.width = (w + pad * 2) + 'px'; cvs.style.height = h + 'px';
+    cvs.style.transform = `translate(${x0 - pad}px, ${y0}px)`;
+    cvs.style.display = 'block'; im.style.visibility = 'hidden';
+    g2.setTransform(dpr, 0, 0, dpr, 0, 0);
+    g2.clearRect(0, 0, w + pad * 2, h);
+    // the cloth: thin horizontal bands, each pushed sideways — pinned at the top, swinging most at the hem
+    const band = 2, sx = im.naturalWidth / w, amp = pad * .7 * wind, k = 6.5 / h;
+    const sway = Math.sin(phase * .35) * .35;                    // the whole sheet leans a little with the gusts
+    for (let y = 0; y < h; y += band) {
+      const t = y / h, hang = Math.pow(t, 1.25);
+      const dx = amp * hang * (Math.sin(y * k * Math.PI - phase) + sway);
+      g2.drawImage(im, 0, y * sx, im.naturalWidth, band * sx, pad + dx, y, w, band + .6);
+    }
+    // folds catch the light: darker where the cloth turns away, a touch lighter where it faces you
+    g2.globalCompositeOperation = 'source-atop';
+    for (let y = 0; y < h; y += band * 2) {
+      const t = y / h, s = Math.cos(y * k * Math.PI - phase) * wind * Math.pow(t, 1.1);
+      g2.fillStyle = s > 0 ? `rgba(0,0,0,${(s * .16).toFixed(3)})` : `rgba(255,255,255,${(-s * .12).toFixed(3)})`;
+      g2.fillRect(0, y, w + pad * 2, band * 2);
+    }
+    g2.globalCompositeOperation = 'source-over';
+    fRaf = requestAnimationFrame(flutter);
+  }
+  imgs.forEach(im => {
+    im.addEventListener('pointermove', blow);
+    im.addEventListener('pointerdown', () => { rubbed = false; });
+    // a rub (press + drag) shouldn't count as a click that opens the detail page
+    im.addEventListener('click', e => { if (rubbed) { e.stopImmediatePropagation(); rubbed = false; } }, true);
+  });
+
   // phones: swipe sideways anywhere above the strip → next / previous product
   let sw = null;
   addEventListener('pointerdown', e => {
