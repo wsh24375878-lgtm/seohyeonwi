@@ -4,9 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>Archive — SEOHYEON WI™</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
 <style>
 /* =========================================================
    Archive — a timeline of every work.
@@ -16,7 +13,7 @@
    click to open it; the filter at the top right lights up one category.
    ========================================================= */
 :root{ --ink:#050505; --muted:#8c8c8c; --rule:#bdbdbd; --pad:24px; --tile:88px; --gap:6px;
-  --serif:'Instrument Serif','Times New Roman',serif; }
+}
 *{box-sizing:border-box}
 html,body{margin:0;height:100%;background:#fff;color:var(--ink);font-family:Arial,Helvetica,sans-serif;-webkit-font-smoothing:antialiased;overflow:hidden}
 a{color:inherit;text-decoration:none}
@@ -38,8 +35,11 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
 .scroller.dragging{cursor:grabbing}
 .track{position:relative;display:flex;height:100%;padding:0 var(--pad);width:max-content;min-width:100%}
 .axis{position:absolute;left:0;right:0;top:var(--axis);height:1px;background:var(--ink);opacity:.55;pointer-events:none}
-.phase{position:relative;display:flex;gap:var(--gap);padding:0 22px;border-left:1px solid var(--rule);height:100%}
-.phase:last-child{border-right:1px solid var(--rule)}
+.phase{position:relative;display:flex;gap:var(--gap);padding:0 22px;height:100%}
+/* column rules: strongest around the axis, fading out toward the top and bottom of the page */
+.phase::before,.phase:last-child::after{content:"";position:absolute;top:0;bottom:0;left:0;width:1px;pointer-events:none;
+  background:linear-gradient(to bottom,transparent 6%,var(--rule) calc(var(--axis) - 22%),var(--rule) calc(var(--axis) + 12%),transparent 94%)}
+.phase:last-child::after{left:auto;right:0}
 .col{position:relative;width:var(--w);height:100%}
 .up,.down{position:absolute;left:0;right:0;display:flex;flex-direction:column;gap:var(--gap)}
 .up{bottom:calc(100% - var(--axis) + 4px);flex-direction:column-reverse}
@@ -53,7 +53,7 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
 .track.hovering .tile{opacity:.35}
 .track.hovering .tile.is-hover{opacity:1}
 .tile.off{opacity:.12!important;filter:grayscale(1)}
-.label{position:absolute;left:22px;bottom:64px;font-family:var(--serif);font-style:italic;font-size:13px;line-height:1.15;text-transform:uppercase;letter-spacing:.02em;white-space:nowrap}
+.label{position:absolute;left:22px;bottom:64px;font-size:13px;line-height:1.3;white-space:nowrap;margin:0}
 .label span{display:block;color:var(--muted)}
 
 /* ---------- hover caption ---------- */
@@ -167,7 +167,7 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
       const cats = [...new Set(list.map(w => w.categoryName))].join(' · ');
       const lab = document.createElement('p');
       lab.className = 'label';
-      lab.innerHTML = `${y ? 'Year ' + y : 'Undated'}<span>${cats}</span>`;
+      lab.innerHTML = `${y || "Undated"}<span>${cats}</span>`;
       phase.appendChild(lab);
       track.appendChild(phase);
     });
