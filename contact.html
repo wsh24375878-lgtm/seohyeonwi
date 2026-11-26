@@ -33,6 +33,7 @@ p,h1,h2{margin:0}
 </style>
 <link rel="stylesheet" href="site-nav.css">
 <link rel="stylesheet" href="site-cursor.css">
+<script src="site-lang.js"></script>
 </head>
 <body>
 <header class="site-top">
@@ -51,7 +52,8 @@ p,h1,h2{margin:0}
 </header>
 
 <main class="page">
-  <h1 class="big-text ko intro">프로젝트와 협업에 대한 이야기를 나눠요.<br><span class="muted" lang="en">say hello, share an idea, or start something together.</span></h1>
+  <h1 class="big-text ko intro t-ko">프로젝트와 협업에 대한 이야기를 나눠요.<br><span class="muted">인사, 아이디어, 함께 시작할 무언가 — 무엇이든 편하게 연락주세요.</span></h1>
+  <h1 class="big-text intro t-en" lang="en">Let’s talk about projects and collaborations.<br><span class="muted">Say hello, share an idea, or start something together.</span></h1>
 
   <section aria-label="Contact information">
     <div class="list">
@@ -85,6 +87,5 @@ document.querySelectorAll('.value[data-copy]').forEach(button => {
 });
 </script>
 <script src="site-cursor.js"></script>
-<script src="site-lang.js"></script>
 </body>
 </html>
