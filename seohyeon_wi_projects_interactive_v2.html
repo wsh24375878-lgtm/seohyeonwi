@@ -49,7 +49,7 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
 .up .tile{transform-origin:50% 100%}
 .down .tile{transform-origin:50% 0}
 .in .tile{transform:none}
-.tile img{display:block;width:100%;height:100%;object-fit:contain;-webkit-user-drag:none;user-select:none;pointer-events:none;
+.tile img{display:block;width:100%;height:100%;object-fit:cover;-webkit-user-drag:none;user-select:none;pointer-events:none;
   filter:grayscale(1);transition:filter .35s ease}
 /* quiet by default: every picture in grey; the one under the mouse (or the chosen category) comes back in colour */
 .tile.is-hover img,.track.filtered .tile:not(.off) img{filter:none}
@@ -137,9 +137,7 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
     const keys = [...years.keys()].sort((a, b) => (a || 9999) - (b || 9999));
     let delay = 0;
     keys.forEach(y => {
-      // within a year, works of the same kind sit together: Fashion, 3D, Product, Graphic
-      const KIND_ORDER = ['fashion', 'object', 'product', 'graphic'];
-      const list = years.get(y).slice().sort((a, b) => KIND_ORDER.indexOf(a.category) - KIND_ORDER.indexOf(b.category));
+      const list = years.get(y);
       const phase = document.createElement('section');
       phase.className = 'phase';
       // columns: alternate up / down so both sides grow evenly
@@ -154,12 +152,12 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
       list.forEach((w, i) => {
         const img = w.images[0];
         if (!col) newCol(i);
-        let h = col._w;                                                 // every tile the same square; the picture sits whole inside it
+        let h = Math.round(col._w / Math.max(.45, Math.min(2.2, img ? img.ar : .8)));
         const fitsUp = upH + h + gap <= roomUp, fitsDown = downH + h + gap <= roomDown;
         let where = side % 2 === 0 ? 'up' : 'down';
         if (where === 'up' && !fitsUp) where = fitsDown ? 'down' : null;
         else if (where === 'down' && !fitsDown) where = fitsUp ? 'up' : null;
-        if (!where) { newCol(i + 1); h = col._w; where = 'up'; }
+        if (!where) { newCol(i + 1); h = Math.round(col._w / Math.max(.45, Math.min(2.2, img ? img.ar : .8))); where = 'up'; }
         const a = document.createElement('a');
         a.className = 'tile'; a.href = w.url; a.style.height = h + 'px';
         a.dataset.cat = w.category; a._w = w;
