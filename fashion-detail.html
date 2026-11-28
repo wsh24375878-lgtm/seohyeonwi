@@ -275,7 +275,8 @@
       // (the first image also carries the project's story — its history and idea, from the portfolio)
       workTitle.textContent = P.title;
       const lead = i === 0 && P.story && P.story.length ? P.story.slice(0, 2).join('\n') + '\n' : '';   // \n: a line break on phones, a space on computers
-      workDesc.textContent = lead + (work.desc || '');
+      // a project with a short 'lead' shows just that on its first picture (its boards already carry the text)
+      workDesc.textContent = i === 0 && P.lead ? P.lead : lead + (work.desc || '');
       const step = (work.title || '').split(' — ').slice(1).join(' — ') || work.info || '';
       workMeta.textContent = [step, P.year || work.year].filter(Boolean).join(' — ');
       counter.textContent = `${String(i + 1).padStart(2, '0')} / ${String(WORKS.length).padStart(2, '0')}`;

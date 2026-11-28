@@ -117,6 +117,7 @@ window.FASHION_PROJECTS = {
   },
   'Renault Uniform': {
     title: 'Renault Uniform', kind: 'Uniform Design Proposal', year: '',
+    lead: 'A uniform design proposal for Renault Korea.',   // the first picture shows only this line
     story: [
       'A uniform proposal for Renault Korea: refined colour drawn from the brand identity and functional design, made into one premium uniform line for all staff.',
       'Three colourways — black & gray (premium, professional), dark navy & denim (modern, casual) and black & cobalt blue (dynamic, sporty) — meet three design types: A, basic, with side panels and piping; B, raglan sleeves; C, a wheel-graphic yoke taken from tyre tracks. Each runs across five pieces: polo, long-sleeve polo, spring jacket, padded vest and winter jumper.',

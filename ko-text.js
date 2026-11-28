@@ -142,6 +142,7 @@ window.KO_TEXT = {
       process: '무드보드 → 북 → 도식화',
     },
     'Renault Uniform': {
+      lead: '르노코리아 직원 유니폼 디자인 제안.',
       story: [
         '르노코리아 직원 유니폼 제안.\n브랜드 아이덴티티를 담은 컬러와\n기능적인 디자인으로\n전 직원이 함께 입는\n프리미엄 유니폼 라인을 기획했다.',
         '컬러는 세 가지로 제안했다.\n전문성과 신뢰감을 주는 블랙 & 그레이,\n편안하고 활동적인 D.네이비 & 데님,\n스포티하고 역동적인\n블랙 & 코발트 블루.\n디자인은 옆판과 파이핑을 넣은 A안,\n나그랑 소매의 B안,\n타이어 자국에서 가져온 휠 그래픽을\n어깨에 넣은 C안으로 나눴다.\n각 안은 반팔티, 긴팔티, 춘추자켓,\n간절기조끼, 동점퍼로 전개된다.',
@@ -203,6 +204,6 @@ window.KO_TEXT = {
   if (window.FASHION_WORKS) window.FASHION_WORKS.forEach(w => { if (K.fashion[w.project]) w.desc = K.fashion[w.project]; });
   if (window.FASHION_PROJECTS) Object.keys(window.FASHION_PROJECTS).forEach(k => {
     const p = window.FASHION_PROJECTS[k], ko = K.projects[k];
-    if (ko) { if (ko.story) p.story = ko.story; if (ko.process) p.process = ko.process; }
+    if (ko) { if (ko.story) p.story = ko.story; if (ko.process) p.process = ko.process; if (ko.lead) p.lead = ko.lead; }
   });
 })();
