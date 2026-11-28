@@ -40,13 +40,13 @@ window.FASHION_WORKS = [
   { project: '11', group: 'Ready-to-wear', title: 'Ready-to-wear — Line-up', src: 'images/fashion/ready-to-wear/11.jpg', info: 'Ready-to-wear',
     desc: 'A ready-to-wear line-up of layered, utility-driven pieces.' },
   { project: '12', group: 'Ready-to-wear', title: 'Ready-to-wear — Tech Pack 01', src: 'images/fashion/ready-to-wear/12.jpg', info: 'Tech Pack',
-    desc: 'Cargo skirt with fold-over waist and drawcord hem.' },
+    desc: 'Cargo skirt.' },
   { project: '13', group: 'Ready-to-wear', title: 'Ready-to-wear — Tech Pack 02', src: 'images/fashion/ready-to-wear/13.jpg', info: 'Tech Pack',
-    desc: 'Wide trousers with crossing belt straps.' },
+    desc: 'Wide trousers with belt straps.' },
   { project: '14', group: 'Ready-to-wear', title: 'Ready-to-wear — Tech Pack 03', src: 'images/fashion/ready-to-wear/14.jpg', info: 'Tech Pack',
-    desc: 'Knit top with an asymmetric open shoulder.' },
+    desc: 'Asymmetric knit top.' },
   { project: '15', group: 'Ready-to-wear', title: 'Ready-to-wear — Tech Pack 04', src: 'images/fashion/ready-to-wear/15.jpg', info: 'Tech Pack',
-    desc: 'Denim bustier with belt-buckle closures.' },
+    desc: 'Denim bustier.' },
   // Miseki seoul 26FW — mood board first (cover), then the book spread and the flats
   { project: '16', group: 'Miseki seoul 26FW', title: 'Miseki seoul 26FW — Mood Board', src: 'images/fashion/miseki-seoul/01.jpg', info: 'Mood Board', year: '2025',
     desc: 'A mood board for Miseki seoul 26FW — misty greens and grey-blues, wet grass, blurred light and black layered looks.' },
@@ -101,6 +101,7 @@ window.FASHION_PROJECTS = {
   },
   'Ready-to-wear': {
     title: 'Ready-to-wear', kind: 'Ready-to-wear Design', year: '2022',
+    lead: 'A ready-to-wear line-up of eleven looks, with four tech packs.',
     story: [
       'A ready-to-wear line of layered, utility-driven pieces, drawn as a line-up of eleven looks.',
       'Four key items were taken further into sample work orders (tech packs): a cargo skirt with a fold-over waist, wide trousers crossed by belt straps, a knit top with an asymmetric open shoulder and a denim bustier closed with buckles. Each sheet sets out the flats, measurements, stitch details and the fabric swatch, next to reference images.',
