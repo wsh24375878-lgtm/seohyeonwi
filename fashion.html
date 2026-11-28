@@ -490,8 +490,8 @@ const detailUrl = FashionData.detailUrl;
   // fashion.html?work=03 → coming back from a detail page: show that work at the front
   const returnParam = new URLSearchParams(location.search).get('work');
   const returning = returnParam !== null;
-  const returnWork = returning ? window.FASHION_WORKS.find(w => w.project === returnParam) : null;
-  const returnIndex = returnWork ? Math.max(0, WORKS.findIndex(c => c.group === returnWork.group)) : 0;
+  // the ring always opens on the first project (Confusion, the blue-background shoot) — even coming back from another one
+  const returnIndex = 0;
 
   if (!returning) document.querySelectorAll('.chrome').forEach(el => el.classList.add('intro-hide'));
 
