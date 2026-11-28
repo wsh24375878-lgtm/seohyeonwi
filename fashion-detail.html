@@ -439,9 +439,10 @@
   });
 
   /* ---------- back to the ring (reverse transition) ---------- */
-  function leave() {
+  // toFirst: the top menu's "Fashion" — the ring opens on the first project (Confusion) instead of the one just seen
+  function leave(toFirst) {
     if (leaving) return;
-    const url = FashionData.listUrl(WORKS[index]);
+    const url = FashionData.listUrl(toFirst ? window.FASHION_WORKS[0] : WORKS[index]);
     if (reduceMotion) { location.href = url; return; }
     leaving = true;
     target = -slides[index].x;
@@ -460,7 +461,7 @@
   document.getElementById('toRing').addEventListener('click', e => { e.preventDefault(); leave(); });
   document.getElementById('crumb').addEventListener('click', e => { e.preventDefault(); leave(); });
   const navFashion = document.querySelector('.site-cats a[href="fashion.html"]');
-  if (navFashion) navFashion.addEventListener('click', e => { e.preventDefault(); leave(); });
+  if (navFashion) navFashion.addEventListener('click', e => { e.preventDefault(); leave(true); });
 
   window.addEventListener('pageshow', e => {
     if (!e.persisted || !leaving) return;
