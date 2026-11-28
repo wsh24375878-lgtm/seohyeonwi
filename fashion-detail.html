@@ -274,7 +274,7 @@
       // top-left text follows the image on show: the project name, what this step is, and its description
       // (the first image also carries the project's story — its history and idea, from the portfolio)
       workTitle.textContent = P.title;
-      const lead = i === 0 && P.story && P.story.length ? P.story.slice(0, 2).join(' ') + ' ' : '';
+      const lead = i === 0 && P.story && P.story.length ? P.story.slice(0, 2).join('\n') + '\n' : '';   // \n: a line break on phones, a space on computers
       workDesc.textContent = lead + (work.desc || '');
       const step = (work.title || '').split(' — ').slice(1).join(' — ') || work.info || '';
       workMeta.textContent = [step, P.year || work.year].filter(Boolean).join(' — ');

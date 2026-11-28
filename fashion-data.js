@@ -54,6 +54,33 @@ window.FASHION_WORKS = [
     desc: 'The mood board laid out as a printed book spread opposite the Miseki seoul wordmark.' },
   { project: '18', group: 'Miseki seoul 26FW', title: 'Miseki seoul 26FW — Flats', src: 'images/fashion/miseki-seoul/03.jpg', info: 'Technical Flats', year: '2025',
     desc: 'Design flats, front and back: a hooded long coat with toggles, a ribbed knit cardigan with an asymmetric button line, and a wrapped pleated skirt with a tie belt.' },
+  // Renault Korea uniform proposal — cover, concept, then types A / B / C in three colourways, trousers, pocket details
+  { project: '19', group: 'Renault Uniform', title: 'Renault Uniform — Cover', src: 'images/fashion/renault/01.jpg', info: 'Design Proposal',
+    desc: 'Renault Design Proposal — the cover of a uniform proposal for Renault Korea, a car sliced by strips of blue light.' },
+  { project: '20', group: 'Renault Uniform', title: 'Renault Uniform — Concept', src: 'images/fashion/renault/02.jpg', info: 'Concept',
+    desc: 'Design concept, three colourways, three design types, design points and direction on one board.' },
+  { project: '21', group: 'Renault Uniform', title: 'Type A Basic — Black & Gray', src: 'images/fashion/renault/03.jpg', info: 'Type A · Basic',
+    desc: 'Type A (basic): grey side panels on black — polo, long-sleeve polo, spring jacket, padded vest and winter jumper.' },
+  { project: '22', group: 'Renault Uniform', title: 'Type A Basic — D/Navy & Denim', src: 'images/fashion/renault/04.jpg', info: 'Type A · Basic',
+    desc: 'Type A in dark navy with denim side panels and fine piping on the outerwear.' },
+  { project: '23', group: 'Renault Uniform', title: 'Type A Basic — Black & C/Blue', src: 'images/fashion/renault/05.jpg', info: 'Type A · Basic',
+    desc: 'Type A in black with cobalt blue piping running down the body and cuffs.' },
+  { project: '24', group: 'Renault Uniform', title: 'Type B Raglan — Black & Gray', src: 'images/fashion/renault/06.jpg', info: 'Type B · Raglan',
+    desc: 'Type B (raglan): grey raglan sleeves on a black body, with the Renault badge on the sleeve.' },
+  { project: '25', group: 'Renault Uniform', title: 'Type B Raglan — D/Navy & Denim', src: 'images/fashion/renault/07.jpg', info: 'Type B · Raglan',
+    desc: 'Type B in dark navy with heathered denim raglan sleeves.' },
+  { project: '26', group: 'Renault Uniform', title: 'Type B Raglan — Black & C/Blue', src: 'images/fashion/renault/08.jpg', info: 'Type B · Raglan',
+    desc: 'Type B in black with cobalt blue raglan sleeves — the sportiest of the three colourways.' },
+  { project: '27', group: 'Renault Uniform', title: 'Type C Wheel Point — Black & Gray', src: 'images/fashion/renault/09.jpg', info: 'Type C · Wheel Graphic',
+    desc: 'Type C (wheel point): a yoke of diagonal wheel-track graphic across the shoulders, grey on black.' },
+  { project: '28', group: 'Renault Uniform', title: 'Type C Wheel Point — D/Navy & Denim', src: 'images/fashion/renault/10.jpg', info: 'Type C · Wheel Graphic',
+    desc: 'Type C in dark navy with a denim wheel-graphic yoke and flap pockets on the outerwear.' },
+  { project: '29', group: 'Renault Uniform', title: 'Type C Wheel Point — Black & C/Blue', src: 'images/fashion/renault/11.jpg', info: 'Type C · Wheel Graphic',
+    desc: 'Type C in black with a cobalt blue wheel-graphic yoke.' },
+  { project: '30', group: 'Renault Uniform', title: 'Renault Uniform — Trousers', src: 'images/fashion/renault/12.jpg', info: 'Trousers',
+    desc: 'Navy trousers, front and back: A, a basic straight leg; B, the same with cargo pockets.' },
+  { project: '31', group: 'Renault Uniform', title: 'Renault Uniform — Pocket Details', src: 'images/fashion/renault/13.jpg', info: 'Details',
+    desc: 'Pocket details: a pocket with pen slots, a double pocket and a pen holder on the sleeve.' },
 ];
 // slots that have no image yet (src: '') are kept above for later but not shown anywhere
 window.FASHION_WORKS = window.FASHION_WORKS.filter(w => w.src);
@@ -87,6 +114,15 @@ window.FASHION_PROJECTS = {
       'The mood board was laid out as a printed book spread opposite the Miseki seoul wordmark, then developed into technical flats — a hooded long coat with toggles, a ribbed knit cardigan with an asymmetric button line and a wrapped pleated skirt with a tie belt.',
     ],
     process: 'Mood board → book → flats',
+  },
+  'Renault Uniform': {
+    title: 'Renault Uniform', kind: 'Uniform Design Proposal', year: '',
+    story: [
+      'A uniform proposal for Renault Korea: refined colour drawn from the brand identity and functional design, made into one premium uniform line for all staff.',
+      'Three colourways — black & gray (premium, professional), dark navy & denim (modern, casual) and black & cobalt blue (dynamic, sporty) — meet three design types: A, basic, with side panels and piping; B, raglan sleeves; C, a wheel-graphic yoke taken from tyre tracks. Each runs across five pieces: polo, long-sleeve polo, spring jacket, padded vest and winter jumper.',
+      'Dynamic lines from the speed of the car, Renault blue as the point colour and premium details — cut panels, functional fabric, pen pockets — finish the set, with two trousers to go with it.',
+    ],
+    process: 'Concept → colourways → types A / B / C → trousers → pocket details',
   },
 };
 window.fashionProjectOf = work => (window.FASHION_PROJECTS[work.group] || { title: work.group || work.title, kind: work.info, year: work.year, story: [] });

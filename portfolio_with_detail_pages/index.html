@@ -640,11 +640,14 @@ const endSwipe = e => {
     dispatchEvent(new CustomEvent('objectswipe', { detail: dx < 0 ? 1 : -1 }));   // swipe left → next
   }
 };
-renderer.domElement.addEventListener('pointerup', endSwipe);
-renderer.domElement.addEventListener('pointercancel', () => { swipe = null; swipeLive = false; });
+addEventListener('pointerup', endSwipe);          // whole window: lifting over the text / strip still ends the swipe
+addEventListener('pointercancel', () => { swipe = null; swipeLive = false; });
 
 renderer.domElement.addEventListener('pointerdown', e => {
   if (e.pointerType !== 'touch' || !introDone) return;
+  // the first finger of a new touch: forget any finger whose lift was missed (it ended over another element),
+  // otherwise a one-finger drag would be read as a pinch and grow the object
+  if (e.isPrimary) { touches.clear(); pinch = null; }
   touches.set(e.pointerId, { x: e.clientX, y: e.clientY });
   if (touches.size > 1) swipe = null;      // second finger: it's a pinch, not a swipe
   if (touches.size === 2) {
@@ -662,7 +665,7 @@ renderer.domElement.addEventListener('pointerdown', e => {
 renderer.domElement.addEventListener('pointermove', e => {
   if (!touches.has(e.pointerId)) return;
   touches.set(e.pointerId, { x: e.clientX, y: e.clientY });
-  if (pinch && touches.size >= 2) {
+  if (pinch && touches.size === 2) {           // only a real two-finger pinch changes the size
     const k = fingerGap() / pinch.d0;          // fingers apart → bigger, together → smaller
     wheelAcc = Math.max(PINCH_MIN, Math.min(PINCH_MAX, (1 + pinch.acc0) * k - 1));
   }
@@ -671,8 +674,9 @@ const liftFinger = e => {
   touches.delete(e.pointerId);
   if (touches.size < 2) pinch = null;
 };
-renderer.domElement.addEventListener('pointerup', liftFinger);
-renderer.domElement.addEventListener('pointercancel', liftFinger);
+// listen on the whole window: a finger lifted over the text or the strip still counts as lifted
+addEventListener('pointerup', liftFinger);
+addEventListener('pointercancel', liftFinger);
 
 renderer.domElement.addEventListener('pointerdown', e => {
   if (!introDone || (e.pointerType === 'mouse' && e.button !== 0)) return;

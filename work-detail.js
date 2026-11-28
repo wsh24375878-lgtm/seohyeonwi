@@ -63,7 +63,7 @@
     const tail = sentences.length && sentences[sentences.length - 1].match(/^(.*다\.)\s+([^.]*\d+\s*cm\.?)$/);
     if (tail) { sentences[sentences.length - 1] = tail[1]; facts.push(tail[2].replace(/\.$/, '')); }
     const paras = [];
-    for (let i = 1; i < sentences.length; i += 2) paras.push(sentences.slice(i, i + 2).join(' '));
+    for (let i = 1; i < sentences.length; i += 2) paras.push(sentences.slice(i, i + 2).join('\n'));   // each sentence on its own line (phones)
     const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
     el.className = 'desc wall-label';
     el.innerHTML =

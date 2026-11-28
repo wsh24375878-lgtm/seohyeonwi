@@ -52,6 +52,10 @@
     '.lang-sep{color:#bdbdbd}' +
     // text written in both languages (About, Contact): .t-ko / .t-en, only the chosen one shows
     'html:not(.lang-ko) .t-ko,html.lang-ko .t-en{display:none!important}' +
-    '.lang-ko .desc,.lang-ko #workDesc{word-break:keep-all;line-height:1.6}';
+    // Korean: wrap lines between words (어절), never inside a word — on every page
+    'html.lang-ko,:lang(ko){word-break:keep-all;overflow-wrap:break-word}' +
+    '.lang-ko .desc,.lang-ko #workDesc{line-height:1.6}' +
+    // phones: the Korean descriptions break where the phrase pauses (the \n in ko-text.js); computers keep one flowing text
+    '@media (max-width:700px){.lang-ko #workDesc,.lang-ko .wl-lead,.lang-ko .wl-p,.lang-ko .story p{white-space:pre-line}}';
   document.head.appendChild(css);
 })();
